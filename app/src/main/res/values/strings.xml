@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">Free Radio</string>
+    <string name="unexpected_error">An unexpected error occurred :(\nPlease try again</string>
 </resources>
