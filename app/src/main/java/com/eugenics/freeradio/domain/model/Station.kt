@@ -1,7 +1,7 @@
 package com.eugenics.freeradio.domain.model
 
-import androidx.room.ColumnInfo
 import com.eugenics.freeradio.data.database.dao.StationDaoObject
+import com.eugenics.media_service.domain.model.PlayerMediaItem
 
 data class Station(
     val stationuuid: String,
@@ -18,22 +18,34 @@ data class Station(
     val language: String,
     val languagecodes: String,
     val changeuuid: String
-) {
-    fun convertToDaoObject(): StationDaoObject =
-        StationDaoObject(
-            stationuuid = stationuuid,
-            name = name,
-            tags = tags,
-            homepage = homepage,
-            url = url,
-            urlResolved = urlResolved,
-            favicon = favicon,
-            bitrate = bitrate,
-            codec = codec,
-            country = country,
-            countrycode = countrycode,
-            language = language,
-            languagecodes = languagecodes,
-            changeuuid = changeuuid
-        )
-}
+)
+
+fun Station.convertToDao(): StationDaoObject =
+    StationDaoObject(
+        stationuuid = this.stationuuid,
+        name = this.name,
+        tags = this.tags,
+        homepage = this.homepage,
+        url = this.url,
+        urlResolved = this.urlResolved,
+        favicon = this.favicon,
+        bitrate = this.bitrate,
+        codec = this.codec,
+        country = this.country,
+        countrycode = this.countrycode,
+        language = this.language,
+        languagecodes = this.languagecodes,
+        changeuuid = this.changeuuid
+    )
+
+fun Station.convertToMediaItem(): PlayerMediaItem =
+    PlayerMediaItem(
+        name = this.name,
+        tags = this.tags,
+        homepage = this.homepage,
+        url = this.url,
+        urlResolved = this.urlResolved,
+        favicon = this.favicon,
+        bitrate = this.bitrate,
+        codec = this.codec
+    )

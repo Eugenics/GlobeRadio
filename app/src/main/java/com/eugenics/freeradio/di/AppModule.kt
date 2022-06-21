@@ -9,12 +9,12 @@ import com.eugenics.freeradio.data.network.ApiService
 import com.eugenics.freeradio.data.repository.FakeDataSourceImpl
 import com.eugenics.freeradio.data.repository.NetworkDataSourceImpl
 import com.eugenics.freeradio.data.repository.RepositoryImpl
-import com.eugenics.freeradio.domain.core.Player
+import com.eugenics.media_service.player.Player
 import com.eugenics.freeradio.domain.repository.DataSource
 import com.eugenics.freeradio.domain.repository.ILocalDataSource
 import com.eugenics.freeradio.domain.repository.Repository
 import com.eugenics.freeradio.domain.usecases.*
-import com.eugenics.freeradio.player.PlayerImpl
+import com.eugenics.media_service.player.PlayerImpl
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
 import dagger.Module

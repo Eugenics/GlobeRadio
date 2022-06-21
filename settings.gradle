@@ -14,3 +14,5 @@ dependencyResolutionManagement {
 }
 rootProject.name = "Free Radio"
 include ':app'
+include ':app:mediaservice'
+include ':media_service'

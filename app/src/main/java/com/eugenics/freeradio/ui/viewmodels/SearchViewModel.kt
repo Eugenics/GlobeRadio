@@ -1,15 +1,13 @@
 package com.eugenics.freeradio.ui.viewmodels
 
-import android.net.Uri
 import android.util.Log
 import androidx.compose.runtime.mutableStateListOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import androidx.media3.common.MediaItem
-import androidx.media3.common.MediaMetadata
-import com.eugenics.freeradio.domain.core.Player
 import com.eugenics.freeradio.domain.model.Station
+import com.eugenics.freeradio.domain.model.convertToMediaItem
 import com.eugenics.freeradio.domain.usecases.UseCase
+import com.eugenics.media_service.player.Player
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.Dispatchers
@@ -21,7 +19,7 @@ import javax.inject.Inject
 @HiltViewModel
 class SearchViewModel @Inject constructor(
     private val useCase: UseCase,
-    val player: Player
+    private val player: Player
 ) : ViewModel() {
 
     private val _stations = mutableStateListOf<Station>()
@@ -68,24 +66,12 @@ class SearchViewModel @Inject constructor(
     fun addMediaItem(index: Int, item: Station) {
         player.addMediaItem(
             index = index,
-            item = MediaItem.Builder()
-                .setUri(item.urlResolved)
-                .setMediaMetadata(
-                    MediaMetadata.Builder()
-                        .setMediaUri(Uri.Builder().path(item.urlResolved).build())
-                        .setDisplayTitle(item.name)
-                        .build()
-                )
-                .build()
+            item = item.convertToMediaItem()
         )
     }
 
     private fun addMediaItems() {
-        val mediaItems = mutableListOf<MediaItem>()
-        for ((index, station) in stations.withIndex()) {
-            mediaItems.add(index, MediaItem.fromUri(station.urlResolved))
-        }
-        player.addMediaItems(mediaItems)
+        player.addMediaItems(mediaItems = stations.map { station -> station.convertToMediaItem() })
     }
 
     fun play(itemPosition: Int) {

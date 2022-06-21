@@ -1,7 +1,7 @@
-package com.eugenics.freeradio.domain.core
+package com.eugenics.media_service.player
 
 import android.content.Context
-import androidx.media3.common.MediaItem
+import com.eugenics.media_service.domain.model.PlayerMediaItem
 
 interface Player {
     fun initialize(context: Context): Player
@@ -13,6 +13,6 @@ interface Player {
     fun release()
     fun getItemsCount(): Int
     fun seekPosition(mediaItemIndex: Int)
-    fun addMediaItems(mediaItems: List<MediaItem>)
-    fun addMediaItem(index: Int, item: MediaItem)
+    fun addMediaItems(mediaItems: List<PlayerMediaItem>)
+    fun addMediaItem(index: Int, item: PlayerMediaItem)
 }
