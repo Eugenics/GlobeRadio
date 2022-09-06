@@ -26,9 +26,8 @@ fun SearchContent(
     Column {
         LazyColumn(modifier = Modifier.fillMaxWidth()) {
             itemsIndexed(stations) { item, station ->
-                viewModel.addMediaItem(item, station)
                 StationCard(station) {
-                    viewModel.play(item)
+                    viewModel.play()
                 }
             }
         }

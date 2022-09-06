@@ -1,7 +1,6 @@
-package com.eugenics.freeradio.domain.model
+package com.eugenics.media_service.domain.model
 
 import com.eugenics.media_service.data.database.enteties.StationDaoObject
-import com.eugenics.media_service.domain.model.PlayerMediaItem
 
 data class Station(
     val stationuuid: String,

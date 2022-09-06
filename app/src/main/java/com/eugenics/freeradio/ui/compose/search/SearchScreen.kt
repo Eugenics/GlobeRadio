@@ -1,5 +1,6 @@
 package com.eugenics.freeradio.ui.compose.search
 
+import android.support.v4.media.session.PlaybackStateCompat
 import androidx.compose.foundation.Image
 import androidx.compose.material.*
 import androidx.compose.runtime.*
@@ -10,6 +11,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import com.eugenics.freeradio.R
 import com.eugenics.freeradio.ui.viewmodels.SearchViewModel
+import com.eugenics.media_service.media.isPlaying
 
 
 @Composable
@@ -19,24 +21,19 @@ fun SearchScreen(
 ) {
     val state = searchViewModel.state.collectAsState()
 
-    LaunchedEffect(key1 = true) {
-        searchViewModel.getStationsByName("80s")
-    }
-
     Scaffold(
         floatingActionButton = {
             FloatingActionButton(
                 onClick = {
-                    if (state.value) {
+                    if (state.value.isPlaying) {
                         searchViewModel.pause()
                     } else {
-                        searchViewModel.play(searchViewModel.itemIndex)
+                        searchViewModel.play()
                     }
                 }
             ) {
-
                 Image(
-                    painter = if (state.value) {
+                    painter = if (state.value.isPlaying) {
                         painterResource(R.drawable.ic_pause)
                     } else {
                         painterResource(R.drawable.ic_play_arrow)
