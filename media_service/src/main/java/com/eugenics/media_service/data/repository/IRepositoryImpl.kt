@@ -43,11 +43,19 @@ class IRepositoryImpl(
     override suspend fun getLocalStations(): List<StationDaoObject> =
         localDataSource.fetchAllStations()
 
+    override suspend fun getLocalStationByTag(tag: String): List<StationDaoObject> =
+        localDataSource.fetchStationByTag(tag = tag)
+
     override suspend fun insertStation(stationDao: StationDaoObject) =
         localDataSource.insertStation(station = stationDao)
 
     override suspend fun insertStations(stations: List<StationDaoObject>) =
         localDataSource.insertStations(stations = stations)
+
+    override suspend fun deleteEmptyTags() = localDataSource.deleteEmptyTags()
+
+    override suspend fun refreshStations(stations: List<StationDaoObject>) =
+        localDataSource.refreshStations(stations = stations)
 
     companion object {
         fun newInstance(context: Context): IRepository =

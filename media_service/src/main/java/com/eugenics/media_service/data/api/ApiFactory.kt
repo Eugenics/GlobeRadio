@@ -24,16 +24,17 @@ object ApiFactory : IFactory<ApiService> {
         .setLevel(HttpLoggingInterceptor.Level.BODY)
 
     private val okHttpClient: OkHttpClient = OkHttpClient.Builder()
-        .addInterceptor(interceptor)
-//        .addInterceptor { chain ->
-//            chain.proceed(
-//                Request.Builder()
-//                    .addHeader(CONTENT_TYPE_HEADER, CONTENT_TYPE_VALUE)
-//                    .build()
-//            )
-//        }
         .connectTimeout(15, TimeUnit.SECONDS)
         .readTimeout(15, TimeUnit.SECONDS)
+        .addInterceptor(interceptor)
+        .addInterceptor { chain ->
+            chain.proceed(
+                chain.request().newBuilder()
+                    .addHeader(CONTENT_TYPE_HEADER, CONTENT_TYPE_VALUE)
+                    .addHeader("ApplicationName", "freeRadio")
+                    .build()
+            )
+        }
         .build()
 
     private val gsonConverterFactory: GsonConverterFactory = GsonConverterFactory.create(gson)

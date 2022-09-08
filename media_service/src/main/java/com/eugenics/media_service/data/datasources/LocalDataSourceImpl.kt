@@ -26,6 +26,12 @@ class LocalDataSourceImpl(
     override suspend fun insertStations(stations: List<StationDaoObject>) =
         database.dao.insertStations(stationsDao = stations)
 
+    override suspend fun deleteEmptyTags() = database.dao.deleteStationsWithoutTags()
+
+    override suspend fun refreshStations(stations: List<StationDaoObject>) =
+        database.dao.refreshStations(stationsDao = stations)
+
+
     companion object {
         fun newInstance(context: Context): ILocalDataSource =
             LocalDataSourceImpl(context = context)

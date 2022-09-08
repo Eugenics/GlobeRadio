@@ -4,7 +4,6 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.Card
-import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.Text
 import androidx.compose.runtime.*
@@ -15,20 +14,19 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import coil.compose.SubcomposeAsyncImage
 import com.eugenics.freeradio.domain.model.Station
-import com.eugenics.freeradio.ui.viewmodels.SearchViewModel
 
 @Composable
 fun SearchContent(
-    viewModel: SearchViewModel
+    stations: List<Station>,
+    onCardClick: (mediaId: String) -> Unit
 ) {
-    val stations by remember { mutableStateOf(viewModel.stations) }
-
     Column {
         LazyColumn(modifier = Modifier.fillMaxWidth()) {
             itemsIndexed(stations) { item, station ->
-                StationCard(station) {
-                    viewModel.play()
-                }
+                StationCard(
+                    station = station,
+                    onCardClick = onCardClick
+                )
             }
         }
     }
@@ -39,10 +37,12 @@ fun SearchContent(
 @Composable
 private fun StationCard(
     station: Station,
-    onCardClick: () -> Unit
+    onCardClick: (mediaId: String) -> Unit
 ) {
     Card(
-        onClick = onCardClick,
+        onClick = {
+            onCardClick(station.stationuuid)
+        },
         modifier = Modifier.padding(2.dp)
     ) {
         Row(
@@ -52,7 +52,7 @@ private fun StationCard(
         ) {
             SubcomposeAsyncImage(
                 model = station.favicon,
-                loading = { CircularProgressIndicator() },
+//                loading = { CircularProgressIndicator() },
                 contentDescription = null,
                 modifier = Modifier
                     .size(50.dp, 50.dp)

@@ -8,4 +8,6 @@ interface ILocalDataSource {
     suspend fun fetchStationByTag(tag: String): List<StationDaoObject>
     suspend fun insertStation(station: StationDaoObject)
     suspend fun insertStations(stations: List<StationDaoObject>)
+    suspend fun deleteEmptyTags()
+    suspend fun refreshStations(stations: List<StationDaoObject>)
 }

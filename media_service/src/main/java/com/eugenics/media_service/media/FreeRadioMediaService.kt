@@ -1,14 +1,19 @@
 package com.eugenics.media_service.media
 
 import android.app.Notification
+import android.app.PendingIntent
 import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
+import android.os.ResultReceiver
 import android.support.v4.media.MediaBrowserCompat
 import android.support.v4.media.MediaBrowserCompat.MediaItem.FLAG_PLAYABLE
 import android.support.v4.media.MediaDescriptionCompat
 import android.support.v4.media.MediaMetadataCompat
+import android.support.v4.media.session.MediaControllerCompat
 import android.support.v4.media.session.MediaSessionCompat
 import android.support.v4.media.session.PlaybackStateCompat
+import android.util.Log
 import androidx.core.content.ContextCompat
 import androidx.core.net.toUri
 import androidx.media.MediaBrowserServiceCompat
@@ -17,9 +22,7 @@ import com.eugenics.media_service.domain.model.PlayerMediaItem
 import com.eugenics.media_service.player.PlayerListener
 import com.eugenics.media_service.player.addMediaItems
 import com.eugenics.media_service.player.getMediaItems
-import com.google.android.exoplayer2.C
-import com.google.android.exoplayer2.ExoPlayer
-import com.google.android.exoplayer2.Player
+import com.google.android.exoplayer2.*
 import com.google.android.exoplayer2.audio.AudioAttributes
 import com.google.android.exoplayer2.ext.mediasession.MediaSessionConnector
 import com.google.android.exoplayer2.ui.PlayerNotificationManager
@@ -43,18 +46,6 @@ class FreeRadioMediaService : MediaBrowserServiceCompat() {
 
     private val playerListener = PlayerListener()
 
-    private val fakeMediaItem = PlayerMediaItem(
-        uuid = "96202f73-0601-11e8-ae97-52543be04c81",
-        name = "Radio Schizoid - Chillout / Ambient",
-        tags = "Electronics",
-        homepage = "",
-        url = "http://94.130.113.214:8000/chill",
-        urlResolved = "http://94.130.113.214:8000/chill",
-        favicon = "http://static.radio.net/images/broadcasts/db/08/33694/c175.png",
-        bitrate = 128,
-        codec = "MP3"
-    )
-
     private val player: Player by lazy {
         ExoPlayer.Builder(baseContext)
             .build()
@@ -62,10 +53,7 @@ class FreeRadioMediaService : MediaBrowserServiceCompat() {
                 playWhenReady = false
                 setAudioAttributes(playerAudioAttributes, true)
                 setHandleAudioBecomingNoisy(true)
-//                addMediaItems(mediaItems = mediaSource.mediaItems.value)
-//                addMediaItem(0, fakeMediaItem)
                 addListener(playerListener)
-//                prepare()
             }
     }
 
@@ -83,6 +71,8 @@ class FreeRadioMediaService : MediaBrowserServiceCompat() {
     override fun onCreate() {
         super.onCreate()
 
+        preparePlayList()
+
         // Create a MediaSessionCompat
         mediaSession = MediaSessionCompat(baseContext, MEDIA_SESSION_LOG_TAG).apply {
             // Set an initial PlaybackState with ACTION_PLAY, so media buttons can start the player
@@ -93,32 +83,22 @@ class FreeRadioMediaService : MediaBrowserServiceCompat() {
                 )
             setPlaybackState(stateBuilder.build())
 
-//            setCallback(MySessionCallback())
+            setCallback(mediaSessionCallbacks)
 
             // Set the session's token so that client activities can communicate with it.
             setSessionToken(sessionToken)
             isActive = true
         }
+        val mediaSessionConnector = MediaSessionConnector(mediaSession)
+        mediaSessionConnector.setPlaybackPreparer(playbackPrepare)
+        mediaSessionConnector.setPlayer(player)
 
-        serviceScope.launch {
-            mediaSource.collectMediaSource()
-            mediaSource.state.collect {
-                if (mediaSource.state.value == MediaSource.STATE_INITIALIZED) {
-                    player.addMediaItems(mediaItems = mediaSource.mediaItems.value)
-                    player.prepare()
-
-                    val mediaSessionConnector = MediaSessionConnector(mediaSession)
-                    mediaSessionConnector.setPlayer(player)
-
-                    notificationManager = FreeRadioNotificationManager(
-                        this@FreeRadioMediaService,
-                        mediaSession.sessionToken,
-                        PlayerNotificationListener()
-                    )
-                    notificationManager.showNotificationForPlayer(player)
-                }
-            }
-        }
+        notificationManager = FreeRadioNotificationManager(
+            this@FreeRadioMediaService,
+            mediaSession.sessionToken,
+            PlayerNotificationListener()
+        )
+        notificationManager.showNotificationForPlayer(player)
     }
 
     override fun onTaskRemoved(rootIntent: Intent?) {
@@ -158,36 +138,53 @@ class FreeRadioMediaService : MediaBrowserServiceCompat() {
         parentId: String,
         result: Result<MutableList<MediaBrowserCompat.MediaItem>>
     ) {
+        result.detach()
         if (parentId == EMPTY_ROOT) {
             result.sendResult(null)
         } else {
-            if (mediaSource.state.value == MediaSource.STATE_INITIALIZED) {
-                val mediaItems = mediaSource.mediaItems.value
-                val browserMediaItems = mutableListOf<MediaBrowserCompat.MediaItem>()
-                for (item in mediaItems) {
-                    val itemDescription = MediaDescriptionCompat.Builder()
-                        .setMediaId(item.uuid)
-                        .setMediaUri(item.urlResolved.toUri())
-                        .setDescription(item.name + ":" + item.tags)
-                        .setTitle(item.name)
-                        .setSubtitle(item.tags)
-                        .build()
-                    browserMediaItems.add(
-                        MediaBrowserCompat.MediaItem(
-                            itemDescription,
-                            FLAG_PLAYABLE
-                        )
-                    )
-                }
-                result.sendResult(browserMediaItems)
-            } else {
-                result.sendResult(null)
-            }
+            serviceScope.launch {
+                mediaSource.state.collect {
+                    when (it) {
+                        MediaSource.STATE_INITIALIZED -> {
+                            val browserMediaItems = mutableListOf<MediaBrowserCompat.MediaItem>()
 
+                            Log.d(
+                                "MEDIA_SERVICE_SIZE",
+                                mediaSource.mediaItems.value.size.toString()
+                            )
+
+                            val mediaItems = mediaSource.mediaItems.value
+                            for (item in mediaItems) {
+                                val extras = Bundle()
+                                extras.putParcelable("STATION", item)
+                                val itemDescription = MediaDescriptionCompat.Builder()
+                                    .setMediaId(item.uuid)
+                                    .setMediaUri(item.urlResolved.toUri())
+                                    .setDescription(item.name + ":" + item.tags)
+                                    .setTitle(item.name)
+                                    .setSubtitle(item.tags)
+                                    .setIconUri(item.favicon.toUri())
+                                    .setExtras(extras)
+                                    .build()
+                                browserMediaItems.add(
+                                    MediaBrowserCompat.MediaItem(
+                                        itemDescription,
+                                        FLAG_PLAYABLE
+                                    )
+                                )
+                            }
+                            result.sendResult(browserMediaItems)
+                            return@collect
+                        }
+                        else -> {}
+                    }
+                }
+            }
         }
     }
 
-    private fun allowBrowsing(clientPackageName: String= "", clientUid: Int = 0): Boolean = true
+
+    private fun allowBrowsing(clientPackageName: String = "", clientUid: Int = 0): Boolean = true
 
     /**
      * Listen for notification events.
@@ -214,6 +211,93 @@ class FreeRadioMediaService : MediaBrowserServiceCompat() {
             stopForeground(true)
             isForegroundService = false
             stopSelf()
+        }
+    }
+
+    private val playbackPrepare = object : MediaSessionConnector.PlaybackPreparer {
+        override fun onCommand(
+            player: Player,
+            command: String,
+            extras: Bundle?,
+            cb: ResultReceiver?
+        ): Boolean {
+            return true
+        }
+
+        override fun getSupportedPrepareActions(): Long =
+            PlaybackStateCompat.ACTION_PLAY or
+                    PlaybackStateCompat.ACTION_PLAY_PAUSE or
+                    PlaybackStateCompat.ACTION_PLAY_FROM_MEDIA_ID or
+                    PlaybackStateCompat.ACTION_PREPARE_FROM_MEDIA_ID or
+                    PlaybackStateCompat.ACTION_PREPARE_FROM_SEARCH or
+                    PlaybackStateCompat.ACTION_PLAY_FROM_SEARCH
+
+        override fun onPrepare(playWhenReady: Boolean) {
+            preparePlayList()
+        }
+
+        override fun onPrepareFromMediaId(
+            mediaId: String,
+            playWhenReady: Boolean,
+            extras: Bundle?
+        ) {
+            if (player.getMediaItems().find { mediaItem -> mediaItem.mediaId == mediaId } != null) {
+                Log.d("SERVICE_PREPARE_MEDIA_ID", mediaId)
+                preparePlayList(mediaId)
+            } else {
+                Log.d("SERVICE_PREPARE_MEDIA_ID", "NO such media id ${mediaId}")
+            }
+        }
+
+        override fun onPrepareFromSearch(query: String, playWhenReady: Boolean, extras: Bundle?) {
+        }
+
+        override fun onPrepareFromUri(uri: Uri, playWhenReady: Boolean, extras: Bundle?) {
+        }
+
+    }
+
+    private fun preparePlayList(mediaItemId: String = "") {
+        serviceScope.launch {
+            mediaSource.collectMediaSource()
+            mediaSource.state.collect {
+                if (mediaSource.state.value == MediaSource.STATE_INITIALIZED) {
+                    val startMediaItem = mediaSource.mediaItems.value.find {
+                        it.uuid == mediaItemId
+                    }
+                    val startPosition = if (startMediaItem == null) {
+                        0
+                    } else {
+                        mediaSource.mediaItems.value.indexOf(startMediaItem)
+                    }
+                    player.stop()
+                    player.setMediaItems(
+                        mediaSource.mediaItems.value.map { playerMediaItem ->
+                            MediaItem.Builder()
+                                .setMediaId(playerMediaItem.uuid)
+                                .setTag(playerMediaItem.tags)
+                                .setUri(playerMediaItem.urlResolved)
+                                .setMediaMetadata(
+                                    MediaMetadata.Builder()
+                                        .setTitle(playerMediaItem.name)
+                                        .setSubtitle(playerMediaItem.tags)
+                                        .setDisplayTitle(playerMediaItem.name)
+                                        .setArtworkUri(playerMediaItem.favicon.toUri())
+                                        .build()
+                                )
+                                .build()
+                        }, startPosition, 0L
+                    )
+                    player.playWhenReady = startMediaItem != null
+                    player.prepare()
+                }
+            }
+        }
+    }
+
+    private val mediaSessionCallbacks = object : MediaSessionCompat.Callback() {
+        override fun onPlayFromMediaId(mediaId: String?, extras: Bundle?) {
+            Log.d("ON_PLAY_FROM_MEDIA_ID", mediaId.toString())
         }
     }
 }

@@ -1,6 +1,7 @@
 package com.eugenics.media_service.media
 
 import android.util.Log
+import com.eugenics.media_service.data.database.enteties.StationDaoObject
 import com.eugenics.media_service.data.util.Response
 import com.eugenics.media_service.domain.model.PlayerMediaItem
 import com.eugenics.media_service.domain.model.convertToMediaItem
@@ -44,7 +45,7 @@ class MediaSource(private val repository: IRepository) {
                         }
                         is Response.Success -> {
                             response.data?.let { stations ->
-                                repository.insertStations(
+                                repository.refreshStations(
                                     stations = stations
                                         .map { station -> station.convertToDaoObject() }
                                 )
@@ -66,13 +67,18 @@ class MediaSource(private val repository: IRepository) {
                     STATE_CREATED -> {
                         _state.value = STATE_INITIALIZING
                         try {
-                            val stations = repository.getLocalStations()
+                            val stations = mutableListOf<StationDaoObject>()
+                            stations.addAll(repository.getLocalStationByTag(tag = "%relax%"))
+                            stations.addAll(repository.getLocalStationByTag(tag = "%chillout%"))
+
                             val playerMediaItems = mutableListOf<PlayerMediaItem>()
-                            playerMediaItems.addAll(
-                                stations.map { station ->
+                            playerMediaItems.addAll(stations
+                                .distinct()
+                                .map { station ->
                                     station.convertToModel().convertToMediaItem()
                                 }
                             )
+                            playerMediaItems.sortBy { playerMediaItem -> playerMediaItem.name }
                             _mediaItems.value = playerMediaItems
                             _state.value = STATE_INITIALIZED
                         } catch (ex: Exception) {

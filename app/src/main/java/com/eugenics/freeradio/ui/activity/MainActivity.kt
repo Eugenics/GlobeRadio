@@ -17,7 +17,9 @@ class MainActivity : ComponentActivity() {
         setContent {
             FreeRadioTheme {
                 val navController = rememberNavController()
-                NavGraph(navController)
+                NavGraph(
+                    navController = navController
+                )
             }
         }
     }

@@ -1,9 +1,6 @@
 package com.eugenics.media_service.data.database.dao
 
-import androidx.room.Dao
-import androidx.room.Insert
-import androidx.room.OnConflictStrategy
-import androidx.room.Query
+import androidx.room.*
 import com.eugenics.media_service.data.database.enteties.StationDaoObject
 
 @Dao
@@ -23,4 +20,13 @@ interface StationDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun insertStations(stationsDao: List<StationDaoObject>)
+
+    @Query("DELETE FROM stations WHERE length(tags) = 0")
+    fun deleteStationsWithoutTags()
+
+    @Transaction
+    fun refreshStations(stationsDao: List<StationDaoObject>) {
+        insertStations(stationsDao = stationsDao)
+        deleteStationsWithoutTags()
+    }
 }

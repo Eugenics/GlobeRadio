@@ -18,6 +18,8 @@ fun Player.addMediaItems(mediaItems: List<PlayerMediaItem>) {
         extras.putParcelable("STATION", item)
 
         val mediaItem = MediaItem.Builder()
+            .setMediaId(item.uuid)
+            .setTag(item.tags)
             .setUri(item.urlResolved)
             .setMediaMetadata(
                 MediaMetadata.Builder()

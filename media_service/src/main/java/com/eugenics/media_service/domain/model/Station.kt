@@ -39,6 +39,7 @@ fun Station.convertToDao(): StationDaoObject =
 
 fun Station.convertToMediaItem(): PlayerMediaItem =
     PlayerMediaItem(
+        uuid = this.stationuuid,
         name = this.name,
         tags = this.tags,
         homepage = this.homepage,
