@@ -1,18 +1,14 @@
 package com.eugenics.freeradio.ui.viewmodels
 
-import android.net.Uri
+import android.support.v4.media.MediaBrowserCompat
+import android.support.v4.media.session.PlaybackStateCompat
 import android.util.Log
-import androidx.compose.runtime.mutableStateListOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import androidx.media3.common.MediaItem
-import androidx.media3.common.MediaMetadata
-import com.eugenics.freeradio.domain.core.Player
 import com.eugenics.freeradio.domain.model.Station
-import com.eugenics.freeradio.domain.usecases.UseCase
+import com.eugenics.media_service.domain.model.PlayerMediaItem
+import com.eugenics.media_service.media.FreeRadioMediaServiceConnection
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.CoroutineExceptionHandler
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
@@ -20,83 +16,110 @@ import javax.inject.Inject
 
 @HiltViewModel
 class SearchViewModel @Inject constructor(
-    private val useCase: UseCase,
-    val player: Player
+    private val mediaServiceConnection: FreeRadioMediaServiceConnection
 ) : ViewModel() {
 
-    private val _stations = mutableStateListOf<Station>()
-    val stations: List<Station> = _stations
+    private val _uiState: MutableStateFlow<Int> = MutableStateFlow(UI_STATE_IDL)
+    val uiState: StateFlow<Int> = _uiState
 
-    private val _state = MutableStateFlow(false)
-    val state: StateFlow<Boolean> = _state
+    private val _stations: MutableStateFlow<List<Station>> = MutableStateFlow(mutableListOf())
+    val stations: StateFlow<List<Station>> = _stations
 
-    var itemIndex: Int = 0
+    private val _state = mediaServiceConnection.playbackState
+    val state: StateFlow<PlaybackStateCompat> = _state
 
-    fun getStationsByName(name: String) {
-        val coroutineExceptionHandler = CoroutineExceptionHandler { _, throwable ->
-            throwable.printStackTrace()
-            Log.e("HTTP error...", throwable.message.toString())
-        }
+    private var currentMediaId: String = ""
+    private val rootId = "/"
 
-        viewModelScope.launch(Dispatchers.IO + coroutineExceptionHandler) {
-            if (useCase.getStationsLocalUseCase().isEmpty()) {
-                val stations = useCase.getStationsUseCase()
-                if (stations.isNotEmpty()) {
-                    stations.forEach { station ->
-                        useCase.insertStationIntoDbUseCase(station = station)
-                    }
-                    Log.d("DB Update", "List of stations update [${stations.size}]")
-                } else {
-                    Log.d("DB Update", "Something went wrong!")
+    private val subscriptionCallback = object : MediaBrowserCompat.SubscriptionCallback() {
+        override fun onChildrenLoaded(
+            parentId: String,
+            children: List<MediaBrowserCompat.MediaItem>
+        ) {
+            val stationServiceContent = mutableListOf<Station>()
+            for (child in children) {
+                val extras = child.description.extras?.getParcelable<PlayerMediaItem>("STATION")
+                extras?.let {
+                    stationServiceContent.add(
+                        Station(
+                            stationuuid = child.mediaId ?: extras.uuid,
+                            name = extras.name,
+                            tags = extras.tags,
+                            homepage = extras.homepage,
+                            url = extras.url,
+                            urlResolved = extras.urlResolved,
+                            favicon = extras.favicon,
+                            bitrate = extras.bitrate,
+                            codec = extras.codec,
+                            country = "",
+                            countrycode = "",
+                            language = "",
+                            languagecodes = "",
+                            changeuuid = ""
+                        )
+                    )
                 }
             }
-            useCase.getStationsByTagLocalUseCase(tag = "%chillout%").apply {
-                _stations.clear()
-                _stations.addAll(this)
-            }
-            useCase.getStationsByTagLocalUseCase(tag = "%psychill%").apply {
-                _stations.addAll(this)
-            }
+            _stations.value = stationServiceContent
 
-//            useCase.getStationsByNameLocalUseCase(name = "%$name%").apply {
-//                _stations.clear()
-//                _stations.addAll(this)
-//            }
+            if (_stations.value.isEmpty()) {
+                _uiState.value = UI_STATE_EMPTY
+            } else {
+                _uiState.value = UI_STATE_READY
+            }
         }
     }
 
-    fun addMediaItem(index: Int, item: Station) {
-        player.addMediaItem(
-            index = index,
-            item = MediaItem.Builder()
-                .setUri(item.urlResolved)
-                .setMediaMetadata(
-                    MediaMetadata.Builder()
-                        .setMediaUri(Uri.Builder().path(item.urlResolved).build())
-                        .setDisplayTitle(item.name)
-                        .build()
-                )
-                .build()
-        )
-    }
-
-    private fun addMediaItems() {
-        val mediaItems = mutableListOf<MediaItem>()
-        for ((index, station) in stations.withIndex()) {
-            mediaItems.add(index, MediaItem.fromUri(station.urlResolved))
+    init {
+        viewModelScope.launch {
+            mediaServiceConnection.isConnected.collect {
+                if (it) {
+                    mediaServiceConnection.subscribe(rootId, subscriptionCallback)
+                    _uiState.value = UI_STATE_LOADING
+                }
+            }
         }
-        player.addMediaItems(mediaItems)
     }
 
-    fun play(itemPosition: Int) {
-        itemIndex = itemPosition
-        player.seekPosition(itemPosition)
-        player.play()
-        _state.value = true
+    fun onItemClick(mediaId: String) {
+        if (mediaId == currentMediaId) {
+            when (state.value.state) {
+                PlaybackStateCompat.STATE_PLAYING -> pause()
+                else -> play()
+            }
+        } else {
+            Log.d("PLAY_FROM_MEDIA_ID_CLICKED", mediaId)
+            mediaServiceConnection.transportControls.playFromMediaId(mediaId, null)
+            _state.value = STATE_PLAYING
+            currentMediaId = mediaId
+        }
+    }
+
+
+    fun play() {
+        mediaServiceConnection.transportControls.play()
+        _state.value = STATE_PLAYING
     }
 
     fun pause() {
-        player.pause()
-        _state.value = false
+        mediaServiceConnection.transportControls.pause()
+        _state.value = STATE_PAUSE
+    }
+
+    companion object {
+        const val TAG = "SEARCH_VIEW_MODEL"
+
+        const val UI_STATE_LOADING = 0
+        const val UI_STATE_EMPTY = 1
+        const val UI_STATE_READY = 2
+        const val UI_STATE_IDL = 3
+
+        val STATE_PLAYING = stateBuilder(state = PlaybackStateCompat.STATE_PLAYING)
+        val STATE_PAUSE = stateBuilder(state = PlaybackStateCompat.STATE_PAUSED)
+
+        private fun stateBuilder(state: Int): PlaybackStateCompat =
+            PlaybackStateCompat.Builder()
+                .setState(state, 0, 0f)
+                .build()
     }
 }
