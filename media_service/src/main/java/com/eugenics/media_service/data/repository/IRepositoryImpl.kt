@@ -46,6 +46,9 @@ class IRepositoryImpl(
     override suspend fun getLocalStationByTag(tag: String): List<StationDaoObject> =
         localDataSource.fetchStationByTag(tag = tag)
 
+    override suspend fun getLocalStationByName(name: String): List<StationDaoObject> =
+        localDataSource.fetchStationByName(name = name)
+
     override suspend fun insertStation(stationDao: StationDaoObject) =
         localDataSource.insertStation(station = stationDao)
 

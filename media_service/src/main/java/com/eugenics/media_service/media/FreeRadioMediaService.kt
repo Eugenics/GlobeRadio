@@ -1,7 +1,6 @@
 package com.eugenics.media_service.media
 
 import android.app.Notification
-import android.app.PendingIntent
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
@@ -9,8 +8,6 @@ import android.os.ResultReceiver
 import android.support.v4.media.MediaBrowserCompat
 import android.support.v4.media.MediaBrowserCompat.MediaItem.FLAG_PLAYABLE
 import android.support.v4.media.MediaDescriptionCompat
-import android.support.v4.media.MediaMetadataCompat
-import android.support.v4.media.session.MediaControllerCompat
 import android.support.v4.media.session.MediaSessionCompat
 import android.support.v4.media.session.PlaybackStateCompat
 import android.util.Log
@@ -18,10 +15,7 @@ import androidx.core.content.ContextCompat
 import androidx.core.net.toUri
 import androidx.media.MediaBrowserServiceCompat
 import com.eugenics.media_service.data.repository.RepositoryFactory
-import com.eugenics.media_service.domain.model.PlayerMediaItem
 import com.eugenics.media_service.player.PlayerListener
-import com.eugenics.media_service.player.addMediaItems
-import com.eugenics.media_service.player.getMediaItems
 import com.google.android.exoplayer2.*
 import com.google.android.exoplayer2.audio.AudioAttributes
 import com.google.android.exoplayer2.ext.mediasession.MediaSessionConnector
@@ -71,6 +65,7 @@ class FreeRadioMediaService : MediaBrowserServiceCompat() {
     override fun onCreate() {
         super.onCreate()
 
+        collectMediaSource()
         preparePlayList()
 
         // Create a MediaSessionCompat
@@ -144,6 +139,10 @@ class FreeRadioMediaService : MediaBrowserServiceCompat() {
         } else {
             serviceScope.launch {
                 mediaSource.state.collect {
+                    Log.d(
+                        "SERVICE_ON_LOAD_CHILDREN",
+                        it.toString()
+                    )
                     when (it) {
                         MediaSource.STATE_INITIALIZED -> {
                             val browserMediaItems = mutableListOf<MediaBrowserCompat.MediaItem>()
@@ -173,8 +172,13 @@ class FreeRadioMediaService : MediaBrowserServiceCompat() {
                                     )
                                 )
                             }
-                            result.sendResult(browserMediaItems)
-                            return@collect
+                            try {
+                                result.sendResult(browserMediaItems)
+                            } catch (ex: Exception) {
+                                Log.e(TAG, ex.message.toString())
+                                notifyChildrenChanged(STATIONS_ROOT)
+                            }
+
                         }
                         else -> {}
                     }
@@ -241,15 +245,13 @@ class FreeRadioMediaService : MediaBrowserServiceCompat() {
             playWhenReady: Boolean,
             extras: Bundle?
         ) {
-            if (player.getMediaItems().find { mediaItem -> mediaItem.mediaId == mediaId } != null) {
-                Log.d("SERVICE_PREPARE_MEDIA_ID", mediaId)
-                preparePlayList(mediaId)
-            } else {
-                Log.d("SERVICE_PREPARE_MEDIA_ID", "NO such media id ${mediaId}")
-            }
+            Log.d(TAG, "OnPrepare...")
+            preparePlayList(mediaItemId = mediaId, STATE_ON_MEDIA_ITEM)
         }
 
         override fun onPrepareFromSearch(query: String, playWhenReady: Boolean, extras: Bundle?) {
+            Log.d("SERVICE_PREPARE_FROM_SEARCH", query)
+            preparePlayList(mediaItemId = query, STATE_ON_SEARCH)
         }
 
         override fun onPrepareFromUri(uri: Uri, playWhenReady: Boolean, extras: Bundle?) {
@@ -257,19 +259,23 @@ class FreeRadioMediaService : MediaBrowserServiceCompat() {
 
     }
 
-    private fun preparePlayList(mediaItemId: String = "") {
+    private fun preparePlayList(mediaItemId: String = "", state: Int = STATE_PREPARE) {
+        Log.d(TAG, "preparePlayList... $state")
+        when (state) {
+            STATE_PREPARE -> mediaSource.collectMediaSource()
+            STATE_ON_SEARCH -> mediaSource.searchInMediaSource(query = mediaItemId)
+            STATE_ON_MEDIA_ITEM -> {
+                mediaSource.onMediaItemClick(mediaItemId = mediaItemId)
+                collectMediaSource()
+            }
+        }
+    }
+
+    private fun collectMediaSource() {
         serviceScope.launch {
-            mediaSource.collectMediaSource()
-            mediaSource.state.collect {
-                if (mediaSource.state.value == MediaSource.STATE_INITIALIZED) {
-                    val startMediaItem = mediaSource.mediaItems.value.find {
-                        it.uuid == mediaItemId
-                    }
-                    val startPosition = if (startMediaItem == null) {
-                        0
-                    } else {
-                        mediaSource.mediaItems.value.indexOf(startMediaItem)
-                    }
+            mediaSource.state.collect { state ->
+                Log.d("COLLECT_STATE", state.toString())
+                if (state == MediaSource.STATE_INITIALIZED) {
                     player.stop()
                     player.setMediaItems(
                         mediaSource.mediaItems.value.map { playerMediaItem ->
@@ -286,10 +292,11 @@ class FreeRadioMediaService : MediaBrowserServiceCompat() {
                                         .build()
                                 )
                                 .build()
-                        }, startPosition, 0L
+                        }, mediaSource.getStartPosition(), 0L
                     )
-                    player.playWhenReady = startMediaItem != null
+                    player.playWhenReady = mediaSource.getPlayOnReady()
                     player.prepare()
+                    return@collect
                 }
             }
         }
@@ -299,5 +306,12 @@ class FreeRadioMediaService : MediaBrowserServiceCompat() {
         override fun onPlayFromMediaId(mediaId: String?, extras: Bundle?) {
             Log.d("ON_PLAY_FROM_MEDIA_ID", mediaId.toString())
         }
+    }
+
+    companion object {
+        const val TAG = "FreeMediaService"
+        private const val STATE_PREPARE = 0
+        private const val STATE_ON_MEDIA_ITEM = 1
+        private const val STATE_ON_SEARCH = 2
     }
 }

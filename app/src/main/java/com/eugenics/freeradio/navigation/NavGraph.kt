@@ -5,7 +5,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import com.eugenics.freeradio.ui.compose.search.SearchScreen
+import com.eugenics.freeradio.ui.compose.main.MainScreen
 import com.eugenics.freeradio.ui.viewmodels.SearchViewModel
 
 @Composable
@@ -18,13 +18,14 @@ fun NavGraph(navController: NavHostController) {
         startDestination = Screen.SearchScreen.rout
     ) {
         composable(route = Screen.SearchScreen.rout) {
-            SearchScreen(
+            MainScreen(
                 uiState = searchViewModel.uiState,
                 playbackState = searchViewModel.state,
                 stationsList = searchViewModel.stations,
                 onPlayClick = { searchViewModel.play() },
                 onPauseClick = { searchViewModel.pause() },
-                onItemClick = { mediaId -> searchViewModel.onItemClick(mediaId = mediaId) }
+                onItemClick = { mediaId -> searchViewModel.onItemClick(mediaId = mediaId) },
+                onSearchClick = { query -> searchViewModel.search(query = query) }
             )
         }
     }

@@ -1,5 +1,6 @@
 package com.eugenics.freeradio.ui.viewmodels
 
+import android.os.Build
 import android.support.v4.media.MediaBrowserCompat
 import android.support.v4.media.session.PlaybackStateCompat
 import android.util.Log
@@ -104,6 +105,10 @@ class SearchViewModel @Inject constructor(
     fun pause() {
         mediaServiceConnection.transportControls.pause()
         _state.value = STATE_PAUSE
+    }
+
+    fun search(query: String) {
+        mediaServiceConnection.transportControls.playFromSearch(query, null)
     }
 
     companion object {

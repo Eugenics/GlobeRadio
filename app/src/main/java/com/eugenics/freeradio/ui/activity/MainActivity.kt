@@ -15,7 +15,7 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
 
         setContent {
-            FreeRadioTheme {
+            FreeRadioTheme(useDarkTheme = false) {
                 val navController = rememberNavController()
                 NavGraph(
                     navController = navController

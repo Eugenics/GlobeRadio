@@ -29,6 +29,9 @@ class MediaSource(private val repository: IRepository) {
     private val _state: MutableStateFlow<Int> = MutableStateFlow(STATE_CREATED)
     val state: StateFlow<Int> = _state
 
+    private var startPosition: Int = 0
+    private var playOnRedy: Boolean = false
+
     //Preload media source
     init {
         _state.value = STATE_INITIALIZING
@@ -60,7 +63,7 @@ class MediaSource(private val repository: IRepository) {
         }
     }
 
-    suspend fun collectMediaSource() {
+    fun collectMediaSource() {
         scope.launch {
             state.collect { stateValue ->
                 when (stateValue) {
@@ -85,10 +88,67 @@ class MediaSource(private val repository: IRepository) {
                             _state.value = STATE_ERROR
                             Log.e(TAG, ex.message.toString())
                         }
+                        playOnRedy = false
+                        return@collect
                     }
                 }
             }
         }
+    }
+
+    fun searchInMediaSource(query: String) {
+        startPosition = 0
+        setPlayOnReady(value = false)
+
+        scope.launch {
+            _state.value = STATE_INITIALIZING
+            try {
+                val stations = mutableListOf<StationDaoObject>()
+                stations.addAll(repository.getLocalStationByName(name = "%$query%"))
+
+                val playerMediaItems = mutableListOf<PlayerMediaItem>()
+                playerMediaItems.addAll(stations
+                    .distinct()
+                    .map { station ->
+                        station.convertToModel().convertToMediaItem()
+                    }
+                )
+                playerMediaItems.sortBy { playerMediaItem -> playerMediaItem.name }
+                _mediaItems.value = playerMediaItems
+                _state.value = STATE_INITIALIZED
+            } catch (ex: Exception) {
+                _state.value = STATE_ERROR
+                Log.e(TAG, ex.message.toString())
+            }
+        }
+    }
+
+    private fun setStartPosition(startPosition: Int = 0) {
+        this@MediaSource.startPosition = startPosition
+    }
+
+    fun getStartPosition(): Int = startPosition
+
+    private fun setPlayOnReady(value: Boolean) {
+        playOnRedy = value
+    }
+
+    fun getPlayOnReady(): Boolean = playOnRedy
+
+    fun onMediaItemClick(mediaItemId: String) {
+        _state.value = STATE_INITIALIZING
+        val startMediaItem = mediaItems.value.find {
+            it.uuid == mediaItemId
+        }
+        startPosition =
+            if (startMediaItem == null) {
+                0
+            } else {
+                mediaItems.value.indexOf(startMediaItem)
+            }
+
+        playOnRedy = true
+        _state.value = STATE_INITIALIZED
     }
 
     companion object {

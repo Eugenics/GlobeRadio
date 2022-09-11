@@ -19,11 +19,14 @@ package com.eugenics.media_service.media
 import android.app.NotificationManager
 import android.app.PendingIntent
 import android.content.Context
+import android.content.res.Resources
 import android.graphics.Bitmap
 import android.net.Uri
 import android.support.v4.media.session.MediaControllerCompat
 import android.support.v4.media.session.MediaSessionCompat
 import android.util.Log
+import androidx.core.content.res.ResourcesCompat
+import androidx.core.graphics.drawable.toBitmap
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.engine.DiskCacheStrategy
 import com.bumptech.glide.request.RequestOptions
@@ -36,7 +39,7 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
-const val NOW_PLAYING_CHANNEL_ID = "com.example.android.uamp.media.NOW_PLAYING"
+const val NOW_PLAYING_CHANNEL_ID = "com.eugenics.media_service.media.NOW_PLAYING"
 const val NOW_PLAYING_NOTIFICATION_ID = 0xb339 // Arbitrary number used to identify our notification
 
 /**
@@ -108,22 +111,25 @@ internal class FreeRadioNotificationManager(
             player: Player,
             callback: PlayerNotificationManager.BitmapCallback
         ): Bitmap? {
+            Log.d(TAG, player.currentMediaItem?.mediaMetadata?.artworkUri.toString().ifEmpty { "No string..." })
             val iconUri = player.currentMediaItem?.mediaMetadata?.artworkUri
-            return if ((currentIconUri != iconUri || currentBitmap == null)
-                && iconUri.toString() != ""
-            ) {
-                // Cache the bitmap for the current song so that successive calls to
-                // `getCurrentLargeIcon` don't cause the bitmap to be recreated.
-                currentIconUri = iconUri
-                serviceScope.launch {
-                    currentBitmap = iconUri?.let {
-                        resolveUriAsBitmap(it)
-                    }
-                    currentBitmap?.let { callback.onBitmap(it) }
+            return when {
+                iconUri == null -> {
+                    ResourcesCompat.getDrawable(
+                        Resources.getSystem(),
+                        R.drawable.ic_music_note,
+                        null
+                    )?.toBitmap() ?: currentBitmap
                 }
-                null
-            } else {
-                currentBitmap
+                (iconUri != currentIconUri) || currentBitmap == null -> {
+                    currentIconUri = iconUri
+                    serviceScope.launch {
+                        currentBitmap = resolveUriAsBitmap(iconUri)
+                        currentBitmap?.let { callback.onBitmap(it) }
+                    }
+                    null
+                }
+                else -> currentBitmap
             }
         }
 
@@ -152,7 +158,5 @@ internal class FreeRadioNotificationManager(
 const val NOTIFICATION_LARGE_ICON_SIZE = 144 // px
 
 private val glideOptions = RequestOptions()
-    .fallback(R.drawable.default_art)
+    .fallback(R.drawable.ic_music_note)
     .diskCacheStrategy(DiskCacheStrategy.DATA)
-
-private const val MODE_READ_ONLY = "r"
