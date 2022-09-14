@@ -6,12 +6,13 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.eugenics.freeradio.ui.compose.main.MainScreen
-import com.eugenics.freeradio.ui.viewmodels.SearchViewModel
+import com.eugenics.freeradio.ui.compose.settings.SettingsScreen
+import com.eugenics.freeradio.ui.viewmodels.MainViewModel
 
 @Composable
 fun NavGraph(navController: NavHostController) {
 
-    val searchViewModel: SearchViewModel = hiltViewModel()
+    val mainViewModel: MainViewModel = hiltViewModel()
 
     NavHost(
         navController = navController,
@@ -19,13 +20,25 @@ fun NavGraph(navController: NavHostController) {
     ) {
         composable(route = Screen.SearchScreen.rout) {
             MainScreen(
-                uiState = searchViewModel.uiState,
-                playbackState = searchViewModel.state,
-                stationsList = searchViewModel.stations,
-                onPlayClick = { searchViewModel.play() },
-                onPauseClick = { searchViewModel.pause() },
-                onItemClick = { mediaId -> searchViewModel.onItemClick(mediaId = mediaId) },
-                onSearchClick = { query -> searchViewModel.search(query = query) }
+                navController = navController,
+                uiState = mainViewModel.uiState,
+                playbackState = mainViewModel.state,
+                stationsList = mainViewModel.stations,
+                onPlayClick = { mainViewModel.play() },
+                onPauseClick = { mainViewModel.pause() },
+                onItemClick = { mediaId -> mainViewModel.onItemClick(mediaId = mediaId) },
+                onSearchClick = { query -> mainViewModel.search(query = query) },
+                sendCommand = { command, parameters ->
+                    mainViewModel.sendCommand(
+                        command = command,
+                        extras = parameters
+                    )
+                }
+            )
+        }
+        composable(route = Screen.SettingsScreen.rout) {
+            SettingsScreen(
+                onBackPressed = { navController.popBackStack() }
             )
         }
     }

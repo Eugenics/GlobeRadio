@@ -5,7 +5,7 @@ import androidx.room.Entity
 import androidx.room.PrimaryKey
 
 @Entity(tableName = "APP_TAGS")
-data class Tags @JvmOverloads constructor(
+data class Tags(
     @PrimaryKey
     @ColumnInfo(name = "uid")
     val uid: Int,

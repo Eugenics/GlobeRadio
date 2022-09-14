@@ -15,6 +15,8 @@ import androidx.core.content.ContextCompat
 import androidx.core.net.toUri
 import androidx.media.MediaBrowserServiceCompat
 import com.eugenics.media_service.data.repository.RepositoryFactory
+import com.eugenics.media_service.media.FreeRadioMediaServiceConnection.Companion.FAVORITES_COMMAND
+import com.eugenics.media_service.media.FreeRadioMediaServiceConnection.Companion.STATIONS_COMMAND
 import com.eugenics.media_service.player.PlayerListener
 import com.google.android.exoplayer2.*
 import com.google.android.exoplayer2.audio.AudioAttributes
@@ -65,7 +67,7 @@ class FreeRadioMediaService : MediaBrowserServiceCompat() {
     override fun onCreate() {
         super.onCreate()
 
-        collectMediaSource()
+        collectMediaState()
         preparePlayList()
 
         // Create a MediaSessionCompat
@@ -99,7 +101,6 @@ class FreeRadioMediaService : MediaBrowserServiceCompat() {
     override fun onTaskRemoved(rootIntent: Intent?) {
         super.onTaskRemoved(rootIntent)
         player.stop()
-        player.clearMediaItems()
     }
 
     override fun onDestroy() {
@@ -178,9 +179,11 @@ class FreeRadioMediaService : MediaBrowserServiceCompat() {
                                 Log.e(TAG, ex.message.toString())
                                 notifyChildrenChanged(STATIONS_ROOT)
                             }
-
+                            return@collect
                         }
-                        else -> {}
+                        else -> {
+                            return@collect
+                        }
                     }
                 }
             }
@@ -195,6 +198,7 @@ class FreeRadioMediaService : MediaBrowserServiceCompat() {
      */
     private inner class PlayerNotificationListener :
         PlayerNotificationManager.NotificationListener {
+
         override fun onNotificationPosted(
             notificationId: Int,
             notification: Notification,
@@ -212,7 +216,7 @@ class FreeRadioMediaService : MediaBrowserServiceCompat() {
         }
 
         override fun onNotificationCancelled(notificationId: Int, dismissedByUser: Boolean) {
-            stopForeground(true)
+            stopForeground(STOP_FOREGROUND_REMOVE)
             isForegroundService = false
             stopSelf()
         }
@@ -225,6 +229,16 @@ class FreeRadioMediaService : MediaBrowserServiceCompat() {
             extras: Bundle?,
             cb: ResultReceiver?
         ): Boolean {
+            when (command) {
+                FAVORITES_COMMAND -> {
+                    Log.d("SERVICE_PREPARE_FAVORITES", command)
+                    mediaSource.collectFavorites()
+                }
+                STATIONS_COMMAND -> {
+                    Log.d("SERVICE_PREPARE_STATIONS", command)
+                    mediaSource.searchInMediaSource(query = "")
+                }
+            }
             return true
         }
 
@@ -264,14 +278,11 @@ class FreeRadioMediaService : MediaBrowserServiceCompat() {
         when (state) {
             STATE_PREPARE -> mediaSource.collectMediaSource()
             STATE_ON_SEARCH -> mediaSource.searchInMediaSource(query = mediaItemId)
-            STATE_ON_MEDIA_ITEM -> {
-                mediaSource.onMediaItemClick(mediaItemId = mediaItemId)
-                collectMediaSource()
-            }
+            STATE_ON_MEDIA_ITEM -> mediaSource.onMediaItemClick(mediaItemId = mediaItemId)
         }
     }
 
-    private fun collectMediaSource() {
+    private fun collectMediaState() {
         serviceScope.launch {
             mediaSource.state.collect { state ->
                 Log.d("COLLECT_STATE", state.toString())
@@ -289,6 +300,11 @@ class FreeRadioMediaService : MediaBrowserServiceCompat() {
                                         .setSubtitle(playerMediaItem.tags)
                                         .setDisplayTitle(playerMediaItem.name)
                                         .setArtworkUri(playerMediaItem.favicon.toUri())
+                                        .also {
+                                            val extras = Bundle()
+                                            extras.putString("url", playerMediaItem.url)
+                                            it.setExtras(extras)
+                                        }
                                         .build()
                                 )
                                 .build()
@@ -296,7 +312,6 @@ class FreeRadioMediaService : MediaBrowserServiceCompat() {
                     )
                     player.playWhenReady = mediaSource.getPlayOnReady()
                     player.prepare()
-                    return@collect
                 }
             }
         }

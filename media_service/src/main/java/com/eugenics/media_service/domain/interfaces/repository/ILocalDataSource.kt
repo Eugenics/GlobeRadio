@@ -10,4 +10,8 @@ interface ILocalDataSource {
     suspend fun insertStations(stations: List<StationDaoObject>)
     suspend fun deleteEmptyTags()
     suspend fun refreshStations(stations: List<StationDaoObject>)
+
+    suspend fun fetchStationsByFavorites(): List<StationDaoObject>
+    suspend fun addFavorite(stationUuid: String)
+    suspend fun deleteFavorite(stationUuid: String)
 }

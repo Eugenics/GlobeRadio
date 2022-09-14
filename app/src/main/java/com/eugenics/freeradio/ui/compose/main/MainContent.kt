@@ -2,11 +2,15 @@ package com.eugenics.freeradio.ui.compose.main
 
 import android.content.res.Configuration.UI_MODE_NIGHT_NO
 import android.content.res.Configuration.UI_MODE_NIGHT_YES
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.Info
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -62,7 +66,11 @@ private fun StationCard(
         },
         modifier = Modifier.padding(2.dp),
         colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surface
+            containerColor = MaterialTheme.colorScheme.surfaceVariant
+        ),
+        border = BorderStroke(
+            width = 0.5.dp,
+            color = MaterialTheme.colorScheme.outlineVariant
         )
     ) {
         Row(
@@ -82,7 +90,7 @@ private fun StationCard(
                 val state = painter.state
                 if (state is AsyncImagePainter.State.Loading || state is AsyncImagePainter.State.Error) {
                     Image(
-                        painter = painterResource(R.drawable.ic_music_note),
+                        painter = painterResource(R.drawable.pradio_wave),
                         contentDescription = null
                     )
                 } else {
@@ -106,11 +114,23 @@ private fun StationCard(
 
             IconButton(
                 modifier = Modifier
-                    .padding(8.dp),
+                    .padding(4.dp),
                 onClick = {}
             ) {
                 Icon(
-                    painter = painterResource(R.drawable.ic_info),
+                    imageVector = Icons.Filled.Favorite,
+                    contentDescription = null,
+                    modifier = Modifier.size(30.dp)
+                )
+            }
+
+            IconButton(
+                modifier = Modifier
+                    .padding(4.dp),
+                onClick = {}
+            ) {
+                Icon(
+                    imageVector = Icons.Filled.Info,
                     contentDescription = null,
                     modifier = Modifier.size(30.dp)
                 )

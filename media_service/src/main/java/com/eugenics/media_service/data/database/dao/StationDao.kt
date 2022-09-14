@@ -29,4 +29,13 @@ interface StationDao {
         insertStations(stationsDao = stationsDao)
         deleteStationsWithoutTags()
     }
+
+    @Query("INSERT INTO favorites values(:uuid,:stationUuid)")
+    fun addFavorite(uuid: String, stationUuid: String)
+
+    @Query("DELETE FROM favorites WHERE station_uuid = :stationUuid")
+    fun deleteFavorite(stationUuid: String)
+
+    @Query("SELECT * FROM stations WHERE stationuuid IN (SELECT station_uuid FROM favorites)")
+    fun fetchStationsByFavorites(): List<StationDaoObject>
 }

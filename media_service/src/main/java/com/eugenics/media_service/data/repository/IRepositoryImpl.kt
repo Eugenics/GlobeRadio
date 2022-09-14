@@ -60,6 +60,17 @@ class IRepositoryImpl(
     override suspend fun refreshStations(stations: List<StationDaoObject>) =
         localDataSource.refreshStations(stations = stations)
 
+    override suspend fun fetchStationsByFavorites(): List<StationDaoObject> =
+        localDataSource.fetchStationsByFavorites()
+
+    override suspend fun addFavorite(stationUuid: String) {
+        localDataSource.addFavorite(stationUuid = stationUuid)
+    }
+
+    override suspend fun deleteFavorite(stationUuid: String) {
+        localDataSource.deleteFavorite(stationUuid = stationUuid)
+    }
+
     companion object {
         fun newInstance(context: Context): IRepository =
             IRepositoryImpl(context = context)

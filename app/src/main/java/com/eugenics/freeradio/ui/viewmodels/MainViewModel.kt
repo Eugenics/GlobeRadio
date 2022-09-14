@@ -1,6 +1,6 @@
 package com.eugenics.freeradio.ui.viewmodels
 
-import android.os.Build
+import android.os.Bundle
 import android.support.v4.media.MediaBrowserCompat
 import android.support.v4.media.session.PlaybackStateCompat
 import android.util.Log
@@ -16,7 +16,7 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class SearchViewModel @Inject constructor(
+class MainViewModel @Inject constructor(
     private val mediaServiceConnection: FreeRadioMediaServiceConnection
 ) : ViewModel() {
 
@@ -109,6 +109,16 @@ class SearchViewModel @Inject constructor(
 
     fun search(query: String) {
         mediaServiceConnection.transportControls.playFromSearch(query, null)
+    }
+
+    fun sendCommand(command: String, extras: String? = null) {
+        val commandParameters = Bundle()
+        commandParameters.putString(FreeRadioMediaServiceConnection.COMMAND_EXTRAS_KEY, extras)
+        mediaServiceConnection.sendCommand(
+            command = command,
+            parameters = commandParameters,
+            resultCallback = { _, _ -> }
+        )
     }
 
     companion object {

@@ -6,12 +6,9 @@ import com.eugenics.media_service.data.util.Response
 import com.eugenics.media_service.domain.model.PlayerMediaItem
 import com.eugenics.media_service.domain.model.convertToMediaItem
 import com.eugenics.media_service.domain.interfaces.repository.IRepository
-import kotlinx.coroutines.CoroutineExceptionHandler
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.launch
 
 private const val TAG = "MEDIA_SOURCE"
 
@@ -26,7 +23,7 @@ class MediaSource(private val repository: IRepository) {
         MutableStateFlow(mutableListOf())
     val mediaItems: StateFlow<List<PlayerMediaItem>> = _mediaItems
 
-    private val _state: MutableStateFlow<Int> = MutableStateFlow(STATE_CREATED)
+    private val _state: MutableStateFlow<Int> = MutableStateFlow(STATE_IDL)
     val state: StateFlow<Int> = _state
 
     private var startPosition: Int = 0
@@ -74,24 +71,17 @@ class MediaSource(private val repository: IRepository) {
                             stations.addAll(repository.getLocalStationByTag(tag = "%relax%"))
                             stations.addAll(repository.getLocalStationByTag(tag = "%chillout%"))
 
-                            val playerMediaItems = mutableListOf<PlayerMediaItem>()
-                            playerMediaItems.addAll(stations
-                                .distinct()
-                                .map { station ->
-                                    station.convertToModel().convertToMediaItem()
-                                }
-                            )
-                            playerMediaItems.sortBy { playerMediaItem -> playerMediaItem.name }
-                            _mediaItems.value = playerMediaItems
+                            feelMediaItems(stations = stations)
+
                             _state.value = STATE_INITIALIZED
                         } catch (ex: Exception) {
                             _state.value = STATE_ERROR
                             Log.e(TAG, ex.message.toString())
                         }
                         playOnRedy = false
-                        return@collect
                     }
                 }
+                return@collect
             }
         }
     }
@@ -104,17 +94,15 @@ class MediaSource(private val repository: IRepository) {
             _state.value = STATE_INITIALIZING
             try {
                 val stations = mutableListOf<StationDaoObject>()
-                stations.addAll(repository.getLocalStationByName(name = "%$query%"))
+                if (query.isBlank()) {
+                    stations.addAll(repository.getLocalStationByTag(tag = "%relax%"))
+                    stations.addAll(repository.getLocalStationByTag(tag = "%chillout%"))
+                } else {
+                    stations.addAll(repository.getLocalStationByName(name = "%$query%"))
+                }
 
-                val playerMediaItems = mutableListOf<PlayerMediaItem>()
-                playerMediaItems.addAll(stations
-                    .distinct()
-                    .map { station ->
-                        station.convertToModel().convertToMediaItem()
-                    }
-                )
-                playerMediaItems.sortBy { playerMediaItem -> playerMediaItem.name }
-                _mediaItems.value = playerMediaItems
+                feelMediaItems(stations = stations)
+
                 _state.value = STATE_INITIALIZED
             } catch (ex: Exception) {
                 _state.value = STATE_ERROR
@@ -123,8 +111,29 @@ class MediaSource(private val repository: IRepository) {
         }
     }
 
-    private fun setStartPosition(startPosition: Int = 0) {
-        this@MediaSource.startPosition = startPosition
+    fun collectFavorites() {
+        scope.launch {
+            _state.value = STATE_INITIALIZING
+            try {
+                feelMediaItems(stations = repository.fetchStationsByFavorites())
+                _state.value = STATE_INITIALIZED
+            } catch (ex: Exception) {
+                _state.value = STATE_ERROR
+                Log.e(TAG, ex.message.toString())
+            }
+        }
+    }
+
+    private fun feelMediaItems(stations: List<StationDaoObject>) {
+        val playerMediaItems = mutableListOf<PlayerMediaItem>()
+        playerMediaItems.addAll(stations
+            .distinct()
+            .map { station ->
+                station.convertToModel().convertToMediaItem()
+            }
+        )
+        playerMediaItems.sortBy { playerMediaItem -> playerMediaItem.name }
+        _mediaItems.value = playerMediaItems
     }
 
     fun getStartPosition(): Int = startPosition
@@ -136,22 +145,27 @@ class MediaSource(private val repository: IRepository) {
     fun getPlayOnReady(): Boolean = playOnRedy
 
     fun onMediaItemClick(mediaItemId: String) {
-        _state.value = STATE_INITIALIZING
-        val startMediaItem = mediaItems.value.find {
-            it.uuid == mediaItemId
-        }
-        startPosition =
-            if (startMediaItem == null) {
-                0
-            } else {
-                mediaItems.value.indexOf(startMediaItem)
+        scope.launch {
+            _state.value = STATE_INITIALIZING
+            val startMediaItem = mediaItems.value.find {
+                it.uuid == mediaItemId
             }
+            startPosition =
+                if (startMediaItem == null) {
+                    0
+                } else {
+                    mediaItems.value.indexOf(startMediaItem)
+                }
 
-        playOnRedy = true
-        _state.value = STATE_INITIALIZED
+            playOnRedy = true
+            delay(1000)
+            _state.value = STATE_INITIALIZED
+        }
     }
 
     companion object {
+        const val STATE_IDL = 0
+
         /**
          * State indicating the source was created, but no initialization has performed.
          */
