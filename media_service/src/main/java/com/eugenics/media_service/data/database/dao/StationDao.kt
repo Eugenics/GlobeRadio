@@ -9,7 +9,7 @@ interface StationDao {
     @Query("SELECT * FROM stations ORDER BY name")
     fun fetchAllStationData(): List<StationDaoObject>
 
-    @Query("SELECT * FROM stations WHERE name LIKE :name ORDER BY name")
+    @Query("SELECT * FROM stations WHERE name LIKE :name OR tags LIKE :name ORDER BY name")
     fun fetchStationByName(name: String): List<StationDaoObject>
 
     @Query("SELECT * FROM stations WHERE tags LIKE :tag ORDER BY name")
@@ -30,12 +30,12 @@ interface StationDao {
         deleteStationsWithoutTags()
     }
 
-    @Query("INSERT INTO favorites values(:uuid,:stationUuid)")
-    fun addFavorite(uuid: String, stationUuid: String)
+    @Query("UPDATE stations SET is_favorite = 1 WHERE stationuuid = :stationUuid")
+    fun addFavorite(stationUuid: String)
 
-    @Query("DELETE FROM favorites WHERE station_uuid = :stationUuid")
+    @Query("UPDATE stations SET is_favorite = 0 WHERE stationuuid = :stationUuid")
     fun deleteFavorite(stationUuid: String)
 
-    @Query("SELECT * FROM stations WHERE stationuuid IN (SELECT station_uuid FROM favorites)")
+    @Query("SELECT * FROM stations WHERE is_favorite = 1")
     fun fetchStationsByFavorites(): List<StationDaoObject>
 }

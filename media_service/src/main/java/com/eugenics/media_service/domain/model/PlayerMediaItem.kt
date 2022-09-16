@@ -14,5 +14,6 @@ data class PlayerMediaItem(
     val urlResolved: String = "",
     val favicon: String = "",
     val bitrate: Int = 0,
-    val codec: String = ""
+    val codec: String = "",
+    val isFavorite: Int = 0
 ) : Parcelable

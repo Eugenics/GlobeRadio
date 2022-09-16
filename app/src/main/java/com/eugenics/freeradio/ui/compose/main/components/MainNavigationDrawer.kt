@@ -1,6 +1,7 @@
 package com.eugenics.freeradio.ui.compose.main.components
 
 import android.content.res.Configuration.UI_MODE_NIGHT_NO
+import android.os.Bundle
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
@@ -26,7 +27,7 @@ fun MainNavigationDrawer(
     drawerState: DrawerState = rememberDrawerState(DrawerValue.Open),
     paddingValues: PaddingValues = PaddingValues(),
     onSettingsClick: () -> Unit = {},
-    sendCommand: (command: String, parameters: String?) -> Unit = { _, _ -> },
+    sendCommand: (command: String, parameters: Bundle?) -> Unit = { _, _ -> },
     content: @Composable () -> Unit
 ) {
     val scope = rememberCoroutineScope()

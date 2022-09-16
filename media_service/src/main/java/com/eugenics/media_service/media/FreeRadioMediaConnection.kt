@@ -103,7 +103,9 @@ class FreeRadioMediaServiceConnection(context: Context, serviceComponent: Compon
 
         const val FAVORITES_COMMAND = "favorites"
         const val STATIONS_COMMAND = "stations"
-        const val COMMAND_EXTRAS_KEY = "commandKey"
+        const val SET_FAVORITES_COMMAND = "setFavorites"
+        const val SET_FAVORITES_STATION_KEY = "setFavoritesStationKey"
+        const val SET_FAVORITES_VALUE_KEY = "setFavoritesValueKey"
 
         fun getInstance(context: Context, serviceComponent: ComponentName) =
             instance ?: synchronized(this) {

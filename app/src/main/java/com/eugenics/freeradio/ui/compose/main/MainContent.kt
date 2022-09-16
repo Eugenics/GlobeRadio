@@ -2,17 +2,17 @@ package com.eugenics.freeradio.ui.compose.main
 
 import android.content.res.Configuration.UI_MODE_NIGHT_NO
 import android.content.res.Configuration.UI_MODE_NIGHT_YES
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
@@ -30,6 +30,8 @@ import com.eugenics.freeradio.ui.theme.FreeRadioTheme
 fun MainContent(
     paddingValues: PaddingValues,
     stations: List<Station>,
+    onFavoriteClick: (stationUuid: String, isFavorite: Int) -> Unit = { _, _ -> },
+    onInfoClick: () -> Unit = {},
     onCardClick: (mediaId: String) -> Unit
 ) {
     val columnState = rememberLazyListState()
@@ -46,7 +48,9 @@ fun MainContent(
             itemsIndexed(stations) { _, station ->
                 StationCard(
                     station = station,
-                    onCardClick = onCardClick
+                    onCardClick = onCardClick,
+                    onFavoriteClick = onFavoriteClick,
+                    onInfoClick = onInfoClick
                 )
             }
         }
@@ -54,87 +58,83 @@ fun MainContent(
 
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun StationCard(
     station: Station,
-    onCardClick: (mediaId: String) -> Unit
+    onCardClick: (mediaId: String) -> Unit = {},
+    onFavoriteClick: (stationUuid: String, isFavorite: Int) -> Unit = { _, _ -> },
+    onInfoClick: () -> Unit = {}
 ) {
-    Card(
-        onClick = {
-            onCardClick(station.stationuuid)
-        },
-        modifier = Modifier.padding(2.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceVariant
-        ),
-        border = BorderStroke(
-            width = 0.5.dp,
-            color = MaterialTheme.colorScheme.outlineVariant
-        )
+    val isFavorite = rememberSaveable { mutableStateOf(station.isFavorite) }
+
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = Modifier.fillMaxSize()
+            .padding(2.dp)
+            .clickable {
+                onCardClick(station.stationuuid)
+            }
     ) {
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.fillMaxSize()
-                .padding(5.dp)
+        SubcomposeAsyncImage(
+            model = station.favicon,
+            contentDescription = null,
+            modifier = Modifier
+                .size(75.dp, 75.dp)
+                .padding(5.dp),
+            contentScale = ContentScale.Fit
         ) {
-            SubcomposeAsyncImage(
-                model = station.favicon.ifBlank {
-                },
-                contentDescription = null,
-                modifier = Modifier
-                    .size(75.dp, 75.dp)
-                    .padding(5.dp),
-                contentScale = ContentScale.Fit
-            ) {
-                val state = painter.state
-                if (state is AsyncImagePainter.State.Loading || state is AsyncImagePainter.State.Error) {
-                    Image(
-                        painter = painterResource(R.drawable.pradio_wave),
-                        contentDescription = null
-                    )
+            val state = painter.state
+            if (state is AsyncImagePainter.State.Loading || state is AsyncImagePainter.State.Error) {
+                Image(
+                    painter = painterResource(R.drawable.pradio_wave),
+                    contentDescription = null
+                )
+            } else {
+                SubcomposeAsyncImageContent()
+            }
+        }
+        Column(
+            modifier = Modifier.weight(1f)
+        ) {
+            Text(
+                text = station.name,
+                style = MaterialTheme.typography.bodyLarge,
+                modifier = Modifier.fillMaxWidth()
+            )
+        }
+
+        IconButton(
+            modifier = Modifier
+                .padding(4.dp),
+            onClick = {
+                if (isFavorite.value == 0) {
+                    isFavorite.value = 1
                 } else {
-                    SubcomposeAsyncImageContent()
+                    isFavorite.value = 0
                 }
+                onFavoriteClick(station.stationuuid, isFavorite.value)
             }
-            Column(
-                modifier = Modifier.weight(1f)
-            ) {
-                Text(
-                    text = station.name,
-                    style = MaterialTheme.typography.bodyLarge,
-                    modifier = Modifier.fillMaxWidth()
-                )
-                Text(
-                    text = "(${station.tags})",
-                    style = MaterialTheme.typography.bodySmall,
-                    modifier = Modifier.fillMaxWidth()
-                )
-            }
+        ) {
+            Icon(
+                painter = painterResource(
+                    if (isFavorite.value == 0) R.drawable.ic_favorite_border
+                    else R.drawable.ic_favorite
+                ),
+                contentDescription = null,
+                modifier = Modifier.size(30.dp)
+            )
+        }
 
-            IconButton(
-                modifier = Modifier
-                    .padding(4.dp),
-                onClick = {}
-            ) {
-                Icon(
-                    imageVector = Icons.Filled.Favorite,
-                    contentDescription = null,
-                    modifier = Modifier.size(30.dp)
-                )
-            }
-
-            IconButton(
-                modifier = Modifier
-                    .padding(4.dp),
-                onClick = {}
-            ) {
-                Icon(
-                    imageVector = Icons.Filled.Info,
-                    contentDescription = null,
-                    modifier = Modifier.size(30.dp)
-                )
-            }
+        IconButton(
+            modifier = Modifier
+                .padding(4.dp),
+            onClick = onInfoClick
+        ) {
+            Icon(
+                imageVector = Icons.Filled.Info,
+                contentDescription = null,
+                modifier = Modifier.size(30.dp)
+            )
         }
     }
 }
@@ -178,4 +178,5 @@ private val fakeStation = Station(
     language = "hindi",
     languagecodes = "hi",
     changeuuid = "92c2fbdc-14ec-4861-af65-49dd7de7826f",
+    isFavorite = 0
 )

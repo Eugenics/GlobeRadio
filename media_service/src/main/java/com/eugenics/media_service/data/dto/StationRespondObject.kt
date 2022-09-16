@@ -3,6 +3,7 @@ package com.eugenics.media_service.data.dto
 import com.eugenics.media_service.data.database.enteties.StationDaoObject
 import com.eugenics.media_service.domain.model.Station
 import com.google.gson.annotations.SerializedName
+import okhttp3.internal.isSensitiveHeader
 
 
 data class StationRespondObject(
@@ -50,7 +51,8 @@ data class StationRespondObject(
             countrycode = countrycode,
             language = language,
             languagecodes = languagecodes,
-            changeuuid = changeuuid
+            changeuuid = changeuuid,
+            isFavorite = 0
         )
 
     fun convertToModel(): Station =
@@ -68,7 +70,8 @@ data class StationRespondObject(
             countrycode = countrycode,
             language = language,
             languagecodes = languagecodes,
-            changeuuid = changeuuid
+            changeuuid = changeuuid,
+            isFavorite = 0
         )
 
 }

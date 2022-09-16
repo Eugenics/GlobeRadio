@@ -35,7 +35,9 @@ data class StationDaoObject(
     @ColumnInfo(name = "languagecodes")
     val languagecodes: String,
     @ColumnInfo(name = "changeuuid")
-    val changeuuid: String
+    val changeuuid: String,
+    @ColumnInfo(name = "is_favorite")
+    val isFavorite: Int
 ) {
     fun convertToModel(): Station =
         Station(
@@ -52,6 +54,7 @@ data class StationDaoObject(
             countrycode = countrycode,
             language = language,
             languagecodes = languagecodes,
-            changeuuid = changeuuid
+            changeuuid = changeuuid,
+            isFavorite = isFavorite
         )
 }

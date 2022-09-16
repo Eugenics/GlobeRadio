@@ -16,7 +16,8 @@ data class Station(
     val countrycode: String,
     val language: String,
     val languagecodes: String,
-    val changeuuid: String
+    val changeuuid: String,
+    val isFavorite: Int
 )
 
 fun Station.convertToDao(): StationDaoObject =
@@ -34,7 +35,8 @@ fun Station.convertToDao(): StationDaoObject =
         countrycode = this.countrycode,
         language = this.language,
         languagecodes = this.languagecodes,
-        changeuuid = this.changeuuid
+        changeuuid = this.changeuuid,
+        isFavorite = this.isFavorite
     )
 
 fun Station.convertToMediaItem(): PlayerMediaItem =
@@ -47,5 +49,6 @@ fun Station.convertToMediaItem(): PlayerMediaItem =
         urlResolved = this.urlResolved,
         favicon = this.favicon,
         bitrate = this.bitrate,
-        codec = this.codec
+        codec = this.codec,
+        isFavorite = this.isFavorite
     )

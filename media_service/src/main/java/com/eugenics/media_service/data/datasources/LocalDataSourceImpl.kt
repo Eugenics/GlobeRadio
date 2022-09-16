@@ -36,7 +36,7 @@ class LocalDataSourceImpl(
         database.dao.fetchStationsByFavorites()
 
     override suspend fun addFavorite(stationUuid: String) {
-        database.dao.addFavorite(uuid = UUID.randomUUID().toString(), stationUuid = stationUuid)
+        database.dao.addFavorite(stationUuid = stationUuid)
     }
 
     override suspend fun deleteFavorite(stationUuid: String) {

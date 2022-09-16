@@ -1,11 +1,14 @@
 package com.eugenics.media_service.media
 
+import android.os.Bundle
+import android.os.ResultReceiver
 import android.util.Log
 import com.eugenics.media_service.data.database.enteties.StationDaoObject
 import com.eugenics.media_service.data.util.Response
 import com.eugenics.media_service.domain.model.PlayerMediaItem
 import com.eugenics.media_service.domain.model.convertToMediaItem
 import com.eugenics.media_service.domain.interfaces.repository.IRepository
+import com.eugenics.media_service.media.FreeRadioMediaServiceConnection.Companion.SET_FAVORITES_COMMAND
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -102,7 +105,7 @@ class MediaSource(private val repository: IRepository) {
                 }
 
                 feelMediaItems(stations = stations)
-
+                delay(DELAY_TIME)
                 _state.value = STATE_INITIALIZED
             } catch (ex: Exception) {
                 _state.value = STATE_ERROR
@@ -112,14 +115,42 @@ class MediaSource(private val repository: IRepository) {
     }
 
     fun collectFavorites() {
+        startPosition = 0
+        setPlayOnReady(value = false)
+
         scope.launch {
             _state.value = STATE_INITIALIZING
             try {
                 feelMediaItems(stations = repository.fetchStationsByFavorites())
+                delay(DELAY_TIME)
                 _state.value = STATE_INITIALIZED
             } catch (ex: Exception) {
                 _state.value = STATE_ERROR
                 Log.e(TAG, ex.message.toString())
+            }
+        }
+    }
+
+    fun setFavorites(
+        stationUuid: String,
+        isFavorite: Int,
+        cb: ResultReceiver?
+    ) {
+        scope.launch {
+            val resultBundle = Bundle()
+            try {
+                if (isFavorite == 1) {
+                    repository.addFavorite(stationUuid = stationUuid)
+                } else {
+                    repository.deleteFavorite(stationUuid = stationUuid)
+                }
+                resultBundle.putString(SET_FAVORITES_COMMAND, "Success")
+                cb?.send(1, resultBundle)
+            } catch (ex: Exception) {
+                _state.value = STATE_ERROR
+                Log.e(TAG, ex.message.toString())
+                resultBundle.putString(SET_FAVORITES_COMMAND, ex.message.toString())
+                cb?.send(0, resultBundle)
             }
         }
     }
@@ -158,7 +189,7 @@ class MediaSource(private val repository: IRepository) {
                 }
 
             playOnRedy = true
-            delay(1000)
+            delay(DELAY_TIME)
             _state.value = STATE_INITIALIZED
         }
     }
@@ -185,5 +216,7 @@ class MediaSource(private val repository: IRepository) {
          * State indicating an error has occurred.
          */
         const val STATE_ERROR = 4
+
+        private const val DELAY_TIME = 1000L
     }
 }
