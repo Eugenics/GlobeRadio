@@ -3,7 +3,6 @@ package com.eugenics.freeradio.data.local.ref
 import android.util.Log
 import androidx.datastore.core.Serializer
 import com.eugenics.freeradio.domain.model.CurrentState
-import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.Json
@@ -26,9 +25,6 @@ object SettingsSerializer : Serializer<CurrentState> {
         }
 
     override suspend fun writeTo(t: CurrentState, output: OutputStream) {
-        val coroutineException = CoroutineExceptionHandler { coroutineContext, throwable ->
-            Log.e(TAG, coroutineContext.toString() + ": " + throwable.message.toString())
-        }
         withContext(Dispatchers.IO) {
             try {
                 output.write(

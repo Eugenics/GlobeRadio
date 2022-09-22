@@ -21,7 +21,6 @@ import com.eugenics.freeradio.ui.viewmodels.MainViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
-import kotlin.math.min
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -40,7 +39,6 @@ fun MainScreen(
     onInfoClick: () -> Unit = {},
     nowPlayingStation: StateFlow<Station> = MutableStateFlow(Station())
 ) {
-    val state = playbackState.collectAsState()
     val stations = stationsList.collectAsState()
     val listState = uiState.collectAsState()
 
