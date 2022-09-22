@@ -5,6 +5,7 @@ import com.eugenics.media_service.data.database.database.DataBase
 import com.eugenics.media_service.data.database.enteties.StationDaoObject
 import com.eugenics.media_service.data.database.database.DataBaseFactory
 import com.eugenics.media_service.domain.interfaces.repository.ILocalDataSource
+import java.util.*
 
 class LocalDataSourceImpl(
     private val context: Context
@@ -31,6 +32,16 @@ class LocalDataSourceImpl(
     override suspend fun refreshStations(stations: List<StationDaoObject>) =
         database.dao.refreshStations(stationsDao = stations)
 
+    override suspend fun fetchStationsByFavorites(): List<StationDaoObject> =
+        database.dao.fetchStationsByFavorites()
+
+    override suspend fun addFavorite(stationUuid: String) {
+        database.dao.addFavorite(stationUuid = stationUuid)
+    }
+
+    override suspend fun deleteFavorite(stationUuid: String) {
+        database.dao.deleteFavorite(stationUuid = stationUuid)
+    }
 
     companion object {
         fun newInstance(context: Context): ILocalDataSource =

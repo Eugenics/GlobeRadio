@@ -11,6 +11,7 @@ interface IRepository {
     suspend fun getFakeStations(): Flow<Response<List<StationRespondObject>>>
     suspend fun getLocalStations(): List<StationDaoObject>
     suspend fun getLocalStationByTag(tag: String): List<StationDaoObject>
+    suspend fun getLocalStationByName(name: String): List<StationDaoObject>
 
     suspend fun insertStation(stationDao: StationDaoObject)
     suspend fun insertStations(stations: List<StationDaoObject>)
@@ -18,4 +19,8 @@ interface IRepository {
     suspend fun deleteEmptyTags()
 
     suspend fun refreshStations(stations: List<StationDaoObject>)
+
+    suspend fun fetchStationsByFavorites(): List<StationDaoObject>
+    suspend fun addFavorite(stationUuid: String)
+    suspend fun deleteFavorite(stationUuid: String)
 }

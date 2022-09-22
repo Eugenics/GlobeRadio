@@ -8,7 +8,7 @@ import androidx.room.PrimaryKey
 data class Tags(
     @PrimaryKey
     @ColumnInfo(name = "uid")
-    val uid: Int = 0,
+    val uid: Int,
     @ColumnInfo(name = "app_tag_name")
-    val appTagName: String = ""
+    val appTagName: String
 )

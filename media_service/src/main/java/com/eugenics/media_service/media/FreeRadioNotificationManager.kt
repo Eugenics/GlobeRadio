@@ -1,19 +1,3 @@
-/*
- * Copyright 2020 Google Inc. All rights reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 package com.eugenics.media_service.media
 
 import android.app.NotificationManager
@@ -24,6 +8,8 @@ import android.net.Uri
 import android.support.v4.media.session.MediaControllerCompat
 import android.support.v4.media.session.MediaSessionCompat
 import android.util.Log
+import androidx.core.content.ContextCompat
+import androidx.core.graphics.drawable.toBitmap
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.engine.DiskCacheStrategy
 import com.bumptech.glide.request.RequestOptions
@@ -36,18 +22,16 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
-const val NOW_PLAYING_CHANNEL_ID = "com.example.android.uamp.media.NOW_PLAYING"
+const val NOW_PLAYING_CHANNEL_ID = "com.eugenics.media_service.media.NOW_PLAYING"
 const val NOW_PLAYING_NOTIFICATION_ID = 0xb339 // Arbitrary number used to identify our notification
 
-/**
- * A wrapper class for ExoPlayer's PlayerNotificationManager. It sets up the notification shown to
- * the user during audio playback and provides track metadata, such as track title and icon image.
- */
 internal class FreeRadioNotificationManager(
     private val context: Context,
     sessionToken: MediaSessionCompat.Token,
     notificationListener: PlayerNotificationManager.NotificationListener
 ) {
+
+    private var notificationState: Int = NOTIFICATION_IS_HIDE
 
     private var player: Player? = null
     private val serviceJob = SupervisorJob()
@@ -82,17 +66,26 @@ internal class FreeRadioNotificationManager(
 
     fun hideNotification() {
         notificationManager.setPlayer(null)
+        this.player = null
+        notificationState = NOTIFICATION_IS_HIDE
     }
 
     fun showNotificationForPlayer(player: Player) {
+        this.player = player
         notificationManager.setPlayer(player)
+        notificationState = NOTIFICATION_IS_SHOW
     }
 
     private inner class DescriptionAdapter(private val controller: MediaControllerCompat) :
         PlayerNotificationManager.MediaDescriptionAdapter {
 
         var currentIconUri: Uri? = null
-        var currentBitmap: Bitmap? = null
+        var currentBitmap: Bitmap? =
+            ContextCompat.getDrawable(context, R.drawable.pradio_wave)?.toBitmap()
+
+        override fun getCurrentSubText(player: Player): CharSequence? {
+            return null
+        }
 
         override fun createCurrentContentIntent(player: Player): PendingIntent? =
             controller.sessionActivity
@@ -101,7 +94,7 @@ internal class FreeRadioNotificationManager(
             controller.metadata.description.subtitle
 
         override fun getCurrentContentTitle(player: Player) =
-            player.currentMediaItem?.mediaMetadata?.title ?: "No title"
+            player.currentMediaItem?.mediaMetadata?.title ?: NO_TITLE
 
 
         override fun getCurrentLargeIcon(
@@ -109,27 +102,23 @@ internal class FreeRadioNotificationManager(
             callback: PlayerNotificationManager.BitmapCallback
         ): Bitmap? {
             val iconUri = player.currentMediaItem?.mediaMetadata?.artworkUri
-            return if ((currentIconUri != iconUri || currentBitmap == null)
-                && iconUri.toString() != ""
-            ) {
-                // Cache the bitmap for the current song so that successive calls to
-                // `getCurrentLargeIcon` don't cause the bitmap to be recreated.
-                currentIconUri = iconUri
-                serviceScope.launch {
-                    currentBitmap = iconUri?.let {
-                        resolveUriAsBitmap(it)
+            return when {
+                iconUri.toString().isBlank() ->
+                    ContextCompat.getDrawable(context, R.drawable.pradio_wave)?.toBitmap()
+                iconUri != currentIconUri && iconUri != null -> {
+                    currentIconUri = iconUri
+                    serviceScope.launch {
+                        currentBitmap = resolveUriAsBitmap(iconUri)
+                        currentBitmap?.let { callback.onBitmap(it) }
                     }
-                    currentBitmap?.let { callback.onBitmap(it) }
+                    null
                 }
-                null
-            } else {
-                currentBitmap
+                else -> currentBitmap
             }
         }
 
         private suspend fun resolveUriAsBitmap(uri: Uri): Bitmap? {
             return withContext(Dispatchers.IO) {
-                // Block on downloading artwork.
                 try {
                     Glide.with(context).applyDefaultRequestOptions(glideOptions)
                         .asBitmap()
@@ -144,15 +133,19 @@ internal class FreeRadioNotificationManager(
         }
     }
 
+    fun getNotificationState(): Int = notificationState
+
     companion object {
         const val TAG = "FreeRadioNotificationManager"
+        private const val NO_TITLE = "No title"
+
+        const val NOTIFICATION_IS_SHOW = 1
+        const val NOTIFICATION_IS_HIDE = 0
     }
 }
 
 const val NOTIFICATION_LARGE_ICON_SIZE = 144 // px
 
 private val glideOptions = RequestOptions()
-    .fallback(R.drawable.default_art)
+    .fallback(R.drawable.pradio_wave)
     .diskCacheStrategy(DiskCacheStrategy.DATA)
-
-private const val MODE_READ_ONLY = "r"

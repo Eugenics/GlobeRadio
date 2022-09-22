@@ -1,7 +1,6 @@
 package com.eugenics.media_service.media
 
 import android.app.Notification
-import android.app.PendingIntent
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
@@ -10,25 +9,31 @@ import android.support.v4.media.MediaBrowserCompat
 import android.support.v4.media.MediaBrowserCompat.MediaItem.FLAG_PLAYABLE
 import android.support.v4.media.MediaDescriptionCompat
 import android.support.v4.media.MediaMetadataCompat
-import android.support.v4.media.session.MediaControllerCompat
 import android.support.v4.media.session.MediaSessionCompat
 import android.support.v4.media.session.PlaybackStateCompat
 import android.util.Log
 import androidx.core.content.ContextCompat
 import androidx.core.net.toUri
 import androidx.media.MediaBrowserServiceCompat
+import com.eugenics.media_service.data.datastore.PrefsDataSource
+import com.eugenics.media_service.data.datastore.PrefsDataStoreFactory
 import com.eugenics.media_service.data.repository.RepositoryFactory
-import com.eugenics.media_service.domain.model.PlayerMediaItem
+import com.eugenics.media_service.domain.core.TagsCommands
+import com.eugenics.media_service.domain.model.CurrentPrefs
+import com.eugenics.media_service.media.FreeRadioMediaServiceConnection.Companion.SET_FAVORITES_COMMAND
+import com.eugenics.media_service.media.FreeRadioMediaServiceConnection.Companion.SET_FAVORITES_STATION_KEY
+import com.eugenics.media_service.media.FreeRadioMediaServiceConnection.Companion.SET_FAVORITES_VALUE_KEY
 import com.eugenics.media_service.player.PlayerListener
-import com.eugenics.media_service.player.addMediaItems
 import com.eugenics.media_service.player.getMediaItems
 import com.google.android.exoplayer2.*
 import com.google.android.exoplayer2.audio.AudioAttributes
 import com.google.android.exoplayer2.ext.mediasession.MediaSessionConnector
+import com.google.android.exoplayer2.ext.mediasession.TimelineQueueNavigator
 import com.google.android.exoplayer2.ui.PlayerNotificationManager
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 
 private const val MEDIA_SESSION_LOG_TAG = "free_radio_media_session"
@@ -68,10 +73,22 @@ class FreeRadioMediaService : MediaBrowserServiceCompat() {
         MediaSource(repository = RepositoryFactory.create(this))
     }
 
+    private val prefs: MutableStateFlow<CurrentPrefs> =
+        MutableStateFlow(CurrentPrefs.getDefaultInstance())
+
+    private val prefsDataSource by lazy {
+        PrefsDataSource(
+            dataStore = PrefsDataStoreFactory.create(
+                application = application
+            )
+        )
+    }
+
     override fun onCreate() {
         super.onCreate()
 
-        preparePlayList()
+        collectMediaState()
+        collectPrefs(prefsDataSource = prefsDataSource)
 
         // Create a MediaSessionCompat
         mediaSession = MediaSessionCompat(baseContext, MEDIA_SESSION_LOG_TAG).apply {
@@ -91,6 +108,7 @@ class FreeRadioMediaService : MediaBrowserServiceCompat() {
         }
         val mediaSessionConnector = MediaSessionConnector(mediaSession)
         mediaSessionConnector.setPlaybackPreparer(playbackPrepare)
+        mediaSessionConnector.setQueueNavigator(QueueNavigator(mediaSession))
         mediaSessionConnector.setPlayer(player)
 
         notificationManager = FreeRadioNotificationManager(
@@ -104,7 +122,6 @@ class FreeRadioMediaService : MediaBrowserServiceCompat() {
     override fun onTaskRemoved(rootIntent: Intent?) {
         super.onTaskRemoved(rootIntent)
         player.stop()
-        player.clearMediaItems()
     }
 
     override fun onDestroy() {
@@ -138,51 +155,42 @@ class FreeRadioMediaService : MediaBrowserServiceCompat() {
         parentId: String,
         result: Result<MutableList<MediaBrowserCompat.MediaItem>>
     ) {
-        result.detach()
+//        result.detach()
         if (parentId == EMPTY_ROOT) {
             result.sendResult(null)
         } else {
-            serviceScope.launch {
-                mediaSource.state.collect {
-                    when (it) {
-                        MediaSource.STATE_INITIALIZED -> {
-                            val browserMediaItems = mutableListOf<MediaBrowserCompat.MediaItem>()
+            Log.d("SERVICE_ON_LOAD_CHILDREN", "")
+            val browserMediaItems = mutableListOf<MediaBrowserCompat.MediaItem>()
 
-                            Log.d(
-                                "MEDIA_SERVICE_SIZE",
-                                mediaSource.mediaItems.value.size.toString()
-                            )
+            Log.d("MEDIA_SERVICE_SIZE", mediaSource.mediaItems.value.size.toString())
 
-                            val mediaItems = mediaSource.mediaItems.value
-                            for (item in mediaItems) {
-                                val extras = Bundle()
-                                extras.putParcelable("STATION", item)
-                                val itemDescription = MediaDescriptionCompat.Builder()
-                                    .setMediaId(item.uuid)
-                                    .setMediaUri(item.urlResolved.toUri())
-                                    .setDescription(item.name + ":" + item.tags)
-                                    .setTitle(item.name)
-                                    .setSubtitle(item.tags)
-                                    .setIconUri(item.favicon.toUri())
-                                    .setExtras(extras)
-                                    .build()
-                                browserMediaItems.add(
-                                    MediaBrowserCompat.MediaItem(
-                                        itemDescription,
-                                        FLAG_PLAYABLE
-                                    )
-                                )
-                            }
-                            result.sendResult(browserMediaItems)
-                            return@collect
-                        }
-                        else -> {}
-                    }
-                }
+            val mediaItems = mediaSource.mediaItems.value
+            for (item in mediaItems) {
+                val extras = Bundle()
+                extras.putParcelable("STATION", item)
+                val itemDescription = MediaDescriptionCompat.Builder()
+                    .setMediaId(item.uuid)
+                    .setMediaUri(item.urlResolved.toUri())
+                    .setDescription(item.name + ":" + item.tags)
+                    .setTitle(item.name)
+                    .setSubtitle(item.tags)
+                    .setIconUri(item.favicon.toUri())
+                    .setExtras(extras)
+                    .build()
+                browserMediaItems.add(
+                    MediaBrowserCompat.MediaItem(
+                        itemDescription,
+                        FLAG_PLAYABLE
+                    )
+                )
+            }
+            try {
+                result.sendResult(browserMediaItems)
+            } catch (ex: Exception) {
+                Log.e(TAG, ex.message.toString())
             }
         }
     }
-
 
     private fun allowBrowsing(clientPackageName: String = "", clientUid: Int = 0): Boolean = true
 
@@ -191,6 +199,7 @@ class FreeRadioMediaService : MediaBrowserServiceCompat() {
      */
     private inner class PlayerNotificationListener :
         PlayerNotificationManager.NotificationListener {
+
         override fun onNotificationPosted(
             notificationId: Int,
             notification: Notification,
@@ -208,7 +217,7 @@ class FreeRadioMediaService : MediaBrowserServiceCompat() {
         }
 
         override fun onNotificationCancelled(notificationId: Int, dismissedByUser: Boolean) {
-            stopForeground(true)
+            stopForeground(STOP_FOREGROUND_REMOVE)
             isForegroundService = false
             stopSelf()
         }
@@ -221,6 +230,32 @@ class FreeRadioMediaService : MediaBrowserServiceCompat() {
             extras: Bundle?,
             cb: ResultReceiver?
         ): Boolean {
+            when (command) {
+                TagsCommands.FAVORITES_COMMAND.name -> {
+                    Log.d("SERVICE_COMMAND_FAVORITES", command)
+                    mediaSource.collectFavorites()
+                    setPrefs(tag = TagsCommands.FAVORITES_COMMAND.name)
+                }
+                TagsCommands.STATIONS_COMMAND.name -> {
+                    Log.d("SERVICE_COMMAND_STATIONS", command)
+                    mediaSource.searchInMediaSource(query = "")
+                    setPrefs(tag = TagsCommands.STATIONS_COMMAND.name)
+                }
+                SET_FAVORITES_COMMAND -> {
+                    Log.d("SERVICE_COMMAND_SET_FAVORITES", command)
+                    extras?.let { bundle ->
+                        val stationUuid = bundle.getString(SET_FAVORITES_STATION_KEY)
+                        val isFavorite = bundle.getInt(SET_FAVORITES_VALUE_KEY)
+                        stationUuid?.let { uuid ->
+                            mediaSource.setFavorites(
+                                stationUuid = uuid,
+                                isFavorite = isFavorite,
+                                cb = cb
+                            )
+                        }
+                    }
+                }
+            }
             return true
         }
 
@@ -241,15 +276,18 @@ class FreeRadioMediaService : MediaBrowserServiceCompat() {
             playWhenReady: Boolean,
             extras: Bundle?
         ) {
-            if (player.getMediaItems().find { mediaItem -> mediaItem.mediaId == mediaId } != null) {
-                Log.d("SERVICE_PREPARE_MEDIA_ID", mediaId)
-                preparePlayList(mediaId)
-            } else {
-                Log.d("SERVICE_PREPARE_MEDIA_ID", "NO such media id ${mediaId}")
-            }
+            Log.d(TAG, "OnPrepareFromMediaId...")
+            preparePlayList(mediaItemId = mediaId, STATE_ON_MEDIA_ITEM)
+            setPrefs(stationUuid = mediaId)
         }
 
-        override fun onPrepareFromSearch(query: String, playWhenReady: Boolean, extras: Bundle?) {
+        override fun onPrepareFromSearch(
+            query: String,
+            playWhenReady: Boolean,
+            extras: Bundle?
+        ) {
+            Log.d("SERVICE_PREPARE_FROM_SEARCH", query)
+            preparePlayList(mediaItemId = query, STATE_ON_SEARCH)
         }
 
         override fun onPrepareFromUri(uri: Uri, playWhenReady: Boolean, extras: Bundle?) {
@@ -257,19 +295,22 @@ class FreeRadioMediaService : MediaBrowserServiceCompat() {
 
     }
 
-    private fun preparePlayList(mediaItemId: String = "") {
+    private fun preparePlayList(
+        mediaItemId: String = "",
+        state: Int = STATE_PREPARE
+    ) {
+        Log.d(TAG, "preparePlayList... $state")
+        when (state) {
+            STATE_ON_SEARCH -> mediaSource.searchInMediaSource(query = mediaItemId)
+            STATE_ON_MEDIA_ITEM -> mediaSource.onMediaItemClick(mediaItemId = mediaItemId)
+        }
+    }
+
+    private fun collectMediaState() {
         serviceScope.launch {
-            mediaSource.collectMediaSource()
-            mediaSource.state.collect {
-                if (mediaSource.state.value == MediaSource.STATE_INITIALIZED) {
-                    val startMediaItem = mediaSource.mediaItems.value.find {
-                        it.uuid == mediaItemId
-                    }
-                    val startPosition = if (startMediaItem == null) {
-                        0
-                    } else {
-                        mediaSource.mediaItems.value.indexOf(startMediaItem)
-                    }
+            mediaSource.state.collect { state ->
+                Log.d("COLLECT_STATE", state.toString())
+                if (state == MediaSource.STATE_INITIALIZED) {
                     player.stop()
                     player.setMediaItems(
                         mediaSource.mediaItems.value.map { playerMediaItem ->
@@ -283,13 +324,19 @@ class FreeRadioMediaService : MediaBrowserServiceCompat() {
                                         .setSubtitle(playerMediaItem.tags)
                                         .setDisplayTitle(playerMediaItem.name)
                                         .setArtworkUri(playerMediaItem.favicon.toUri())
+                                        .also {
+                                            val extras = Bundle()
+                                            extras.putString("url", playerMediaItem.url)
+                                            it.setExtras(extras)
+                                        }
                                         .build()
                                 )
                                 .build()
-                        }, startPosition, 0L
+                        }, mediaSource.getStartPosition(), 0L
                     )
-                    player.playWhenReady = startMediaItem != null
+                    player.playWhenReady = mediaSource.getPlayOnReady()
                     player.prepare()
+                    notifyChildrenChanged(STATIONS_ROOT)
                 }
             }
         }
@@ -299,5 +346,60 @@ class FreeRadioMediaService : MediaBrowserServiceCompat() {
         override fun onPlayFromMediaId(mediaId: String?, extras: Bundle?) {
             Log.d("ON_PLAY_FROM_MEDIA_ID", mediaId.toString())
         }
+    }
+
+    private inner class QueueNavigator(
+        mediaSession: MediaSessionCompat
+    ) : TimelineQueueNavigator(mediaSession) {
+        override fun getMediaDescription(player: Player, windowIndex: Int): MediaDescriptionCompat {
+            if (windowIndex < player.getMediaItems().size) {
+                val metaData = MediaMetadataCompat.Builder()
+                    .putString(
+                        MediaMetadataCompat.METADATA_KEY_TITLE,
+                        player.currentMediaItem?.mediaMetadata?.title.toString()
+                    )
+                    .putString(
+                        MediaMetadataCompat.METADATA_KEY_ART_URI,
+                        player.currentMediaItem?.mediaMetadata?.artworkUri.toString()
+                    )
+                    .build()
+                return metaData.description
+            }
+            return MediaDescriptionCompat.Builder().build()
+        }
+    }
+
+    private fun collectPrefs(prefsDataSource: PrefsDataSource) {
+        serviceScope.launch {
+            prefsDataSource.getPrefs().collect {
+                mediaSource.collectMediaSource(
+                    tag = it.tag,
+                    stationUuid = it.stationUuid
+                )
+                prefs.value = it
+                return@collect
+            }
+        }
+    }
+
+    private fun setPrefs(
+        tag: String = prefs.value.tag,
+        stationUuid: String = prefs.value.stationUuid
+    ) {
+        serviceScope.launch {
+            prefsDataSource.setPrefs(
+                prefs = CurrentPrefs(
+                    tag = tag,
+                    stationUuid = stationUuid
+                )
+            )
+        }
+    }
+
+    companion object {
+        const val TAG = "FreeMediaService"
+        private const val STATE_PREPARE = 0
+        private const val STATE_ON_MEDIA_ITEM = 1
+        private const val STATE_ON_SEARCH = 2
     }
 }

@@ -1,24 +1,28 @@
 package com.eugenics.freeradio.domain.model
 
+import android.os.Parcelable
 import com.eugenics.media_service.data.database.enteties.StationDaoObject
 import com.eugenics.media_service.domain.model.PlayerMediaItem
+import kotlinx.parcelize.Parcelize
 
+@Parcelize
 data class Station(
-    val stationuuid: String,
-    val name: String,
-    val tags: String,
-    val homepage: String,
-    val url: String,
-    val urlResolved: String,
-    val favicon: String,
-    val bitrate: Int,
-    val codec: String,
-    val country: String,
-    val countrycode: String,
-    val language: String,
-    val languagecodes: String,
-    val changeuuid: String
-)
+    val stationuuid: String = "",
+    val name: String = "",
+    val tags: String = "",
+    val homepage: String = "",
+    val url: String = "",
+    val urlResolved: String = "",
+    val favicon: String = "",
+    val bitrate: Int = 0,
+    val codec: String = "",
+    val country: String = "",
+    val countrycode: String = "",
+    val language: String = "",
+    val languagecodes: String = "",
+    val changeuuid: String = "",
+    val isFavorite: Int = 0
+) : Parcelable
 
 fun Station.convertToDao(): StationDaoObject =
     StationDaoObject(
@@ -35,7 +39,8 @@ fun Station.convertToDao(): StationDaoObject =
         countrycode = this.countrycode,
         language = this.language,
         languagecodes = this.languagecodes,
-        changeuuid = this.changeuuid
+        changeuuid = this.changeuuid,
+        isFavorite = this.isFavorite
     )
 
 fun Station.convertToMediaItem(): PlayerMediaItem =
