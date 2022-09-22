@@ -2,7 +2,6 @@ package com.eugenics.freeradio.navigation
 
 import android.os.Bundle
 import androidx.compose.runtime.Composable
-import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -14,10 +13,10 @@ import com.eugenics.media_service.media.FreeRadioMediaServiceConnection.Companio
 import com.eugenics.media_service.media.FreeRadioMediaServiceConnection.Companion.SET_FAVORITES_VALUE_KEY
 
 @Composable
-fun NavGraph(navController: NavHostController) {
-
-    val mainViewModel: MainViewModel = hiltViewModel()
-
+fun NavGraph(
+    navController: NavHostController,
+    mainViewModel: MainViewModel
+) {
     NavHost(
         navController = navController,
         startDestination = Screen.SearchScreen.rout
@@ -52,7 +51,9 @@ fun NavGraph(navController: NavHostController) {
         }
         composable(route = Screen.SettingsScreen.rout) {
             SettingsScreen(
-                onBackPressed = { navController.popBackStack() }
+                settings = mainViewModel.settings,
+                onBackPressed = { navController.popBackStack() },
+                onThemePick = { theme -> mainViewModel.setSettings(theme = theme) }
             )
         }
     }

@@ -1,39 +1,27 @@
 package com.eugenics.freeradio.ui.compose.main
 
 import android.os.Bundle
-import android.support.v4.media.MediaMetadataCompat
-import android.support.v4.media.MediaMetadataCompat.METADATA_KEY_ART_URI
-import android.support.v4.media.MediaMetadataCompat.METADATA_KEY_TITLE
 import android.support.v4.media.session.PlaybackStateCompat
-import android.widget.ImageButton
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
-import coil.compose.AsyncImagePainter
-import coil.compose.SubcomposeAsyncImage
-import coil.compose.SubcomposeAsyncImageContent
-import com.eugenics.freeradio.R
 import com.eugenics.freeradio.domain.model.Station
 import com.eugenics.freeradio.navigation.Screen
+import com.eugenics.freeradio.ui.compose.main.components.AppBarCard
+import com.eugenics.freeradio.ui.compose.main.components.MainBottomAppBar
 import com.eugenics.freeradio.ui.compose.main.components.MainNavigationDrawer
-import com.eugenics.freeradio.ui.compose.main.components.MainTopBar
 import com.eugenics.freeradio.ui.compose.splash.SplashScreen
 import com.eugenics.freeradio.ui.theme.FreeRadioTheme
 import com.eugenics.freeradio.ui.viewmodels.MainViewModel
-import com.eugenics.media_service.media.isPlaying
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
+import kotlin.math.min
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -59,9 +47,12 @@ fun MainScreen(
     val drawerState = rememberDrawerState(DrawerValue.Closed)
     val scope = rememberCoroutineScope()
 
+    val padding = WindowInsets.systemBars.asPaddingValues()
+
     when (listState.value) {
-        MainViewModel.UI_STATE_LOADING -> SplashScreen()
+        MainViewModel.UI_STATE_FIRST_INIT -> SplashScreen()
         MainViewModel.UI_STATE_IDL -> SplashScreen()
+        MainViewModel.UI_STATE_EMPTY -> SplashScreen()
         else -> {
             MainNavigationDrawer(
                 drawerState = drawerState,
@@ -75,8 +66,9 @@ fun MainScreen(
             ) {
                 Scaffold(
                     topBar = {
-                        MainTopBar(
-                            onDrawerClick = {
+                        AppBarCard(
+                            paddingValues = padding,
+                            onMenuClick = {
                                 scope.launch {
                                     if (drawerState.isOpen) {
                                         drawerState.close()
@@ -89,59 +81,17 @@ fun MainScreen(
                         )
                     },
                     bottomBar = {
-                        BottomAppBar {
-                            if (listState.value == MainViewModel.UI_STATE_READY) {
-                                SubcomposeAsyncImage(
-                                    model = nowPlayingStation.collectAsState().value.favicon,
-                                    contentDescription = null,
-                                    modifier = Modifier
-                                        .size(50.dp, 50.dp)
-                                        .padding(5.dp),
-                                    contentScale = ContentScale.Fit
-                                ) {
-                                    val painterState = painter.state
-                                    if (painterState is AsyncImagePainter.State.Loading || painterState is AsyncImagePainter.State.Error) {
-                                        Image(
-                                            painter = painterResource(R.drawable.pradio_wave),
-                                            contentDescription = null
-                                        )
-                                    } else {
-                                        SubcomposeAsyncImageContent()
-                                    }
-                                }
-                                Text(
-                                    text = nowPlayingStation.collectAsState().value.name,
-                                    style = MaterialTheme.typography.labelLarge,
-                                    modifier = Modifier.weight(1f)
-                                )
-                                IconButton(
-                                    onClick = {
-                                        if (state.value.isPlaying) {
-                                            onPauseClick()
-                                        } else {
-                                            onPlayClick()
-                                        }
-                                    }
-                                ) {
-                                    Image(
-                                        painter = if (state.value.isPlaying) {
-                                            painterResource(R.drawable.ic_pause)
-                                        } else {
-                                            painterResource(R.drawable.ic_play_arrow)
-                                        },
-                                        contentDescription = null
-                                    )
-                                }
-                            }
-                        }
+                        MainBottomAppBar(
+                            paddingValues = padding,
+                            nowPlayingStation = nowPlayingStation.collectAsState().value,
+                            playbackState = playbackState.collectAsState().value,
+                            onPlayClick = onPlayClick,
+                            onPauseClick = onPauseClick
+                        )
                     }
                 ) { paddingValues ->
                     when (listState.value) {
                         MainViewModel.UI_STATE_READY -> {
-//                            if (stations.value.isNotEmpty()) {
-//                                currentStation.value = stations.value[0]
-//                            }
-
                             MainContent(
                                 paddingValues = paddingValues,
                                 stations = stations.value,
@@ -155,7 +105,9 @@ fun MainScreen(
                                 text = "Loading...",
                                 style = MaterialTheme.typography.titleMedium,
                                 textAlign = TextAlign.Center,
-                                modifier = Modifier.padding(paddingValues = paddingValues)
+                                modifier = Modifier.padding(
+                                    top = paddingValues.calculateTopPadding()
+                                )
                             )
                         }
                     }

@@ -5,6 +5,7 @@ import android.os.ResultReceiver
 import android.util.Log
 import com.eugenics.media_service.data.database.enteties.StationDaoObject
 import com.eugenics.media_service.data.util.Response
+import com.eugenics.media_service.domain.core.TagsCommands
 import com.eugenics.media_service.domain.model.PlayerMediaItem
 import com.eugenics.media_service.domain.model.convertToMediaItem
 import com.eugenics.media_service.domain.interfaces.repository.IRepository
@@ -63,7 +64,10 @@ class MediaSource(private val repository: IRepository) {
         }
     }
 
-    fun collectMediaSource() {
+    fun collectMediaSource(
+        tag: String,
+        stationUuid: String
+    ) {
         scope.launch {
             state.collect { stateValue ->
                 when (stateValue) {
@@ -71,10 +75,20 @@ class MediaSource(private val repository: IRepository) {
                         _state.value = STATE_INITIALIZING
                         try {
                             val stations = mutableListOf<StationDaoObject>()
-                            stations.addAll(repository.getLocalStationByTag(tag = "%relax%"))
-                            stations.addAll(repository.getLocalStationByTag(tag = "%chillout%"))
+                            when (tag) {
+                                TagsCommands.STATIONS_COMMAND.name ->
+                                    stations.addAll(repository.getLocalStations())
+                                TagsCommands.FAVORITES_COMMAND.name ->
+                                    stations.addAll(repository.fetchStationsByFavorites())
+                                else -> stations.addAll(repository.getLocalStations())
+                            }
 
                             feelMediaItems(stations = stations)
+
+                            onMediaItemClick(
+                                mediaItemId = stationUuid,
+                                false
+                            )
 
                             _state.value = STATE_INITIALIZED
                         } catch (ex: Exception) {
@@ -98,8 +112,7 @@ class MediaSource(private val repository: IRepository) {
             try {
                 val stations = mutableListOf<StationDaoObject>()
                 if (query.isBlank()) {
-                    stations.addAll(repository.getLocalStationByTag(tag = "%relax%"))
-                    stations.addAll(repository.getLocalStationByTag(tag = "%chillout%"))
+                    stations.addAll(repository.getLocalStations())
                 } else {
                     stations.addAll(repository.getLocalStationByName(name = "%$query%"))
                 }
@@ -175,7 +188,10 @@ class MediaSource(private val repository: IRepository) {
 
     fun getPlayOnReady(): Boolean = playOnRedy
 
-    fun onMediaItemClick(mediaItemId: String) {
+    fun onMediaItemClick(
+        mediaItemId: String,
+        playWhenReady: Boolean = true
+    ) {
         scope.launch {
             _state.value = STATE_INITIALIZING
             val startMediaItem = mediaItems.value.find {
@@ -188,7 +204,7 @@ class MediaSource(private val repository: IRepository) {
                     mediaItems.value.indexOf(startMediaItem)
                 }
 
-            playOnRedy = true
+            playOnRedy = playWhenReady
             delay(DELAY_TIME)
             _state.value = STATE_INITIALIZED
         }

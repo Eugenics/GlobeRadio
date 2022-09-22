@@ -15,6 +15,7 @@ import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
@@ -38,15 +39,18 @@ fun MainContent(
 
     Column(
         modifier = Modifier
-            .padding(paddingValues = paddingValues)
-            .fillMaxWidth()
+//            .padding(paddingValues = paddingValues)
+            .fillMaxSize()
     ) {
         LazyColumn(
             modifier = Modifier.fillMaxWidth(),
             state = columnState
         ) {
-            itemsIndexed(stations) { _, station ->
+            itemsIndexed(stations) { index, station ->
                 StationCard(
+                    paddingValues = paddingValues,
+                    index = index,
+                    size = stations.size,
                     station = station,
                     onCardClick = onCardClick,
                     onFavoriteClick = onFavoriteClick,
@@ -60,17 +64,32 @@ fun MainContent(
 
 @Composable
 private fun StationCard(
+    paddingValues: PaddingValues = PaddingValues(),
+    index: Int = 0,
+    size: Int = 0,
     station: Station,
     onCardClick: (mediaId: String) -> Unit = {},
     onFavoriteClick: (stationUuid: String, isFavorite: Int) -> Unit = { _, _ -> },
     onInfoClick: () -> Unit = {}
 ) {
     val isFavorite = rememberSaveable { mutableStateOf(station.isFavorite) }
+    val standardPadding = 2.dp
+    val topPadding =
+        if (index == 0) paddingValues.calculateTopPadding() + 0.dp
+        else standardPadding
+    val bottomPadding =
+        if (index == size - 1) paddingValues.calculateBottomPadding() + 0.dp
+        else standardPadding
 
     Row(
         verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier.fillMaxSize()
-            .padding(2.dp)
+            .padding(
+                top = topPadding,
+                bottom = bottomPadding,
+                start = standardPadding,
+                end = standardPadding
+            )
             .clickable {
                 onCardClick(station.stationuuid)
             }
@@ -79,8 +98,9 @@ private fun StationCard(
             model = station.favicon,
             contentDescription = null,
             modifier = Modifier
-                .size(75.dp, 75.dp)
-                .padding(5.dp),
+                .size(65.dp, 65.dp)
+                .padding(5.dp)
+                .clip(MaterialTheme.shapes.medium),
             contentScale = ContentScale.Fit
         ) {
             val state = painter.state

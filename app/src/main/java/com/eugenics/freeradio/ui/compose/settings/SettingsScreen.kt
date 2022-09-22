@@ -1,26 +1,32 @@
 package com.eugenics.freeradio.ui.compose.settings
 
 import android.content.res.Configuration.UI_MODE_NIGHT_YES
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.eugenics.freeradio.domain.model.CurrentState
+import com.eugenics.freeradio.domain.model.Theme
 import com.eugenics.freeradio.ui.compose.settings.components.ThemePicker
 import com.eugenics.freeradio.ui.theme.FreeRadioTheme
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SettingsScreen(
-    onBackPressed: () -> Unit = {}
+    settings: StateFlow<CurrentState> = MutableStateFlow(CurrentState.getDefaultValueInstance()),
+    onBackPressed: () -> Unit = {},
+    onThemePick: (theme: Theme) -> Unit = { _ -> }
 ) {
+    val theme = settings.collectAsState().value.theme
     Scaffold(
         topBar = {
             TopAppBar(title = {
@@ -50,7 +56,10 @@ fun SettingsScreen(
                     .padding(5.dp),
                 style = MaterialTheme.typography.bodyLarge
             )
-            ThemePicker { }
+            ThemePicker(
+                currentTheme = theme,
+                onThemeChoose = onThemePick
+            )
         }
     }
 }

@@ -13,7 +13,7 @@ android {
     defaultConfig {
         applicationId "com.eugenics.freeradio"
         minSdk 27
-        targetSdk 32
+        targetSdk 33
         versionCode 1
         versionName "1.0"
 
@@ -125,4 +125,7 @@ dependencies {
     // Material 3
     implementation("androidx.compose.material3:material3:1.0.0-beta02")
     implementation("androidx.compose.material3:material3-window-size-class:1.0.0-beta02")
+
+    // DataStore
+    implementation("androidx.datastore:datastore:1.0.0")
 }

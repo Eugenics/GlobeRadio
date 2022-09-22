@@ -18,14 +18,13 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.eugenics.freeradio.R
-import com.eugenics.media_service.media.FreeRadioMediaServiceConnection
+import com.eugenics.media_service.domain.core.TagsCommands
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MainNavigationDrawer(
     drawerState: DrawerState = rememberDrawerState(DrawerValue.Open),
-    paddingValues: PaddingValues = PaddingValues(),
     onSettingsClick: () -> Unit = {},
     sendCommand: (command: String, parameters: Bundle?) -> Unit = { _, _ -> },
     content: @Composable () -> Unit
@@ -65,7 +64,7 @@ fun MainNavigationDrawer(
                     icon = Icons.Filled.Refresh,
                     onClick = {
                         sendCommand(
-                            FreeRadioMediaServiceConnection.STATIONS_COMMAND,
+                            TagsCommands.STATIONS_COMMAND.name,
                             null
                         )
                         scope.launch {
@@ -79,7 +78,7 @@ fun MainNavigationDrawer(
                     icon = Icons.Filled.Favorite,
                     onClick = {
                         sendCommand(
-                            FreeRadioMediaServiceConnection.FAVORITES_COMMAND,
+                            TagsCommands.FAVORITES_COMMAND.name,
                             null
                         )
                         scope.launch {

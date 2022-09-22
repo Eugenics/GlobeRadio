@@ -15,12 +15,14 @@ import android.util.Log
 import androidx.core.content.ContextCompat
 import androidx.core.net.toUri
 import androidx.media.MediaBrowserServiceCompat
+import com.eugenics.media_service.data.datastore.PrefsDataSource
+import com.eugenics.media_service.data.datastore.PrefsDataStoreFactory
 import com.eugenics.media_service.data.repository.RepositoryFactory
-import com.eugenics.media_service.media.FreeRadioMediaServiceConnection.Companion.FAVORITES_COMMAND
+import com.eugenics.media_service.domain.core.TagsCommands
+import com.eugenics.media_service.domain.model.CurrentPrefs
 import com.eugenics.media_service.media.FreeRadioMediaServiceConnection.Companion.SET_FAVORITES_COMMAND
 import com.eugenics.media_service.media.FreeRadioMediaServiceConnection.Companion.SET_FAVORITES_STATION_KEY
 import com.eugenics.media_service.media.FreeRadioMediaServiceConnection.Companion.SET_FAVORITES_VALUE_KEY
-import com.eugenics.media_service.media.FreeRadioMediaServiceConnection.Companion.STATIONS_COMMAND
 import com.eugenics.media_service.player.PlayerListener
 import com.eugenics.media_service.player.getMediaItems
 import com.google.android.exoplayer2.*
@@ -31,6 +33,7 @@ import com.google.android.exoplayer2.ui.PlayerNotificationManager
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 
 private const val MEDIA_SESSION_LOG_TAG = "free_radio_media_session"
@@ -70,11 +73,22 @@ class FreeRadioMediaService : MediaBrowserServiceCompat() {
         MediaSource(repository = RepositoryFactory.create(this))
     }
 
+    private val prefs: MutableStateFlow<CurrentPrefs> =
+        MutableStateFlow(CurrentPrefs.getDefaultInstance())
+
+    private val prefsDataSource by lazy {
+        PrefsDataSource(
+            dataStore = PrefsDataStoreFactory.create(
+                application = application
+            )
+        )
+    }
+
     override fun onCreate() {
         super.onCreate()
 
         collectMediaState()
-        preparePlayList()
+        collectPrefs(prefsDataSource = prefsDataSource)
 
         // Create a MediaSessionCompat
         mediaSession = MediaSessionCompat(baseContext, MEDIA_SESSION_LOG_TAG).apply {
@@ -145,16 +159,10 @@ class FreeRadioMediaService : MediaBrowserServiceCompat() {
         if (parentId == EMPTY_ROOT) {
             result.sendResult(null)
         } else {
-            Log.d(
-                "SERVICE_ON_LOAD_CHILDREN",
-                ""
-            )
+            Log.d("SERVICE_ON_LOAD_CHILDREN", "")
             val browserMediaItems = mutableListOf<MediaBrowserCompat.MediaItem>()
 
-            Log.d(
-                "MEDIA_SERVICE_SIZE",
-                mediaSource.mediaItems.value.size.toString()
-            )
+            Log.d("MEDIA_SERVICE_SIZE", mediaSource.mediaItems.value.size.toString())
 
             val mediaItems = mediaSource.mediaItems.value
             for (item in mediaItems) {
@@ -180,7 +188,6 @@ class FreeRadioMediaService : MediaBrowserServiceCompat() {
                 result.sendResult(browserMediaItems)
             } catch (ex: Exception) {
                 Log.e(TAG, ex.message.toString())
-//                                notifyChildrenChanged(STATIONS_ROOT)
             }
         }
     }
@@ -224,13 +231,15 @@ class FreeRadioMediaService : MediaBrowserServiceCompat() {
             cb: ResultReceiver?
         ): Boolean {
             when (command) {
-                FAVORITES_COMMAND -> {
+                TagsCommands.FAVORITES_COMMAND.name -> {
                     Log.d("SERVICE_COMMAND_FAVORITES", command)
                     mediaSource.collectFavorites()
+                    setPrefs(tag = TagsCommands.FAVORITES_COMMAND.name)
                 }
-                STATIONS_COMMAND -> {
+                TagsCommands.STATIONS_COMMAND.name -> {
                     Log.d("SERVICE_COMMAND_STATIONS", command)
                     mediaSource.searchInMediaSource(query = "")
+                    setPrefs(tag = TagsCommands.STATIONS_COMMAND.name)
                 }
                 SET_FAVORITES_COMMAND -> {
                     Log.d("SERVICE_COMMAND_SET_FAVORITES", command)
@@ -267,8 +276,9 @@ class FreeRadioMediaService : MediaBrowserServiceCompat() {
             playWhenReady: Boolean,
             extras: Bundle?
         ) {
-            Log.d(TAG, "OnPrepare...")
+            Log.d(TAG, "OnPrepareFromMediaId...")
             preparePlayList(mediaItemId = mediaId, STATE_ON_MEDIA_ITEM)
+            setPrefs(stationUuid = mediaId)
         }
 
         override fun onPrepareFromSearch(
@@ -285,10 +295,12 @@ class FreeRadioMediaService : MediaBrowserServiceCompat() {
 
     }
 
-    private fun preparePlayList(mediaItemId: String = "", state: Int = STATE_PREPARE) {
+    private fun preparePlayList(
+        mediaItemId: String = "",
+        state: Int = STATE_PREPARE
+    ) {
         Log.d(TAG, "preparePlayList... $state")
         when (state) {
-            STATE_PREPARE -> mediaSource.collectMediaSource()
             STATE_ON_SEARCH -> mediaSource.searchInMediaSource(query = mediaItemId)
             STATE_ON_MEDIA_ITEM -> mediaSource.onMediaItemClick(mediaItemId = mediaItemId)
         }
@@ -354,6 +366,33 @@ class FreeRadioMediaService : MediaBrowserServiceCompat() {
                 return metaData.description
             }
             return MediaDescriptionCompat.Builder().build()
+        }
+    }
+
+    private fun collectPrefs(prefsDataSource: PrefsDataSource) {
+        serviceScope.launch {
+            prefsDataSource.getPrefs().collect {
+                mediaSource.collectMediaSource(
+                    tag = it.tag,
+                    stationUuid = it.stationUuid
+                )
+                prefs.value = it
+                return@collect
+            }
+        }
+    }
+
+    private fun setPrefs(
+        tag: String = prefs.value.tag,
+        stationUuid: String = prefs.value.stationUuid
+    ) {
+        serviceScope.launch {
+            prefsDataSource.setPrefs(
+                prefs = CurrentPrefs(
+                    tag = tag,
+                    stationUuid = stationUuid
+                )
+            )
         }
     }
 

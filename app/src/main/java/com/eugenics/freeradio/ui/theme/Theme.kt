@@ -7,6 +7,7 @@ import androidx.compose.material3.darkColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.SideEffect
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.compositeOver
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 
 
@@ -87,20 +88,23 @@ fun FreeRadioTheme(
         DarkColors
     }
 
+    val blackScrim = Color(0f, 0f, 0f, 0.3f) // 30% opaque black
+
     SideEffect {
-        systemUiController.setStatusBarColor(
+        systemUiController.setSystemBarsColor(
             color = Color.Transparent,
-            darkIcons = useDarkIcons
-        )
-        systemUiController.setNavigationBarColor(
-            color = colors.surface,
-            darkIcons = useDarkIcons
+            darkIcons = useDarkIcons,
+            isNavigationBarContrastEnforced = false,
+            transformColorForLightContent = { original ->
+                blackScrim.compositeOver(original)
+            }
         )
     }
 
     MaterialTheme(
         colorScheme = colors,
         typography = AppTypography,
-        content = content
+        content = content,
+        shapes = AppBarShape
     )
 }
