@@ -66,7 +66,8 @@ class MediaSource(private val repository: IRepository) {
 
     fun collectMediaSource(
         tag: String,
-        stationUuid: String
+        stationUuid: String,
+        command: String
     ) {
         scope.launch {
             state.collect { stateValue ->
@@ -75,9 +76,9 @@ class MediaSource(private val repository: IRepository) {
                         _state.value = STATE_INITIALIZING
                         try {
                             val stations = mutableListOf<StationDaoObject>()
-                            when (tag) {
+                            when (command) {
                                 TagsCommands.STATIONS_COMMAND.name ->
-                                    stations.addAll(repository.getLocalStations())
+                                    stations.addAll(repository.getLocalStationByTag(tag = "%$tag%"))
                                 TagsCommands.FAVORITES_COMMAND.name ->
                                     stations.addAll(repository.fetchStationsByFavorites())
                                 else -> stations.addAll(repository.getLocalStations())
@@ -111,10 +112,13 @@ class MediaSource(private val repository: IRepository) {
             _state.value = STATE_INITIALIZING
             try {
                 val stations = mutableListOf<StationDaoObject>()
-                if (query.isBlank()) {
+                if (query.isBlank() || query == "*") {
                     stations.addAll(repository.getLocalStations())
                 } else {
-                    stations.addAll(repository.getLocalStationByName(name = "%$query%"))
+                    stations.addAll(
+//                        repository.getLocalStationByName(name = "%$query%")
+                        repository.getLocalStationByTag(tag = "%$query%")
+                    )
                 }
 
                 feelMediaItems(stations = stations)
@@ -135,6 +139,23 @@ class MediaSource(private val repository: IRepository) {
             _state.value = STATE_INITIALIZING
             try {
                 feelMediaItems(stations = repository.fetchStationsByFavorites())
+                delay(DELAY_TIME)
+                _state.value = STATE_INITIALIZED
+            } catch (ex: Exception) {
+                _state.value = STATE_ERROR
+                Log.e(TAG, ex.message.toString())
+            }
+        }
+    }
+
+    fun collectSearch(query: String) {
+        startPosition = 0
+        setPlayOnReady(value = false)
+
+        scope.launch {
+            _state.value = STATE_INITIALIZING
+            try {
+                feelMediaItems(stations = repository.getLocalStationByName(name = "%$query%"))
                 delay(DELAY_TIME)
                 _state.value = STATE_INITIALIZED
             } catch (ex: Exception) {

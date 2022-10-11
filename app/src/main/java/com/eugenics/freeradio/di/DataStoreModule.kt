@@ -5,6 +5,8 @@ import androidx.datastore.core.DataStore
 import androidx.datastore.core.DataStoreFactory
 import com.eugenics.freeradio.data.local.ref.SettingsDataSource
 import com.eugenics.freeradio.data.local.ref.SettingsSerializer
+import com.eugenics.freeradio.data.repository.RepositoryImpl
+import com.eugenics.freeradio.domain.interfaces.Repository
 import com.eugenics.freeradio.domain.model.CurrentState
 import dagger.Module
 import dagger.Provides
@@ -30,4 +32,9 @@ class DataStoreModule {
     @Singleton
     fun providesDataStoreDataSource(dataStore: DataStore<CurrentState>): SettingsDataSource =
         SettingsDataSource(dataStore = dataStore)
+
+    @Provides
+    @Singleton
+    fun provideRepository(application: Application): Repository =
+        RepositoryImpl(application = application)
 }

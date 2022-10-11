@@ -1,0 +1,22 @@
+<resources>
+    <string name="app_name">Free Radio</string>
+    <string name="unexpected_error">An unexpected error occurred :(\nPlease try again</string>
+    <string name="loading_string">Загрузка…</string>
+    <string name="search_hint_text">Поиск…</string>
+    <string name="stations_text">Станции</string>
+    <string name="favorites_text">Избранное</string>
+    <string name="settings_text">Настройки</string>
+    <string name="about_text">О прграмме</string>
+    <string name="choose_theme_text">Выбор темы</string>
+    <string name="close_string">Закрыть</string>
+    <string name="dark_text">Темная</string>
+    <string name="light_text">Светлая</string>
+    <string name="system_text">Системная</string>
+    <string name="free_radio_text">Free Radio</string>
+    <string name="favorites_confirm_string">Вы хотите удалить станцию из избранного?</string>
+    <string name="yes_string">Да</string>
+    <string name="no_string">Нет</string>
+    <string name="ok_string">OK</string>
+    <string name="cancel_string">Отмена</string>
+    <string name="tags_select_string">Выбор жанра…</string>
+</resources>

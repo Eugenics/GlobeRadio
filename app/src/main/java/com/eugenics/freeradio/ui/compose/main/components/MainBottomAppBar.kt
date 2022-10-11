@@ -1,7 +1,10 @@
 package com.eugenics.freeradio.ui.compose.main.components
 
 import android.content.res.Configuration.UI_MODE_NIGHT_YES
+import android.media.session.PlaybackState
+import android.os.Build
 import android.support.v4.media.session.PlaybackStateCompat
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
@@ -21,8 +24,8 @@ import coil.compose.SubcomposeAsyncImageContent
 import com.eugenics.freeradio.R
 import com.eugenics.freeradio.domain.model.Station
 import com.eugenics.freeradio.ui.theme.FreeRadioTheme
-import com.eugenics.media_service.media.isPlaying
 
+@RequiresApi(Build.VERSION_CODES.S)
 @Composable
 fun MainBottomAppBar(
     paddingValues: PaddingValues = PaddingValues(),
@@ -33,9 +36,9 @@ fun MainBottomAppBar(
 ) {
     Card(
         shape = RoundedCornerShape(percent = 35),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.primaryContainer
-        ),
+//        colors = CardDefaults.cardColors(
+//            containerColor = MaterialTheme.colorScheme.primary
+//        ),
         modifier = Modifier
             .padding(
                 bottom = paddingValues.calculateBottomPadding() + 5.dp,
@@ -67,15 +70,24 @@ fun MainBottomAppBar(
                     SubcomposeAsyncImageContent()
                 }
             }
-            Text(
-                text = nowPlayingStation.name,
-                style = MaterialTheme.typography.bodyLarge,
+            Column(
                 modifier = Modifier.weight(1f)
                     .padding(8.dp)
-            )
+            ) {
+                Text(
+                    text = nowPlayingStation.name,
+                    style = MaterialTheme.typography.bodyLarge,
+                    modifier = Modifier.fillMaxWidth()
+                )
+                Text(
+                    text = nowPlayingStation.nowPlayingTitle.ifBlank { "" },
+                    style = MaterialTheme.typography.bodySmall,
+                    modifier = Modifier.fillMaxWidth()
+                )
+            }
             IconButton(
                 onClick = {
-                    if (playbackState.isPlaying) {
+                    if (playbackState.state == PlaybackState.STATE_PLAYING) {
                         onPauseClick()
                     } else {
                         onPlayClick()
@@ -84,7 +96,7 @@ fun MainBottomAppBar(
                 modifier = Modifier.padding(end = 10.dp)
             ) {
                 Image(
-                    painter = if (playbackState.isPlaying) {
+                    painter = if (playbackState.state == PlaybackState.STATE_PLAYING) {
                         painterResource(R.drawable.ic_pause)
                     } else {
                         painterResource(R.drawable.ic_play_arrow)
@@ -97,9 +109,10 @@ fun MainBottomAppBar(
     }
 }
 
+@RequiresApi(Build.VERSION_CODES.S)
 @Composable
 @Preview
-private fun bottomAppCardPreview() {
+private fun BottomAppCardPreview() {
     FreeRadioTheme {
         MainBottomAppBar(
             playbackState = PlaybackStateCompat
@@ -110,9 +123,10 @@ private fun bottomAppCardPreview() {
     }
 }
 
+@RequiresApi(Build.VERSION_CODES.S)
 @Composable
 @Preview(uiMode = UI_MODE_NIGHT_YES)
-private fun bottomAppCardPreviewDark() {
+private fun BottomAppCardPreviewDark() {
     FreeRadioTheme {
         MainBottomAppBar(
             playbackState = PlaybackStateCompat

@@ -10,13 +10,18 @@ import android.support.v4.media.MediaMetadataCompat
 import android.support.v4.media.session.MediaControllerCompat
 import android.support.v4.media.session.MediaSessionCompat
 import android.support.v4.media.session.PlaybackStateCompat
+import com.google.android.exoplayer2.MediaMetadata
+import com.google.android.exoplayer2.Player
+import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.MutableStateFlow
 
 class FreeRadioMediaServiceConnection(context: Context, serviceComponent: ComponentName) {
     val isConnected = MutableStateFlow(false)
-    val networkFailure = MutableStateFlow(false)
     val playbackState = MutableStateFlow(EMPTY_PLAYBACK_STATE)
-    val nowPlaying = MutableStateFlow(NOTHING_PLAYING)
+
+
+    val nowPlayingItem = MutableStateFlow(NOTHING_PLAYING)
+    private var nowPlayingJob: Job? = null
 
     val transportControls: MediaControllerCompat.TransportControls
         get() = mediaController.transportControls
@@ -34,10 +39,12 @@ class FreeRadioMediaServiceConnection(context: Context, serviceComponent: Compon
 
     fun subscribe(parentId: String, callback: MediaBrowserCompat.SubscriptionCallback) {
         mediaBrowser.subscribe(parentId, callback)
+        collectNowPlaying()
     }
 
     fun unsubscribe(parentId: String, callback: MediaBrowserCompat.SubscriptionCallback) {
         mediaBrowser.unsubscribe(parentId, callback)
+        nowPlayingJob?.cancel()
     }
 
     fun sendCommand(
@@ -82,7 +89,6 @@ class FreeRadioMediaServiceConnection(context: Context, serviceComponent: Compon
         }
 
         override fun onMetadataChanged(metadata: MediaMetadataCompat?) {
-            nowPlaying.value = metadata ?: NOTHING_PLAYING
         }
 
         override fun onQueueChanged(queue: MutableList<MediaSessionCompat.QueueItem>?) {
@@ -94,6 +100,15 @@ class FreeRadioMediaServiceConnection(context: Context, serviceComponent: Compon
 
         override fun onSessionDestroyed() {
             mediaBrowserConnectionCallback.onConnectionSuspended()
+        }
+    }
+
+    private fun collectNowPlaying() {
+        val scope = CoroutineScope(Dispatchers.IO)
+        nowPlayingJob = scope.launch {
+            nowPlaying.collect {
+                nowPlayingItem.value = it
+            }
         }
     }
 
@@ -110,6 +125,27 @@ class FreeRadioMediaServiceConnection(context: Context, serviceComponent: Compon
                 instance ?: FreeRadioMediaServiceConnection(context, serviceComponent)
                     .also { instance = it }
             }
+
+        val nowPlaying = MutableStateFlow(NOTHING_PLAYING)
+
+        class PlayerListener : Player.Listener {
+            override fun onMediaMetadataChanged(mediaMetadata: MediaMetadata) {
+                nowPlaying.value = MediaMetadataCompat.Builder()
+                    .putString(
+                        MediaMetadataCompat.METADATA_KEY_TITLE,
+                        mediaMetadata.displayTitle?.toString() ?: ""
+                    )
+                    .putString(
+                        MediaMetadataCompat.METADATA_KEY_ART_URI,
+                        mediaMetadata.artworkUri?.toString() ?: ""
+                    )
+                    .putString(
+                        MediaMetadataCompat.METADATA_KEY_DISPLAY_TITLE,
+                        mediaMetadata.title?.toString() ?: ""
+                    )
+                    .build()
+            }
+        }
     }
 }
 

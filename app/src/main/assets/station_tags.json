@@ -1,0 +1,258 @@
+[
+  {
+    "key": "All",
+    "value": "*"
+  },
+  {
+    "key": "50s",
+    "value": "50"
+  },
+  {
+    "key": "60s",
+    "value": "60"
+  },
+  {
+    "key": "70s",
+    "value": "70"
+  },
+  {
+    "key": "80s",
+    "value": "80"
+  },
+  {
+    "key": "90s",
+    "value": "90"
+  },
+  {
+    "key": "alternative",
+    "value": "alternative"
+  },
+  {
+    "key": "ambient",
+    "value": "ambient"
+  },
+  {
+    "key": "anime",
+    "value": "anime"
+  },
+  {
+    "key": "balada",
+    "value": "balada"
+  },
+  {
+    "key": "blues",
+    "value": "blues"
+  },
+  {
+    "key": "children",
+    "value": "children"
+  },
+  {
+    "key": "chill",
+    "value": "chill"
+  },
+  {
+    "key": "chillout",
+    "value": "chillout"
+  },
+  {
+    "key": "classic",
+    "value": "classic"
+  },
+  {
+    "key": "club",
+    "value": "club"
+  },
+  {
+    "key": "comedy",
+    "value": "comedy"
+  },
+  {
+    "key": "community",
+    "value": "community"
+  },
+  {
+    "key": "culture",
+    "value": "culture"
+  },
+  {
+    "key": "dance",
+    "value": "dance"
+  },
+  {
+    "key": "disco",
+    "value": "disco"
+  },
+  {
+    "key": "eclectic",
+    "value": "eclectic"
+  },
+  {
+    "key": "economics",
+    "value": "economics"
+  },
+  {
+    "key": "electro",
+    "value": "electro"
+  },
+  {
+    "key": "electronic",
+    "value": "electronic"
+  },
+  {
+    "key": "folk",
+    "value": "folk"
+  },
+  {
+    "key": "funk",
+    "value": "funk"
+  },
+  {
+    "key": "gothic",
+    "value": "gothic"
+  },
+  {
+    "key": "hard rock",
+    "value": "hard rock"
+  },
+  {
+    "key": "heavy metal",
+    "value": "heavy metal"
+  },
+  {
+    "key": "hip hop",
+    "value": "hip hop"
+  },
+  {
+    "key": "hits",
+    "value": "hits"
+  },
+  {
+    "key": "house",
+    "value": "house"
+  },
+  {
+    "key": "indie",
+    "value": "indie"
+  },
+  {
+    "key": "industrial",
+    "value": "industrial"
+  },
+  {
+    "key": "information",
+    "value": "information"
+  },
+  {
+    "key": "instrumental",
+    "value": "instrumental"
+  },
+  {
+    "key": "jazz",
+    "value": "jazz"
+  },
+  {
+    "key": "latin",
+    "value": "latin"
+  },
+  {
+    "key": "literature",
+    "value": "literature"
+  },
+  {
+    "key": "live",
+    "value": "live"
+  },
+  {
+    "key": "live sports",
+    "value": "live sports"
+  },
+  {
+    "key": "lounge",
+    "value": "lounge"
+  },
+  {
+    "key": "love",
+    "value": "love"
+  },
+  {
+    "key": "metal",
+    "value": "metal"
+  },
+  {
+    "key": "news",
+    "value": "news"
+  },
+  {
+    "key": "online",
+    "value": "online"
+  },
+  {
+    "key": "opera",
+    "value": "opera"
+  },
+  {
+    "key": "pop",
+    "value": "pop"
+  },
+  {
+    "key": "progressive rock",
+    "value": "progressive rock"
+  },
+  {
+    "key": "rap",
+    "value": "rap"
+  },
+  {
+    "key": "relax",
+    "value": "relax"
+  },
+  {
+    "key": "rock",
+    "value": "rock"
+  },
+  {
+    "key": "romantic",
+    "value": "romantic"
+  },
+  {
+    "key": "smooth",
+    "value": "smooth"
+  },
+  {
+    "key": "soul",
+    "value": "soul"
+  },
+  {
+    "key": "sport",
+    "value": "sport"
+  },
+  {
+    "key": "talk",
+    "value": "talk"
+  },
+  {
+    "key": "techno",
+    "value": "techno"
+  },
+  {
+    "key": "top",
+    "value": "top"
+  },
+  {
+    "key": "traditional",
+    "value": "traditional"
+  },
+  {
+    "key": "trance",
+    "value": "trance"
+  },
+  {
+    "key": "tropical",
+    "value": "tropical"
+  },
+  {
+    "key": "urban",
+    "value": "urban"
+  }
+]

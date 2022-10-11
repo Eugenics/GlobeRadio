@@ -21,7 +21,9 @@ data class Station(
     val language: String = "",
     val languagecodes: String = "",
     val changeuuid: String = "",
-    val isFavorite: Int = 0
+    val isFavorite: Int = 0,
+    val nowPlayingArtist: String = "",
+    val nowPlayingTitle: String = ""
 ) : Parcelable
 
 fun Station.convertToDao(): StationDaoObject =

@@ -94,7 +94,7 @@ dependencies {
 
     // Player
     implementation project(path: ':media_service')
-    implementation("androidx.media3:media3-session:1.0.0-beta01")
+    implementation("androidx.media3:media3-session:1.0.0-beta02")
 
     // Compose Accompanist
     implementation "com.google.accompanist:accompanist-insets:0.25.1"
@@ -123,8 +123,8 @@ dependencies {
     implementation("androidx.media:media:1.6.0")
 
     // Material 3
-    implementation("androidx.compose.material3:material3:1.0.0-beta02")
-    implementation("androidx.compose.material3:material3-window-size-class:1.0.0-beta02")
+    implementation("androidx.compose.material3:material3:1.0.0-beta03")
+    implementation("androidx.compose.material3:material3-window-size-class:1.0.0-beta03")
 
     // DataStore
     implementation("androidx.datastore:datastore:1.0.0")

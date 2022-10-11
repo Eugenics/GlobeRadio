@@ -1,4 +1,22 @@
 <resources>
     <string name="app_name">Free Radio</string>
     <string name="unexpected_error">An unexpected error occurred :(\nPlease try again</string>
+    <string name="loading_string">Loading…</string>
+    <string name="search_hint_text">Search here…</string>
+    <string name="stations_text">Stations</string>
+    <string name="favorites_text">Favorites</string>
+    <string name="settings_text">Settings</string>
+    <string name="about_text">About</string>
+    <string name="choose_theme_text">Choose theme</string>
+    <string name="close_string">Close</string>
+    <string name="dark_text">Dark</string>
+    <string name="light_text">Light</string>
+    <string name="system_text">System</string>
+    <string name="free_radio_text">Free Radio</string>
+    <string name="favorites_confirm_string">Are you sure to remove this station from favorites?</string>
+    <string name="yes_string">Yes</string>
+    <string name="no_string">No</string>
+    <string name="ok_string">OK</string>
+    <string name="cancel_string">Cancel</string>
+    <string name="tags_select_string">Genre select…</string>
 </resources>

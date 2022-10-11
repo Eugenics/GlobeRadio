@@ -8,8 +8,6 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Info
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -18,6 +16,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImagePainter
@@ -32,7 +31,6 @@ fun MainContent(
     paddingValues: PaddingValues,
     stations: List<Station>,
     onFavoriteClick: (stationUuid: String, isFavorite: Int) -> Unit = { _, _ -> },
-    onInfoClick: () -> Unit = {},
     onCardClick: (mediaId: String) -> Unit
 ) {
     val columnState = rememberLazyListState()
@@ -53,8 +51,7 @@ fun MainContent(
                     size = stations.size,
                     station = station,
                     onCardClick = onCardClick,
-                    onFavoriteClick = onFavoriteClick,
-                    onInfoClick = onInfoClick
+                    onFavoriteClick = onFavoriteClick
                 )
             }
         }
@@ -69,8 +66,7 @@ private fun StationCard(
     size: Int = 0,
     station: Station,
     onCardClick: (mediaId: String) -> Unit = {},
-    onFavoriteClick: (stationUuid: String, isFavorite: Int) -> Unit = { _, _ -> },
-    onInfoClick: () -> Unit = {}
+    onFavoriteClick: (stationUuid: String, isFavorite: Int) -> Unit = { _, _ -> }
 ) {
     val isFavorite = rememberSaveable { mutableStateOf(station.isFavorite) }
     val standardPadding = 2.dp
@@ -81,14 +77,45 @@ private fun StationCard(
         if (index == size - 1) paddingValues.calculateBottomPadding() + 0.dp
         else standardPadding
 
+    val showFavoriteDialog = rememberSaveable { mutableStateOf(false) }
+    if (showFavoriteDialog.value) {
+        AlertDialog(
+            onDismissRequest = { showFavoriteDialog.value = false },
+            confirmButton = {
+                Button(onClick = {
+                    isFavorite.value = 0
+                    showFavoriteDialog.value = false
+                    onFavoriteClick(station.stationuuid, isFavorite.value)
+                }) {
+                    Text(text = stringResource(R.string.yes_string))
+                }
+            },
+            dismissButton = {
+                Button(
+                    onClick = { showFavoriteDialog.value = false }
+                ) {
+                    Text(text = stringResource(R.string.no_string))
+                }
+            },
+            title = { Text(text = stringResource(R.string.favorites_text)) },
+            text = {
+                Text(
+                    text = stringResource(R.string.favorites_confirm_string),
+                    style = MaterialTheme.typography.bodyLarge
+                )
+            },
+            shape = MaterialTheme.shapes.medium
+        )
+    }
+
     Row(
         verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier.fillMaxSize()
             .padding(
                 top = topPadding,
                 bottom = bottomPadding,
-                start = standardPadding,
-                end = standardPadding
+                start = 8.dp,
+                end = 8.dp
             )
             .clickable {
                 onCardClick(station.stationuuid)
@@ -129,10 +156,10 @@ private fun StationCard(
             onClick = {
                 if (isFavorite.value == 0) {
                     isFavorite.value = 1
+                    onFavoriteClick(station.stationuuid, isFavorite.value)
                 } else {
-                    isFavorite.value = 0
+                    showFavoriteDialog.value = true
                 }
-                onFavoriteClick(station.stationuuid, isFavorite.value)
             }
         ) {
             Icon(
@@ -140,18 +167,6 @@ private fun StationCard(
                     if (isFavorite.value == 0) R.drawable.ic_favorite_border
                     else R.drawable.ic_favorite
                 ),
-                contentDescription = null,
-                modifier = Modifier.size(30.dp)
-            )
-        }
-
-        IconButton(
-            modifier = Modifier
-                .padding(4.dp),
-            onClick = onInfoClick
-        ) {
-            Icon(
-                imageVector = Icons.Filled.Info,
                 contentDescription = null,
                 modifier = Modifier.size(30.dp)
             )

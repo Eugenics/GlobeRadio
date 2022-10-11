@@ -10,6 +10,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.eugenics.freeradio.domain.model.CurrentState
@@ -18,6 +19,7 @@ import com.eugenics.freeradio.ui.compose.settings.components.ThemePicker
 import com.eugenics.freeradio.ui.theme.FreeRadioTheme
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import com.eugenics.freeradio.R
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -31,7 +33,7 @@ fun SettingsScreen(
         topBar = {
             TopAppBar(title = {
                 Text(
-                    text = "Settings",
+                    text = stringResource(R.string.settings_text),
                     style = MaterialTheme.typography.titleMedium
                 )
             },
@@ -50,7 +52,7 @@ fun SettingsScreen(
             modifier = Modifier.padding(paddingValues = paddingValues)
         ) {
             Text(
-                text = "Settings",
+                text = stringResource(R.string.settings_text),
                 color = MaterialTheme.colorScheme.error,
                 modifier = Modifier.fillMaxWidth()
                     .padding(5.dp),

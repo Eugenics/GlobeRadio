@@ -2,13 +2,16 @@ package com.eugenics.freeradio.ui.viewmodels
 
 import android.os.Bundle
 import android.support.v4.media.MediaBrowserCompat
+import android.support.v4.media.MediaMetadataCompat
 import android.support.v4.media.session.PlaybackStateCompat
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.eugenics.freeradio.data.local.ref.SettingsDataSource
+import com.eugenics.freeradio.domain.interfaces.Repository
 import com.eugenics.freeradio.domain.model.CurrentState
 import com.eugenics.freeradio.domain.model.Station
+import com.eugenics.freeradio.domain.model.Tag
 import com.eugenics.freeradio.domain.model.Theme
 import com.eugenics.media_service.domain.core.TagsCommands
 import com.eugenics.media_service.domain.model.PlayerMediaItem
@@ -24,7 +27,8 @@ import javax.inject.Inject
 @HiltViewModel
 class MainViewModel @Inject constructor(
     private val mediaServiceConnection: FreeRadioMediaServiceConnection,
-    private val dataStore: SettingsDataSource
+    private val dataStore: SettingsDataSource,
+    private val repository: Repository
 ) : ViewModel() {
 
     private val _uiState: MutableStateFlow<Int> = MutableStateFlow(UI_STATE_IDL)
@@ -40,8 +44,7 @@ class MainViewModel @Inject constructor(
         MutableStateFlow(CurrentState.getDefaultValueInstance())
     val settings: StateFlow<CurrentState> = _settings
 
-
-    private val nowPlayingMetaData = mediaServiceConnection.nowPlaying
+    private val nowPlayingMetaData = mediaServiceConnection.nowPlayingItem
 
     val nowPlaying = MutableStateFlow(Station())
 
@@ -84,7 +87,10 @@ class MainViewModel @Inject constructor(
             _stations.value = stationServiceContent
 
             if (_stations.value.isEmpty()) {
-                _uiState.value = UI_STATE_EMPTY
+                _uiState.value = when (uiState.value) {
+                    UI_STATE_FIRST_INIT -> UI_STATE_FIRST_INIT
+                    else -> UI_STATE_EMPTY
+                }
             } else {
                 _uiState.value = UI_STATE_READY
             }
@@ -143,7 +149,10 @@ class MainViewModel @Inject constructor(
     fun sendCommand(command: String, extras: Bundle? = null) {
         if (command in enumValues<TagsCommands>().map { it.name }.toList()) {
             _uiState.value = UI_STATE_REFRESH
-            setSettings(tag = command)
+            setSettings(
+                command = command,
+                tag = extras?.getString("TAG") ?: "*"
+            )
         }
         mediaServiceConnection.sendCommand(
             command = command,
@@ -165,8 +174,10 @@ class MainViewModel @Inject constructor(
         viewModelScope.launch(ioDispatcher) {
             nowPlayingMetaData.collect { metaData ->
                 val station = Station(
-                    name = metaData.description.title.toString(),
-                    favicon = metaData.description.iconUri.toString()
+                    name = metaData.getString(MediaMetadataCompat.METADATA_KEY_TITLE) ?: "",
+                    favicon = metaData.description.iconUri.toString(),
+                    nowPlayingTitle =
+                    metaData.getString(MediaMetadataCompat.METADATA_KEY_DISPLAY_TITLE) ?: ""
                 )
                 nowPlaying.value = station
             }
@@ -184,18 +195,21 @@ class MainViewModel @Inject constructor(
     fun setSettings(
         tag: String = settings.value.tag,
         stationUuid: String = settings.value.stationUuid,
-        theme: Theme = settings.value.theme
+        theme: Theme = settings.value.theme,
+        command: String = settings.value.command
     ) {
         viewModelScope.launch(ioDispatcher) {
             val currentState = CurrentState(
                 tag = tag,
                 stationUuid = stationUuid,
-                theme = theme
+                theme = theme,
+                command = command
             )
             dataStore.setSettings(settings = currentState)
         }
     }
 
+    fun getTagsList(): List<Tag> = repository.getTags()
 
     companion object {
         const val TAG = "SEARCH_VIEW_MODEL"

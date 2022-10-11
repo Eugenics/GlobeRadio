@@ -1,11 +1,9 @@
 package com.eugenics.media_service.media
 
-import android.app.NotificationManager
 import android.app.PendingIntent
 import android.content.Context
 import android.graphics.Bitmap
 import android.net.Uri
-import android.support.v4.media.session.MediaControllerCompat
 import android.support.v4.media.session.MediaSessionCompat
 import android.util.Log
 import androidx.core.content.ContextCompat
@@ -37,22 +35,17 @@ internal class FreeRadioNotificationManager(
     private val serviceJob = SupervisorJob()
     private val serviceScope = CoroutineScope(Dispatchers.Main + serviceJob)
     private val notificationManager: PlayerNotificationManager
-    private val platformNotificationManager: NotificationManager =
-        context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
 
     init {
-        val mediaController = MediaControllerCompat(context, sessionToken)
-
         val builder = PlayerNotificationManager.Builder(
             context,
             NOW_PLAYING_NOTIFICATION_ID,
             NOW_PLAYING_CHANNEL_ID
         )
         with(builder) {
-            setMediaDescriptionAdapter(DescriptionAdapter(mediaController))
+            setMediaDescriptionAdapter(DescriptionAdapter())
             setNotificationListener(notificationListener)
             setChannelNameResourceId(R.string.notification_channel)
-            setChannelDescriptionResourceId(R.string.notification_channel_description)
         }
         notificationManager = builder.build()
         notificationManager.setMediaSessionToken(sessionToken)
@@ -76,26 +69,21 @@ internal class FreeRadioNotificationManager(
         notificationState = NOTIFICATION_IS_SHOW
     }
 
-    private inner class DescriptionAdapter(private val controller: MediaControllerCompat) :
-        PlayerNotificationManager.MediaDescriptionAdapter {
+    private inner class DescriptionAdapter : PlayerNotificationManager.MediaDescriptionAdapter {
 
         var currentIconUri: Uri? = null
         var currentBitmap: Bitmap? =
             ContextCompat.getDrawable(context, R.drawable.pradio_wave)?.toBitmap()
 
-        override fun getCurrentSubText(player: Player): CharSequence? {
-            return null
-        }
+        override fun getCurrentSubText(player: Player): CharSequence = NO_TITLE
 
-        override fun createCurrentContentIntent(player: Player): PendingIntent? =
-            controller.sessionActivity
+        override fun createCurrentContentIntent(player: Player): PendingIntent? = null
 
         override fun getCurrentContentText(player: Player) =
-            controller.metadata.description.subtitle
+            player.mediaMetadata.title ?: ""
 
         override fun getCurrentContentTitle(player: Player) =
-            player.currentMediaItem?.mediaMetadata?.title ?: NO_TITLE
-
+            player.mediaMetadata.displayTitle ?: ""
 
         override fun getCurrentLargeIcon(
             player: Player,
@@ -132,8 +120,6 @@ internal class FreeRadioNotificationManager(
             }
         }
     }
-
-    fun getNotificationState(): Int = notificationState
 
     companion object {
         const val TAG = "FreeRadioNotificationManager"

@@ -1,6 +1,8 @@
 package com.eugenics.freeradio.navigation
 
+import android.os.Build
 import android.os.Bundle
+import androidx.annotation.RequiresApi
 import androidx.compose.runtime.Composable
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
@@ -12,6 +14,7 @@ import com.eugenics.media_service.media.FreeRadioMediaServiceConnection.Companio
 import com.eugenics.media_service.media.FreeRadioMediaServiceConnection.Companion.SET_FAVORITES_STATION_KEY
 import com.eugenics.media_service.media.FreeRadioMediaServiceConnection.Companion.SET_FAVORITES_VALUE_KEY
 
+@RequiresApi(Build.VERSION_CODES.S)
 @Composable
 fun NavGraph(
     navController: NavHostController,
@@ -46,7 +49,8 @@ fun NavGraph(
                         extras = bundle
                     )
                 },
-                nowPlayingStation = mainViewModel.nowPlaying
+                nowPlayingStation = mainViewModel.nowPlaying,
+                tagsList = mainViewModel.getTagsList()
             )
         }
         composable(route = Screen.SettingsScreen.rout) {

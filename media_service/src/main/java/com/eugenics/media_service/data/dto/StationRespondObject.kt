@@ -3,8 +3,6 @@ package com.eugenics.media_service.data.dto
 import com.eugenics.media_service.data.database.enteties.StationDaoObject
 import com.eugenics.media_service.domain.model.Station
 import com.google.gson.annotations.SerializedName
-import okhttp3.internal.isSensitiveHeader
-
 
 data class StationRespondObject(
     @SerializedName("stationuuid")

@@ -23,13 +23,14 @@ import com.eugenics.media_service.domain.model.CurrentPrefs
 import com.eugenics.media_service.media.FreeRadioMediaServiceConnection.Companion.SET_FAVORITES_COMMAND
 import com.eugenics.media_service.media.FreeRadioMediaServiceConnection.Companion.SET_FAVORITES_STATION_KEY
 import com.eugenics.media_service.media.FreeRadioMediaServiceConnection.Companion.SET_FAVORITES_VALUE_KEY
-import com.eugenics.media_service.player.PlayerListener
 import com.eugenics.media_service.player.getMediaItems
 import com.google.android.exoplayer2.*
 import com.google.android.exoplayer2.audio.AudioAttributes
 import com.google.android.exoplayer2.ext.mediasession.MediaSessionConnector
 import com.google.android.exoplayer2.ext.mediasession.TimelineQueueNavigator
+import com.google.android.exoplayer2.source.ProgressiveMediaSource
 import com.google.android.exoplayer2.ui.PlayerNotificationManager
+import com.google.android.exoplayer2.upstream.DefaultHttpDataSource
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -49,10 +50,16 @@ class FreeRadioMediaService : MediaBrowserServiceCompat() {
         .setUsage(C.USAGE_MEDIA)
         .build()
 
-    private val playerListener = PlayerListener()
+    private val playerListener = FreeRadioMediaServiceConnection.Companion.PlayerListener()
 
-    private val player: Player by lazy {
+    private val defaultHttpDataSourceFactory = DefaultHttpDataSource.Factory()
+        .setDefaultRequestProperties(mapOf("1" to "Icy-MetaData"))
+
+    private val player: ExoPlayer by lazy {
         ExoPlayer.Builder(baseContext)
+            .setMediaSourceFactory(
+                ProgressiveMediaSource.Factory(defaultHttpDataSourceFactory)
+            )
             .build()
             .apply {
                 playWhenReady = false
@@ -234,12 +241,19 @@ class FreeRadioMediaService : MediaBrowserServiceCompat() {
                 TagsCommands.FAVORITES_COMMAND.name -> {
                     Log.d("SERVICE_COMMAND_FAVORITES", command)
                     mediaSource.collectFavorites()
-                    setPrefs(tag = TagsCommands.FAVORITES_COMMAND.name)
+                    setPrefs(
+                        tag = "*",
+                        command = TagsCommands.FAVORITES_COMMAND.name
+                    )
                 }
                 TagsCommands.STATIONS_COMMAND.name -> {
                     Log.d("SERVICE_COMMAND_STATIONS", command)
-                    mediaSource.searchInMediaSource(query = "")
-                    setPrefs(tag = TagsCommands.STATIONS_COMMAND.name)
+                    val tag = extras?.getString("TAG") ?: "*"
+                    mediaSource.searchInMediaSource(query = tag)
+                    setPrefs(
+                        tag = tag,
+                        command = TagsCommands.STATIONS_COMMAND.name
+                    )
                 }
                 SET_FAVORITES_COMMAND -> {
                     Log.d("SERVICE_COMMAND_SET_FAVORITES", command)
@@ -301,7 +315,7 @@ class FreeRadioMediaService : MediaBrowserServiceCompat() {
     ) {
         Log.d(TAG, "preparePlayList... $state")
         when (state) {
-            STATE_ON_SEARCH -> mediaSource.searchInMediaSource(query = mediaItemId)
+            STATE_ON_SEARCH -> mediaSource.collectSearch(query = mediaItemId)
             STATE_ON_MEDIA_ITEM -> mediaSource.onMediaItemClick(mediaItemId = mediaItemId)
         }
     }
@@ -316,11 +330,9 @@ class FreeRadioMediaService : MediaBrowserServiceCompat() {
                         mediaSource.mediaItems.value.map { playerMediaItem ->
                             MediaItem.Builder()
                                 .setMediaId(playerMediaItem.uuid)
-                                .setTag(playerMediaItem.tags)
-                                .setUri(playerMediaItem.urlResolved)
+                                .setUri(playerMediaItem.urlResolved.toUri())
                                 .setMediaMetadata(
                                     MediaMetadata.Builder()
-                                        .setTitle(playerMediaItem.name)
                                         .setSubtitle(playerMediaItem.tags)
                                         .setDisplayTitle(playerMediaItem.name)
                                         .setArtworkUri(playerMediaItem.favicon.toUri())
@@ -336,6 +348,7 @@ class FreeRadioMediaService : MediaBrowserServiceCompat() {
                     )
                     player.playWhenReady = mediaSource.getPlayOnReady()
                     player.prepare()
+
                     notifyChildrenChanged(STATIONS_ROOT)
                 }
             }
@@ -356,11 +369,15 @@ class FreeRadioMediaService : MediaBrowserServiceCompat() {
                 val metaData = MediaMetadataCompat.Builder()
                     .putString(
                         MediaMetadataCompat.METADATA_KEY_TITLE,
-                        player.currentMediaItem?.mediaMetadata?.title.toString()
+                        player.mediaMetadata.displayTitle?.toString() ?: ""
                     )
                     .putString(
                         MediaMetadataCompat.METADATA_KEY_ART_URI,
-                        player.currentMediaItem?.mediaMetadata?.artworkUri.toString()
+                        player.mediaMetadata.artworkUri?.toString() ?: ""
+                    )
+                    .putString(
+                        MediaMetadataCompat.METADATA_KEY_MEDIA_URI,
+                        player.currentMediaItem?.mediaMetadata?.extras?.getString("url")
                     )
                     .build()
                 return metaData.description
@@ -374,7 +391,8 @@ class FreeRadioMediaService : MediaBrowserServiceCompat() {
             prefsDataSource.getPrefs().collect {
                 mediaSource.collectMediaSource(
                     tag = it.tag,
-                    stationUuid = it.stationUuid
+                    stationUuid = it.stationUuid,
+                    command = it.command
                 )
                 prefs.value = it
                 return@collect
@@ -384,13 +402,15 @@ class FreeRadioMediaService : MediaBrowserServiceCompat() {
 
     private fun setPrefs(
         tag: String = prefs.value.tag,
-        stationUuid: String = prefs.value.stationUuid
+        stationUuid: String = prefs.value.stationUuid,
+        command: String = prefs.value.command
     ) {
         serviceScope.launch {
             prefsDataSource.setPrefs(
                 prefs = CurrentPrefs(
                     tag = tag,
-                    stationUuid = stationUuid
+                    stationUuid = stationUuid,
+                    command = command
                 )
             )
         }

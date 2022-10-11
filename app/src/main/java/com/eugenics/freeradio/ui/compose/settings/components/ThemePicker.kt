@@ -10,8 +10,10 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.eugenics.freeradio.R
 import com.eugenics.freeradio.domain.model.Theme
 import com.eugenics.freeradio.ui.theme.FreeRadioTheme
 
@@ -25,9 +27,9 @@ fun ThemePicker(
     val themeName = remember { mutableStateOf(" ") }
 
     themeName.value = when (currentTheme) {
-        Theme.DARK -> "Dark"
-        Theme.LIGHT -> "Light"
-        else -> "System"
+        Theme.DARK -> stringResource(R.string.dark_text)
+        Theme.LIGHT -> stringResource(R.string.light_text)
+        else -> stringResource(R.string.system_text)
     }
 
     if (showThemeDialog.value) {
@@ -77,7 +79,7 @@ private fun ThemeChooseDialog(
         onDismissRequest = onDismissButtonClick,
         title = {
             Text(
-                text = "Choose theme",
+                text = stringResource(R.string.choose_theme_text),
                 style = MaterialTheme.typography.titleLarge
             )
         },
@@ -85,7 +87,7 @@ private fun ThemeChooseDialog(
             Button(
                 onClick = onDismissButtonClick,
             ) {
-                Text(text = "Close")
+                Text(text = stringResource(R.string.close_string))
             }
         },
         confirmButton = {},
@@ -109,9 +111,9 @@ private fun ThemeChooseDialog(
                             )
                             Text(
                                 text = when (theme) {
-                                    Theme.DARK -> "Dark"
-                                    Theme.LIGHT -> "Light"
-                                    else -> "System"
+                                    Theme.DARK -> stringResource(R.string.dark_text)
+                                    Theme.LIGHT -> stringResource(R.string.light_text)
+                                    else -> stringResource(R.string.system_text)
                                 },
                                 style = MaterialTheme.typography.bodyLarge
                             )

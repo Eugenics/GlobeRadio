@@ -23,10 +23,12 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.eugenics.freeradio.R
 import com.eugenics.freeradio.ui.theme.FreeRadioTheme
 
 @OptIn(ExperimentalComposeUiApi::class, ExperimentalMaterial3Api::class)
@@ -44,9 +46,9 @@ fun AppBarCard(
 
     Card(
         shape = RoundedCornerShape(percent = 35),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.primaryContainer
-        ),
+//        colors = CardDefaults.cardColors(
+//            containerColor = MaterialTheme.colorScheme.primary
+//        ),
         modifier = Modifier
             .padding(
                 top = paddingValues.calculateTopPadding() + 5.dp,
@@ -85,7 +87,9 @@ fun AppBarCard(
                         TextField(
                             modifier = Modifier.fillMaxWidth(),
                             colors = TextFieldDefaults.textFieldColors(
-                                containerColor = Color.Transparent
+                                containerColor = Color.Transparent,
+                                cursorColor = MaterialTheme.colorScheme.onSurface,
+                                textColor = MaterialTheme.colorScheme.onSurface
                             ),
                             value = text.value,
                             onValueChange = { value ->
@@ -101,8 +105,9 @@ fun AppBarCard(
                             }),
                             placeholder = {
                                 Text(
-                                    text = "Search here...",
-                                    modifier = Modifier.alpha(ContentAlpha.medium)
+                                    text = stringResource(R.string.search_hint_text),
+                                    modifier = Modifier.alpha(ContentAlpha.medium),
+                                    color = MaterialTheme.colorScheme.onSurface
                                 )
                             },
                             trailingIcon = {
@@ -143,50 +148,6 @@ fun AppBarCard(
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-private fun DefaultTopAppBar(
-    paddingValues: PaddingValues = PaddingValues(),
-    onMenuClick: () -> Unit = {},
-    onSearchClick: () -> Unit = {}
-) {
-    TopAppBar(
-        colors = TopAppBarDefaults.mediumTopAppBarColors(
-
-        ),
-        modifier = Modifier
-            .padding(
-                top = paddingValues.calculateTopPadding(),
-                start = 8.dp,
-                end = 8.dp
-            ),
-        title = {},
-        navigationIcon = {
-            IconButton(
-                onClick = onMenuClick,
-                modifier = Modifier.padding(start = 16.dp)
-            ) {
-                Image(
-                    imageVector = Icons.Filled.Menu,
-                    contentDescription = null
-                )
-            }
-        },
-        actions = {
-            IconButton(
-                onClick = onSearchClick,
-                modifier = Modifier
-                    .padding(end = 16.dp)
-            ) {
-                Image(
-                    imageVector = Icons.Filled.Search,
-                    contentDescription = null,
-                )
-            }
-        }
-    )
-}
-
 @Composable
 @Preview
 private fun AppBarCardPreview() {
@@ -202,19 +163,3 @@ private fun AppBarCardPreviewDark() {
         AppBarCard()
     }
 }
-
-//@Composable
-//@Preview
-//private fun TopAppPreview() {
-//    FreeRadioTheme {
-//        DefaultTopAppBar()
-//    }
-//}
-//
-//@Composable
-//@Preview(uiMode = UI_MODE_NIGHT_YES)
-//private fun TopAppPreviewDark() {
-//    FreeRadioTheme {
-//        DefaultTopAppBar()
-//    }
-//}

@@ -4,5 +4,6 @@
     <style name="Theme.FreeRadio" parent="Theme.MaterialComponents.DayNight.DarkActionBar">
         <item name="android:windowTranslucentStatus">true</item>
         <item name="android:windowTranslucentNavigation">true</item>
+        <item name="android:windowBackground">@color/windowBackgroundDarkMode</item>
     </style>
 </resources>

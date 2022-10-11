@@ -49,31 +49,12 @@ dependencies {
 
     implementation("androidx.media:media:1.6.0")
 
-    // Media3
-    val media3Version = "1.0.0-beta01"
+    val exoplayerVersion = "2.18.1"
 
-    // For media playback using ExoPlayer
-    implementation("androidx.media3:media3-exoplayer:$media3Version")
+    implementation("com.google.android.exoplayer:exoplayer:$exoplayerVersion")
+    implementation("com.google.android.exoplayer:extension-okhttp:$exoplayerVersion")
+    implementation("com.google.android.exoplayer:extension-mediasession:$exoplayerVersion")
 
-    // For DASH playback support with ExoPlayer
-    implementation("androidx.media3:media3-exoplayer-dash:$media3Version")
-    // For HLS playback support with ExoPlayer
-    implementation("androidx.media3:media3-exoplayer-hls:$media3Version")
-    // For RTSP playback support with ExoPlayer
-    implementation("androidx.media3:media3-exoplayer-rtsp:$media3Version")
-    // For loading data using the OkHttp network stack
-    implementation("androidx.media3:media3-datasource-okhttp:$media3Version")
-    // For building media playback UIs
-    implementation("androidx.media3:media3-ui:$media3Version")
-    // For exposing and controlling media sessions
-    implementation("androidx.media3:media3-session:$media3Version")
-    // For scheduling background operations using Jetpack Work's WorkManager with ExoPlayer
-    implementation("androidx.media3:media3-exoplayer-workmanager:$media3Version")
-
-    val exoplayer_version = "2.18.1"
-
-    implementation("com.google.android.exoplayer:exoplayer:$exoplayer_version")
-    implementation("com.google.android.exoplayer:extension-mediasession:$exoplayer_version")
 
     // Glide dependencies
     implementation("com.github.bumptech.glide:glide:4.12.0")
