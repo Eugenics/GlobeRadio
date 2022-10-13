@@ -67,11 +67,12 @@ fun MainNavigationDrawer(
                                     )
                                 }
                                 .fillMaxWidth()
-                                .padding(5.dp)
+                                .padding(10.dp)
+                                .wrapContentWidth(align = Alignment.CenterHorizontally)
                         ) {
                             Text(
-                                text = item.name,
-                                style = MaterialTheme.typography.bodyLarge
+                                text = item.name.uppercase(),
+                                style = MaterialTheme.typography.labelLarge
                             )
                         }
                     }

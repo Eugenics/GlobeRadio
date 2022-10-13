@@ -9,7 +9,6 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
@@ -17,6 +16,7 @@ import com.eugenics.freeradio.R
 import com.eugenics.freeradio.domain.model.Station
 import com.eugenics.freeradio.domain.model.Tag
 import com.eugenics.freeradio.navigation.Screen
+import com.eugenics.freeradio.ui.compose.load.LoadContent
 import com.eugenics.freeradio.ui.compose.main.components.AppBarCard
 import com.eugenics.freeradio.ui.compose.main.components.MainBottomAppBar
 import com.eugenics.freeradio.ui.compose.main.components.MainNavigationDrawer
@@ -110,14 +110,7 @@ fun MainScreen(
                                 Box(
                                     modifier = Modifier.fillMaxSize()
                                 ) {
-                                    Text(
-                                        text = stringResource(R.string.loading_string),
-                                        style = MaterialTheme.typography.titleMedium,
-                                        textAlign = TextAlign.Center,
-                                        modifier = Modifier.padding(
-                                            top = paddingValues.calculateTopPadding()
-                                        )
-                                    )
+                                    LoadContent(text = stringResource(R.string.loading_string))
                                 }
                             }
                         }
