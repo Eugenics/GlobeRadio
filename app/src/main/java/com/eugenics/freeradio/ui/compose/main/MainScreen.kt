@@ -21,6 +21,7 @@ import com.eugenics.freeradio.ui.compose.main.components.AppBarCard
 import com.eugenics.freeradio.ui.compose.main.components.MainBottomAppBar
 import com.eugenics.freeradio.ui.compose.main.components.MainNavigationDrawer
 import com.eugenics.freeradio.ui.compose.splash.SplashScreen
+import com.eugenics.freeradio.ui.compose.splash.SplashScreenNew
 import com.eugenics.freeradio.ui.theme.FreeRadioTheme
 import com.eugenics.freeradio.ui.viewmodels.MainViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -53,9 +54,9 @@ fun MainScreen(
     val padding = WindowInsets.systemBars.asPaddingValues()
 
     when (listState.value) {
-        MainViewModel.UI_STATE_FIRST_INIT -> SplashScreen()
-        MainViewModel.UI_STATE_IDL -> SplashScreen()
-        MainViewModel.UI_STATE_LOADING -> SplashScreen()
+        MainViewModel.UI_STATE_FIRST_INIT -> SplashScreenNew()
+        MainViewModel.UI_STATE_IDL -> SplashScreenNew()
+        MainViewModel.UI_STATE_LOADING -> SplashScreenNew()
         else -> {
             Surface(
                 color = MaterialTheme.colorScheme.background

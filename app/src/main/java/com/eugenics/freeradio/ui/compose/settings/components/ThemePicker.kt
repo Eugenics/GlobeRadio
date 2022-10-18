@@ -52,7 +52,7 @@ fun ThemePicker(
             }
     ) {
         Text(
-            text = "Theme",
+            text = stringResource(R.string.theme_title_string),
             style = MaterialTheme.typography.bodyLarge,
             modifier = Modifier.padding(10.dp)
                 .weight(1f)

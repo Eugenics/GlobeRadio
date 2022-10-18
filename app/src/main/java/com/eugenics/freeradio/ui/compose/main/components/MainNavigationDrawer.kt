@@ -14,19 +14,19 @@ import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.eugenics.freeradio.R
 import com.eugenics.freeradio.domain.model.Tag
+import com.eugenics.freeradio.ui.compose.settings.components.SoftwareInfoDialog
 import com.eugenics.media_service.domain.core.TagsCommands
 import kotlinx.coroutines.launch
 
@@ -82,6 +82,11 @@ fun MainNavigationDrawer(
         )
     }
 
+    var showLicenseDialog: Boolean by rememberSaveable { mutableStateOf(false) }
+    if (showLicenseDialog) {
+        SoftwareInfoDialog { showLicenseDialog = false }
+    }
+
     ModalNavigationDrawer(
         drawerState = drawerState,
         drawerContent = {
@@ -92,19 +97,21 @@ fun MainNavigationDrawer(
 
                 Row(
                     horizontalArrangement = Arrangement.Center,
-                    verticalAlignment = Alignment.CenterVertically
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.padding(bottom = 10.dp)
                 ) {
                     Spacer(Modifier.width(10.dp))
                     Image(
-                        painter = painterResource(R.drawable.ic_freeradio),
+                        painter = painterResource(R.drawable.free_radio_logo),
                         contentDescription = null,
+                        contentScale = ContentScale.Crop,
                         modifier = Modifier
-                            .size(100.dp)
+                            .size(75.dp)
                             .clip(CircleShape)
                     )
                     Spacer(Modifier.width(20.dp))
                     Text(
-                        text = "Free Radio",
+                        text = stringResource(R.string.free_radio_text),
                         style = MaterialTheme.typography.headlineSmall
                     )
                 }
@@ -148,7 +155,12 @@ fun MainNavigationDrawer(
                 CustomNavigationItem(
                     text = stringResource(R.string.about_text),
                     icon = Icons.Filled.Info,
-                    onClick = { }
+                    onClick = {
+                        scope.launch {
+                            drawerState.close()
+                        }
+                        showLicenseDialog = true
+                    }
                 )
 
             }
