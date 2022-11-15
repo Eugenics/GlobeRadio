@@ -269,6 +269,14 @@ class FreeRadioMediaService : MediaBrowserServiceCompat() {
                         }
                     }
                 }
+                TagsCommands.RELOAD_ALL_STATIONS_COMMAND.name -> {
+                    Log.d("RELOAD_ALL_STATIONS_COMMAND", command)
+                    mediaSource.reloadStations()
+                    setPrefs(
+                        tag = "*",
+                        command = TagsCommands.STATIONS_COMMAND.name
+                    )
+                }
             }
             return true
         }

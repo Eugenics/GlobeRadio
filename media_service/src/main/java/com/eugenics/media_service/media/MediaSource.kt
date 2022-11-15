@@ -231,6 +231,41 @@ class MediaSource(private val repository: IRepository) {
         }
     }
 
+    fun reloadStations() {
+        try {
+            _state.value = STATE_INITIALIZING
+            scope.launch {
+                repository.getRemoteStations().collect { response ->
+                    when (response) {
+                        is Response.Loading -> {
+                            _state.value = STATE_INITIALIZING
+                        }
+                        is Response.Success -> {
+                            val stations = response.data
+                            stations?.let {
+                                repository.reloadStations(
+                                    stations.map { stationRespondObject ->
+                                        stationRespondObject.convertToDaoObject()
+                                    }
+                                )
+                            }
+                            _state.value = STATE_INITIALIZED
+                        }
+                        is Response.Error -> {
+                            Log.e(TAG, response.message)
+                            _state.value = STATE_ERROR
+                        }
+                    }
+                }
+            }
+        } catch (ex: Exception) {
+            _state.value = STATE_ERROR
+            Log.e(TAG, ex.message.toString())
+//            resultBundle.putString(SET_FAVORITES_COMMAND, ex.message.toString())
+//            cb?.send(0, resultBundle)
+        }
+    }
+
     companion object {
         const val STATE_IDL = 0
 

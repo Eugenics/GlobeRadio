@@ -6,6 +6,7 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.*
@@ -26,14 +27,29 @@ import com.eugenics.freeradio.R
 import com.eugenics.freeradio.domain.model.Station
 import com.eugenics.freeradio.ui.theme.FreeRadioTheme
 
+/** extension property for LazyListState **/
+val LazyListState.isScrolledUp: Boolean
+    get() = firstVisibleItemScrollOffset > 0
+
 @Composable
 fun MainContent(
     paddingValues: PaddingValues,
     stations: List<Station>,
     onFavoriteClick: (stationUuid: String, isFavorite: Int) -> Unit = { _, _ -> },
-    onCardClick: (mediaId: String) -> Unit
+    onCardClick: (mediaId: String) -> Unit,
+    onScrolled: (isScrolledUp: Boolean) -> Unit
 ) {
     val columnState = rememberLazyListState()
+    val columnVisibleIndex = rememberSaveable { mutableStateOf(columnState.firstVisibleItemIndex) }
+    val firstVisibleIndex = rememberSaveable { mutableStateOf(0) }
+
+    if (columnVisibleIndex.value > firstVisibleIndex.value) {
+        onScrolled(true)
+        firstVisibleIndex.value = columnVisibleIndex.value
+    } else {
+        onScrolled(false)
+        firstVisibleIndex.value = columnVisibleIndex.value
+    }
 
     Column(
         modifier = Modifier
@@ -56,7 +72,6 @@ fun MainContent(
             }
         }
     }
-
 }
 
 @Composable
@@ -181,7 +196,8 @@ private fun StationCardPreview() {
         MainContent(
             paddingValues = PaddingValues(),
             stations = listOf(fakeStation, fakeStation, fakeStation),
-            onCardClick = {}
+            onCardClick = {},
+            onScrolled = {}
         )
     }
 }
@@ -193,7 +209,8 @@ private fun StationCardNightPreview() {
         MainContent(
             paddingValues = PaddingValues(),
             stations = listOf(fakeStation, fakeStation, fakeStation),
-            onCardClick = {}
+            onCardClick = {},
+            onScrolled = {}
         )
     }
 }

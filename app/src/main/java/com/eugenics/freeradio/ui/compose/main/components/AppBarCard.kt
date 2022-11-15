@@ -34,7 +34,7 @@ import com.eugenics.freeradio.ui.theme.FreeRadioTheme
 @OptIn(ExperimentalComposeUiApi::class, ExperimentalMaterial3Api::class)
 @Composable
 fun AppBarCard(
-    paddingValues: PaddingValues = PaddingValues(),
+    modifier: Modifier = Modifier,
     onMenuClick: () -> Unit = {},
     onSearchClick: (query: String) -> Unit = { _ -> }
 ) {
@@ -46,16 +46,7 @@ fun AppBarCard(
 
     Card(
         shape = RoundedCornerShape(percent = 35),
-//        colors = CardDefaults.cardColors(
-//            containerColor = MaterialTheme.colorScheme.primary
-//        ),
-        modifier = Modifier
-            .padding(
-                top = paddingValues.calculateTopPadding() + 5.dp,
-                start = 8.dp,
-                end = 8.dp
-            )
-            .fillMaxWidth()
+        modifier = modifier
     ) {
         Row(
             verticalAlignment = Alignment.CenterVertically,

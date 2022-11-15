@@ -71,6 +71,9 @@ class IRepositoryImpl(
         localDataSource.deleteFavorite(stationUuid = stationUuid)
     }
 
+    override suspend fun reloadStations(stations: List<StationDaoObject>) =
+        localDataSource.reloadStations(stations = stations)
+
     companion object {
         fun newInstance(context: Context): IRepository =
             IRepositoryImpl(context = context)

@@ -9,10 +9,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Favorite
-import androidx.compose.material.icons.filled.Info
-import androidx.compose.material.icons.filled.Refresh
-import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -121,7 +118,7 @@ fun MainNavigationDrawer(
 
                 CustomNavigationItem(
                     text = stringResource(R.string.stations_text),
-                    icon = Icons.Filled.Refresh,
+                    icon = Icons.Filled.List,
                     onClick = {
                         tagDialog.value = true
                         scope.launch {
@@ -146,6 +143,20 @@ fun MainNavigationDrawer(
 
                 Divider()
                 Spacer(Modifier.height(12.dp))
+
+                CustomNavigationItem(
+                    text = stringResource(R.string.reload_all_stations_string),
+                    icon = Icons.Filled.Refresh,
+                    onClick = {
+                        sendCommand(
+                            TagsCommands.RELOAD_ALL_STATIONS_COMMAND.name,
+                            null
+                        )
+                        scope.launch {
+                            drawerState.close()
+                        }
+                    }
+                )
 
                 CustomNavigationItem(
                     text = stringResource(R.string.settings_text),

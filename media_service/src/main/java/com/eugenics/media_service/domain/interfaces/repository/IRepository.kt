@@ -23,4 +23,6 @@ interface IRepository {
     suspend fun fetchStationsByFavorites(): List<StationDaoObject>
     suspend fun addFavorite(stationUuid: String)
     suspend fun deleteFavorite(stationUuid: String)
+
+    suspend fun reloadStations(stations: List<StationDaoObject>)
 }

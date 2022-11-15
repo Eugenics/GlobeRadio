@@ -20,4 +20,5 @@
     <string name="cancel_string">Отмена</string>
     <string name="tags_select_string">Выбор жанра…</string>
     <string name="theme_title_string">Тема</string>
+    <string name="reload_all_stations_string">Обновить лист радиостанций</string>
 </resources>
