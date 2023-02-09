@@ -14,8 +14,8 @@ android {
         applicationId "com.eugenics.freeradio"
         minSdk 27
         targetSdk 33
-        versionCode 1
-        versionName "1.0"
+        versionCode 2
+        versionName "1.1"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -101,7 +101,7 @@ dependencies {
     implementation "com.google.accompanist:accompanist-insets:0.25.1"
     implementation "com.google.accompanist:accompanist-coil:0.15.0"
     implementation "com.google.accompanist:accompanist-swiperefresh:0.25.1"
-    implementation "com.google.accompanist:accompanist-systemuicontroller:0.25.1"
+    implementation "com.google.accompanist:accompanist-systemuicontroller:0.28.0"
     implementation "com.google.accompanist:accompanist-navigation-animation:0.25.1"
 
     //Coil compose

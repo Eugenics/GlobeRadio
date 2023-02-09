@@ -14,7 +14,7 @@ import com.eugenics.media_service.data.database.enteties.Tags
         FavoritesTmpDaoObject::class
     ],
     version = 1,
-    exportSchema = false
+    exportSchema = true
 )
 abstract class DataBase : RoomDatabase() {
     abstract val dao: StationDao
