@@ -4,5 +4,5 @@ Free Radio
   <img src="doc/images/under_construction.jpg" alt="under construction" width="300"/>
 </p>
 
-Free Radio is an easy and free player for listening of online radio for Android with out Ads.
-Thousands of interesting stations of online broadcasting from different countries and cities.
+Free Radio is an easy and free Android player for listening online radio without Ads.
+Thousands of interesting online broadcasting stations from different countries and cities.
