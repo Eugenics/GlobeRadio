@@ -11,8 +11,8 @@ android {
 
     defaultConfig {
         minSdk = 27
-        targetSdk = 33
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
         kapt {
             arguments {
                 arg("room.schemaLocation", "$projectDir/schemas")
