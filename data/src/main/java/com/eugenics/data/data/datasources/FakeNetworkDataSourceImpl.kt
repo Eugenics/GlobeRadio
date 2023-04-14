@@ -2,10 +2,10 @@ package com.eugenics.data.data.datasources
 
 import android.util.Log
 import com.eugenics.data.data.dto.StationRespondObject
-import com.eugenics.data.interfaces.repository.IDataSource
+import com.eugenics.data.interfaces.repository.INetworkDataSource
 
 
-class FakeIDataSourceImpl : IDataSource {
+class FakeNetworkDataSourceImpl : INetworkDataSource {
     override suspend fun getStationsByName(name: String): List<StationRespondObject> {
         val fakeSearchStationRespond = createFakeStation()
         Log.d("FakeDataSourceByName", fakeSearchStationRespond.toString())
@@ -37,9 +37,5 @@ class FakeIDataSourceImpl : IDataSource {
             languagecodes = "hi",
             changeuuid = "92c2fbdc-14ec-4861-af65-49dd7de7826f",
         )
-    }
-
-    companion object {
-        fun newInstance(): IDataSource = FakeIDataSourceImpl()
     }
 }

@@ -1,39 +1,35 @@
 package com.eugenics.data.data.repository
 
-import android.content.Context
 import com.eugenics.data.data.database.enteties.StationDaoObject
-import com.eugenics.data.data.datasources.DataSourceFactory
 import com.eugenics.data.data.dto.StationRespondObject
 import com.eugenics.data.data.util.Response
-import com.eugenics.data.interfaces.repository.IDataSource
+import com.eugenics.data.interfaces.repository.INetworkDataSource
 import com.eugenics.data.interfaces.repository.ILocalDataSource
 import com.eugenics.media_service.domain.interfaces.repository.IRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 
-class IRepositoryImpl(
-    private val context: Context
+class Repository(
+    private val remoteDataSource: INetworkDataSource,
+    private val localDataSource: ILocalDataSource,
+    private val fakeINetworkDataSource: INetworkDataSource
 ) : IRepository {
-    private val remoteDataSource: IDataSource = DataSourceFactory.createRemoteDataSource()
-    private val localDataSource: ILocalDataSource =
-        DataSourceFactory.createLocalDataSource(context = context)
-    private val fakeIDataSource: IDataSource = DataSourceFactory.createFakeDataSource()
-
-    override suspend fun getRemoteStations(): Flow<Response<List<StationRespondObject>>> = flow {
-        emit(Response.Loading())
-        try {
-            val stationList = remoteDataSource.getStations()
-            emit(Response.Success(data = stationList))
-        } catch (ex: Exception) {
-            emit(Response.Error(error = ex.message.toString()))
+    override suspend fun getRemoteStations(): Flow<Response<List<StationRespondObject>>> =
+        flow {
+            emit(Response.Loading())
+            try {
+                val stationList = remoteDataSource.getStations()
+                emit(Response.Success(data = stationList))
+            } catch (ex: Exception) {
+                emit(Response.Error(error = ex.message.toString()))
+            }
         }
-    }
 
     override suspend fun getFakeStations(): Flow<Response<List<StationRespondObject>>> =
         flow {
             emit(Response.Loading())
             try {
-                val stationList = fakeIDataSource.getStations()
+                val stationList = fakeINetworkDataSource.getStations()
                 emit(Response.Success(data = stationList))
             } catch (ex: Exception) {
                 emit(Response.Error(error = ex.message.toString()))
@@ -73,9 +69,4 @@ class IRepositoryImpl(
 
     override suspend fun reloadStations(stations: List<StationDaoObject>) =
         localDataSource.reloadStations(stations = stations)
-
-    companion object {
-        fun newInstance(context: Context): IRepository =
-            IRepositoryImpl(context = context)
-    }
 }
