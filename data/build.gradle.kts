@@ -74,4 +74,7 @@ dependencies {
     // KotlinX Serialization
     val kotlinxSerializationVersion = "1.3.2"
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:$kotlinxSerializationVersion")
+
+    // Core module
+    implementation(project(":core"))
 }

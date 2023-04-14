@@ -1,0 +1,52 @@
+package com.eugenics.data.data.datasources
+
+import android.content.Context
+import com.eugenics.data.data.database.database.DataBase
+import com.eugenics.data.data.database.enteties.StationDaoObject
+import com.eugenics.data.data.database.database.DataBaseFactory
+import com.eugenics.data.interfaces.repository.ILocalDataSource
+
+class LocalDataSourceImpl(
+    private val context: Context
+) : ILocalDataSource {
+    private val database: DataBase = DataBaseFactory.create(context = context)
+
+    override suspend fun fetchAllStations(): List<StationDaoObject> =
+        database.dao.fetchAllStationData()
+
+    override suspend fun fetchStationByName(name: String): List<StationDaoObject> =
+        database.dao.fetchStationByName(name = name)
+
+    override suspend fun fetchStationByTag(tag: String): List<StationDaoObject> =
+        database.dao.fetchStationByTag(tag = tag)
+
+    override suspend fun insertStation(station: StationDaoObject) =
+        database.dao.insertStation(stationDao = station)
+
+    override suspend fun insertStations(stations: List<StationDaoObject>) =
+        database.dao.insertStations(stationsDao = stations)
+
+    override suspend fun deleteEmptyTags() = database.dao.deleteStationsWithoutTags()
+
+    override suspend fun refreshStations(stations: List<StationDaoObject>) =
+        database.dao.refreshStations(stationsDao = stations)
+
+    override suspend fun fetchStationsByFavorites(): List<StationDaoObject> =
+        database.dao.fetchStationsByFavorites()
+
+    override suspend fun addFavorite(stationUuid: String) {
+        database.dao.addFavorite(stationUuid = stationUuid)
+    }
+
+    override suspend fun deleteFavorite(stationUuid: String) {
+        database.dao.deleteFavorite(stationUuid = stationUuid)
+    }
+
+    override suspend fun reloadStations(stations: List<StationDaoObject>) =
+        database.dao.reloadAllStations(stationsDao = stations)
+
+    companion object {
+        fun newInstance(context: Context): ILocalDataSource =
+            LocalDataSourceImpl(context = context)
+    }
+}
