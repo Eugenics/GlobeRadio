@@ -1,5 +1,9 @@
 package com.eugenics.core.model
 
+import android.os.Parcelable
+import kotlinx.parcelize.Parcelize
+
+@Parcelize
 data class Station(
     val stationuuid: String,
     val name: String,
@@ -16,37 +20,25 @@ data class Station(
     val languagecodes: String,
     val changeuuid: String,
     val isFavorite: Int
-)
-
-//fun Station.convertToDao(): StationDaoObject =
-//    StationDaoObject(
-//        stationuuid = this.stationuuid,
-//        name = this.name,
-//        tags = this.tags,
-//        homepage = this.homepage,
-//        url = this.url,
-//        urlResolved = this.urlResolved,
-//        favicon = this.favicon,
-//        bitrate = this.bitrate,
-//        codec = this.codec,
-//        country = this.country,
-//        countrycode = this.countrycode,
-//        language = this.language,
-//        languagecodes = this.languagecodes,
-//        changeuuid = this.changeuuid,
-//        isFavorite = this.isFavorite
-//    )
-
-fun Station.convertToMediaItem(): PlayerMediaItem =
-    PlayerMediaItem(
-        uuid = this.stationuuid,
-        name = this.name,
-        tags = this.tags,
-        homepage = this.homepage,
-        url = this.url,
-        urlResolved = this.urlResolved,
-        favicon = this.favicon,
-        bitrate = this.bitrate,
-        codec = this.codec,
-        isFavorite = this.isFavorite
-    )
+) : Parcelable {
+    companion object {
+        fun emptyInstance(): Station =
+            Station(
+                stationuuid = "",
+                name = "",
+                tags = "",
+                homepage = "",
+                url = "",
+                urlResolved = "",
+                favicon = "",
+                bitrate = 0,
+                codec = "",
+                country = "",
+                countrycode = "",
+                language = "",
+                languagecodes = "",
+                changeuuid = "",
+                isFavorite = 0
+            )
+    }
+}

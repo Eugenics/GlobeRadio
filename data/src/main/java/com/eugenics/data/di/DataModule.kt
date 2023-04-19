@@ -5,10 +5,14 @@ import androidx.datastore.core.DataStore
 import androidx.datastore.core.DataStoreFactory
 import androidx.room.Room
 import com.eugenics.core.model.CurrentPrefs
+import com.eugenics.core.model.CurrentState
 import com.eugenics.data.data.database.dao.StationDao
 import com.eugenics.data.data.database.database.DataBase
 import com.eugenics.data.data.datasources.LocalDataSourceImpl
+import com.eugenics.data.data.datastore.PrefsDataSource
 import com.eugenics.data.data.datastore.PrefsSerializer
+import com.eugenics.data.data.datastore.SettingsDataSource
+import com.eugenics.data.data.datastore.SettingsSerializer
 import com.eugenics.data.interfaces.repository.ILocalDataSource
 import dagger.Module
 import dagger.Provides
@@ -54,4 +58,27 @@ class DataModule {
                 )
             }
         )
+
+    @Provides
+    @Singleton
+    fun providePrefsDataSource(dataStore: DataStore<CurrentPrefs>): PrefsDataSource =
+        PrefsDataSource(dataStore = dataStore)
+
+    @Provides
+    @Singleton
+    fun provideSettingsDataStore(@ApplicationContext context: Context): DataStore<CurrentState> =
+        DataStoreFactory.create(
+            serializer = SettingsSerializer,
+            produceFile = {
+                File(
+                    context.applicationInfo.dataDir,
+                    "datastore/settings_data_store.pb"
+                )
+            }
+        )
+
+    @Provides
+    @Singleton
+    fun provideSettingsDataSource(settingsDataStore: DataStore<CurrentState>): SettingsDataSource =
+        SettingsDataSource(dataStore = settingsDataStore)
 }

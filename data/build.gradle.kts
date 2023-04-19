@@ -26,6 +26,12 @@ android {
             )
         }
     }
+
+    kapt {
+        arguments { arg("room.schemaLocation", "$projectDir/schemas") }
+        correctErrorTypes = true
+    }
+
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
@@ -55,6 +61,11 @@ dependencies {
     val hiltVersion = "2.45"
     implementation("com.google.dagger:hilt-android:$hiltVersion")
     kapt("com.google.dagger:hilt-android-compiler:$hiltVersion")
+
+    // Dagger
+    val daggerVersion = "2.45"
+    implementation("com.google.dagger:dagger:$daggerVersion")
+    kapt("com.google.dagger:dagger-compiler:$daggerVersion")
 
     // DataStore
     val dataStoreVersion = "1.0.0"

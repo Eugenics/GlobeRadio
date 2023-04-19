@@ -4,6 +4,7 @@ plugins {
     id("kotlin-kapt")
     id("kotlin-parcelize")
     id("kotlinx-serialization")
+    id("dagger.hilt.android.plugin")
 }
 
 android {
@@ -12,12 +13,6 @@ android {
     defaultConfig {
         minSdk = 27
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
-
-        kapt {
-            arguments {
-                arg("room.schemaLocation", "$projectDir/schemas")
-            }
-        }
     }
 
     buildTypes {
@@ -91,4 +86,13 @@ dependencies {
 
     // DataStore
     implementation("androidx.datastore:datastore:1.0.0")
+
+    // Hilt
+    val hiltVersion = "2.45"
+    implementation("com.google.dagger:hilt-android:$hiltVersion")
+    kapt("com.google.dagger:hilt-android-compiler:$hiltVersion")
+
+    // modules
+    implementation(project(":core"))
+    implementation(project(":data"))
 }

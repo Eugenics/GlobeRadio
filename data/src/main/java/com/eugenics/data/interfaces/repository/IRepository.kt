@@ -1,5 +1,8 @@
-package com.eugenics.media_service.domain.interfaces.repository
+package com.eugenics.data.interfaces.repository
 
+import com.eugenics.core.model.CurrentPrefs
+import com.eugenics.core.model.CurrentState
+import com.eugenics.core.model.Tag
 import com.eugenics.data.data.database.enteties.StationDaoObject
 import com.eugenics.data.data.dto.StationRespondObject
 import com.eugenics.data.data.util.Response
@@ -25,4 +28,12 @@ interface IRepository {
     suspend fun deleteFavorite(stationUuid: String)
 
     suspend fun reloadStations(stations: List<StationDaoObject>)
+
+    fun getPrefs(): Flow<CurrentPrefs>
+    suspend fun setPrefs(prefs: CurrentPrefs)
+
+    suspend fun getTags(): List<Tag>
+
+    fun getSettings(): Flow<CurrentState>
+    suspend fun setSettings(settings: CurrentState)
 }

@@ -1,9 +1,10 @@
 package com.eugenics.data.interfaces.repository
 
 import com.eugenics.data.data.database.enteties.StationDaoObject
+import com.eugenics.core.interfaces.IDataSource
 
 
-interface ILocalDataSource {
+interface ILocalDataSource: IDataSource {
     suspend fun fetchAllStations(): List<StationDaoObject>
     suspend fun fetchStationByName(name: String): List<StationDaoObject>
     suspend fun fetchStationByTag(tag: String): List<StationDaoObject>

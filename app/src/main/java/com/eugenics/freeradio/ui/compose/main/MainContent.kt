@@ -23,8 +23,8 @@ import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImagePainter
 import coil.compose.SubcomposeAsyncImage
 import coil.compose.SubcomposeAsyncImageContent
+import com.eugenics.core.model.Station
 import com.eugenics.freeradio.R
-import com.eugenics.freeradio.domain.model.Station
 import com.eugenics.freeradio.ui.theme.FreeRadioTheme
 
 /** extension property for LazyListState **/

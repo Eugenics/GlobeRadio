@@ -1,18 +1,32 @@
 package com.eugenics.data.data.repository
 
+import com.eugenics.core.model.CurrentPrefs
+import com.eugenics.core.model.CurrentState
+import com.eugenics.core.model.Tag
 import com.eugenics.data.data.database.enteties.StationDaoObject
+import com.eugenics.data.data.datastore.PrefsDataSource
+import com.eugenics.data.data.datastore.SettingsDataSource
 import com.eugenics.data.data.dto.StationRespondObject
 import com.eugenics.data.data.util.Response
+import com.eugenics.data.di.NetworkModule
+import com.eugenics.data.interfaces.repository.IFileDataSource
 import com.eugenics.data.interfaces.repository.INetworkDataSource
 import com.eugenics.data.interfaces.repository.ILocalDataSource
-import com.eugenics.media_service.domain.interfaces.repository.IRepository
+import com.eugenics.data.interfaces.repository.IRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
+import javax.inject.Inject
+import javax.inject.Named
 
-class Repository(
+class IRepositoryImpl @Inject constructor(
+    @Named(NetworkModule.NETWORK_DATA_SOURCE_NAME)
     private val remoteDataSource: INetworkDataSource,
     private val localDataSource: ILocalDataSource,
-    private val fakeINetworkDataSource: INetworkDataSource
+    @Named(NetworkModule.FAKE_DATA_SOURCE_NAME)
+    private val fakeINetworkDataSource: INetworkDataSource,
+    private val prefsDataSource: PrefsDataSource,
+    private val fileDataSource: IFileDataSource,
+    private val settingsDataSource: SettingsDataSource
 ) : IRepository {
     override suspend fun getRemoteStations(): Flow<Response<List<StationRespondObject>>> =
         flow {
@@ -69,4 +83,17 @@ class Repository(
 
     override suspend fun reloadStations(stations: List<StationDaoObject>) =
         localDataSource.reloadStations(stations = stations)
+
+    override fun getPrefs(): Flow<CurrentPrefs> = prefsDataSource.getPrefs()
+
+    override suspend fun setPrefs(prefs: CurrentPrefs) = prefsDataSource.setPrefs(prefs)
+    override suspend fun getTags(): List<Tag> =
+        fileDataSource.getTags()
+
+    override fun getSettings(): Flow<CurrentState> =
+        settingsDataSource.getSettings()
+
+    override suspend fun setSettings(settings: CurrentState) {
+        settingsDataSource.setSettings(settings = settings)
+    }
 }

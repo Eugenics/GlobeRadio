@@ -15,11 +15,8 @@ import android.util.Log
 import androidx.core.content.ContextCompat
 import androidx.core.net.toUri
 import androidx.media.MediaBrowserServiceCompat
-import com.eugenics.media_service.data.datastore.PrefsDataSource
-import com.eugenics.media_service.data.datastore.PrefsDataStoreFactory
-import com.eugenics.media_service.data.repository.RepositoryFactory
-import com.eugenics.media_service.domain.core.TagsCommands
-import com.eugenics.media_service.domain.model.CurrentPrefs
+import com.eugenics.core.enums.TagsCommands
+import com.eugenics.data.interfaces.repository.IRepository
 import com.eugenics.media_service.media.FreeRadioMediaServiceConnection.Companion.SET_FAVORITES_COMMAND
 import com.eugenics.media_service.media.FreeRadioMediaServiceConnection.Companion.SET_FAVORITES_STATION_KEY
 import com.eugenics.media_service.media.FreeRadioMediaServiceConnection.Companion.SET_FAVORITES_VALUE_KEY
@@ -31,17 +28,23 @@ import com.google.android.exoplayer2.ext.mediasession.TimelineQueueNavigator
 import com.google.android.exoplayer2.source.ProgressiveMediaSource
 import com.google.android.exoplayer2.ui.PlayerNotificationManager
 import com.google.android.exoplayer2.upstream.DefaultHttpDataSource
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
 private const val MEDIA_SESSION_LOG_TAG = "free_radio_media_session"
 private const val STATIONS_ROOT = "/"
 private const val EMPTY_ROOT = "@empty@"
 
+@AndroidEntryPoint
 class FreeRadioMediaService : MediaBrowserServiceCompat() {
+
+    @Inject
+    lateinit var repository: IRepository
+
     private val serviceJob = SupervisorJob()
     private val serviceScope = CoroutineScope(Dispatchers.Main + serviceJob)
 
@@ -77,25 +80,14 @@ class FreeRadioMediaService : MediaBrowserServiceCompat() {
     private var isForegroundService = false
 
     private val mediaSource: MediaSource by lazy {
-        MediaSource(repository = RepositoryFactory.create(this))
+        MediaSource(repository = repository)
     }
 
-    private val prefs: MutableStateFlow<CurrentPrefs> =
-        MutableStateFlow(CurrentPrefs.getDefaultInstance())
-
-    private val prefsDataSource by lazy {
-        PrefsDataSource(
-            dataStore = PrefsDataStoreFactory.create(
-                application = application
-            )
-        )
-    }
 
     override fun onCreate() {
         super.onCreate()
 
         collectMediaState()
-        collectPrefs(prefsDataSource = prefsDataSource)
 
         // Create a MediaSessionCompat
         mediaSession = MediaSessionCompat(baseContext, MEDIA_SESSION_LOG_TAG).apply {
@@ -241,20 +233,22 @@ class FreeRadioMediaService : MediaBrowserServiceCompat() {
                 TagsCommands.FAVORITES_COMMAND.name -> {
                     Log.d("SERVICE_COMMAND_FAVORITES", command)
                     mediaSource.collectFavorites()
-                    setPrefs(
+                    mediaSource.setPrefs(
                         tag = "*",
                         command = TagsCommands.FAVORITES_COMMAND.name
                     )
                 }
+
                 TagsCommands.STATIONS_COMMAND.name -> {
                     Log.d("SERVICE_COMMAND_STATIONS", command)
                     val tag = extras?.getString("TAG") ?: "*"
                     mediaSource.searchInMediaSource(query = tag)
-                    setPrefs(
+                    mediaSource.setPrefs(
                         tag = tag,
                         command = TagsCommands.STATIONS_COMMAND.name
                     )
                 }
+
                 SET_FAVORITES_COMMAND -> {
                     Log.d("SERVICE_COMMAND_SET_FAVORITES", command)
                     extras?.let { bundle ->
@@ -269,10 +263,11 @@ class FreeRadioMediaService : MediaBrowserServiceCompat() {
                         }
                     }
                 }
+
                 TagsCommands.RELOAD_ALL_STATIONS_COMMAND.name -> {
                     Log.d("RELOAD_ALL_STATIONS_COMMAND", command)
                     mediaSource.reloadStations()
-                    setPrefs(
+                    mediaSource.setPrefs(
                         tag = "*",
                         command = TagsCommands.STATIONS_COMMAND.name
                     )
@@ -300,7 +295,7 @@ class FreeRadioMediaService : MediaBrowserServiceCompat() {
         ) {
             Log.d(TAG, "OnPrepareFromMediaId...")
             preparePlayList(mediaItemId = mediaId, STATE_ON_MEDIA_ITEM)
-            setPrefs(stationUuid = mediaId)
+            mediaSource.setPrefs(stationUuid = mediaId)
         }
 
         override fun onPrepareFromSearch(
@@ -394,35 +389,6 @@ class FreeRadioMediaService : MediaBrowserServiceCompat() {
         }
     }
 
-    private fun collectPrefs(prefsDataSource: PrefsDataSource) {
-        serviceScope.launch {
-            prefsDataSource.getPrefs().collect {
-                mediaSource.collectMediaSource(
-                    tag = it.tag,
-                    stationUuid = it.stationUuid,
-                    command = it.command
-                )
-                prefs.value = it
-                return@collect
-            }
-        }
-    }
-
-    private fun setPrefs(
-        tag: String = prefs.value.tag,
-        stationUuid: String = prefs.value.stationUuid,
-        command: String = prefs.value.command
-    ) {
-        serviceScope.launch {
-            prefsDataSource.setPrefs(
-                prefs = CurrentPrefs(
-                    tag = tag,
-                    stationUuid = stationUuid,
-                    command = command
-                )
-            )
-        }
-    }
 
     companion object {
         const val TAG = "FreeMediaService"

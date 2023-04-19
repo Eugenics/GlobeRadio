@@ -6,7 +6,6 @@ import com.eugenics.data.data.database.enteties.StationDaoObject
 
 @Dao
 interface StationDao {
-
     @Query("SELECT * FROM stations ORDER BY name")
     fun fetchAllStationData(): List<StationDaoObject>
 

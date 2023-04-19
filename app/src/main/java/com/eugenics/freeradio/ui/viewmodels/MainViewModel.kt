@@ -1,5 +1,6 @@
 package com.eugenics.freeradio.ui.viewmodels
 
+import android.os.Build
 import android.os.Bundle
 import android.support.v4.media.MediaBrowserCompat
 import android.support.v4.media.MediaMetadataCompat
@@ -7,14 +8,14 @@ import android.support.v4.media.session.PlaybackStateCompat
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.eugenics.freeradio.data.local.ref.SettingsDataSource
-import com.eugenics.freeradio.domain.interfaces.Repository
-import com.eugenics.freeradio.domain.model.CurrentState
-import com.eugenics.freeradio.domain.model.Station
-import com.eugenics.freeradio.domain.model.Tag
-import com.eugenics.freeradio.domain.model.Theme
-import com.eugenics.media_service.domain.core.TagsCommands
-import com.eugenics.media_service.domain.model.PlayerMediaItem
+import com.eugenics.core.enums.TagsCommands
+import com.eugenics.core.model.NowPlayingStation
+import com.eugenics.core.model.PlayerMediaItem
+import com.eugenics.core.model.Station
+import com.eugenics.core.model.Tag
+import com.eugenics.data.interfaces.repository.IRepository
+import com.eugenics.core.model.CurrentState
+import com.eugenics.core.enums.Theme
 import com.eugenics.media_service.media.FreeRadioMediaServiceConnection
 import com.eugenics.media_service.media.FreeRadioMediaServiceConnection.Companion.SET_FAVORITES_COMMAND
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -27,8 +28,7 @@ import javax.inject.Inject
 @HiltViewModel
 class MainViewModel @Inject constructor(
     private val mediaServiceConnection: FreeRadioMediaServiceConnection,
-    private val dataStore: SettingsDataSource,
-    private val repository: Repository
+    private val repository: IRepository
 ) : ViewModel() {
 
     private val _uiState: MutableStateFlow<Int> = MutableStateFlow(UI_STATE_IDL)
@@ -46,12 +46,19 @@ class MainViewModel @Inject constructor(
 
     private val nowPlayingMetaData = mediaServiceConnection.nowPlayingItem
 
-    val nowPlaying = MutableStateFlow(Station())
+    val nowPlaying = MutableStateFlow(NowPlayingStation.emptyInstance())
 
     private val ioDispatcher = Dispatchers.IO
 
     private var currentMediaId: String = ""
     private val rootId = "/"
+
+    private var _tagList: MutableStateFlow<List<Tag>> = MutableStateFlow(listOf())
+    val tagList: StateFlow<List<Tag>> = _tagList
+
+    init {
+        getTagsList()
+    }
 
     private val subscriptionCallback = object : MediaBrowserCompat.SubscriptionCallback() {
         override fun onChildrenLoaded(
@@ -61,7 +68,15 @@ class MainViewModel @Inject constructor(
             val stationServiceContent = mutableListOf<Station>()
 
             for (child in children) {
-                val extras = child.description.extras?.getParcelable<PlayerMediaItem>("STATION")
+                val extras =
+                    if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
+                        child.description.extras?.getParcelable("STATION")
+                    } else {
+                        child.description.extras?.getParcelable(
+                            "STATION",
+                            PlayerMediaItem::class.java
+                        )
+                    }
                 extras?.let {
                     stationServiceContent.add(
                         Station(
@@ -173,20 +188,19 @@ class MainViewModel @Inject constructor(
     private fun collectNowPlaying() {
         viewModelScope.launch(ioDispatcher) {
             nowPlayingMetaData.collect { metaData ->
-                val station = Station(
+                nowPlaying.value = NowPlayingStation(
                     name = metaData.getString(MediaMetadataCompat.METADATA_KEY_TITLE) ?: "",
                     favicon = metaData.description.iconUri.toString(),
                     nowPlayingTitle =
                     metaData.getString(MediaMetadataCompat.METADATA_KEY_DISPLAY_TITLE) ?: ""
                 )
-                nowPlaying.value = station
             }
         }
     }
 
     private fun collectSettings() {
         viewModelScope.launch(ioDispatcher) {
-            dataStore.getSettings().collect {
+            repository.getSettings().collect {
                 _settings.value = it
             }
         }
@@ -205,11 +219,15 @@ class MainViewModel @Inject constructor(
                 theme = theme,
                 command = command
             )
-            dataStore.setSettings(settings = currentState)
+            repository.setSettings(settings = currentState)
         }
     }
 
-    fun getTagsList(): List<Tag> = repository.getTags()
+    private fun getTagsList() {
+        viewModelScope.launch(ioDispatcher) {
+            _tagList.value = repository.getTags()
+        }
+    }
 
     companion object {
         const val TAG = "SEARCH_VIEW_MODEL"

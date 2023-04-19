@@ -3,7 +3,7 @@ package com.eugenics.data.di
 import android.util.Log
 import com.eugenics.data.data.api.ApiService
 import com.eugenics.data.data.datasources.FakeNetworkDataSourceImpl
-import com.eugenics.data.data.datasources.NetworkINetworkDataSourceImpl
+import com.eugenics.data.data.datasources.INetworkDataSourceImpl
 import com.eugenics.data.interfaces.repository.INetworkDataSource
 import com.eugenics.media_service.data.constants.BASE_URL
 import com.google.gson.Gson
@@ -63,7 +63,7 @@ class NetworkModule {
     @Singleton
     @Named(NETWORK_DATA_SOURCE_NAME)
     fun provideNetworkDataSource(api: ApiService): INetworkDataSource =
-        NetworkINetworkDataSourceImpl(apiService = api)
+        INetworkDataSourceImpl(apiService = api)
 
     @Provides
     @Singleton

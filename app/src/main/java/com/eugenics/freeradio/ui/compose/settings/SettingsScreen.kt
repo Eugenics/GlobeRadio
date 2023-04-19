@@ -13,8 +13,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.eugenics.freeradio.domain.model.CurrentState
-import com.eugenics.freeradio.domain.model.Theme
+import com.eugenics.core.model.CurrentState
+import com.eugenics.core.enums.Theme
 import com.eugenics.freeradio.ui.compose.settings.components.ThemePicker
 import com.eugenics.freeradio.ui.theme.FreeRadioTheme
 import kotlinx.coroutines.flow.MutableStateFlow
