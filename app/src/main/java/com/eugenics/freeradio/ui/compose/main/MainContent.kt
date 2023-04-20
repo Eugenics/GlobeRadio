@@ -6,7 +6,6 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.*
@@ -26,10 +25,6 @@ import coil.compose.SubcomposeAsyncImageContent
 import com.eugenics.core.model.Station
 import com.eugenics.freeradio.R
 import com.eugenics.freeradio.ui.theme.FreeRadioTheme
-
-/** extension property for LazyListState **/
-val LazyListState.isScrolledUp: Boolean
-    get() = firstVisibleItemScrollOffset > 0
 
 @Composable
 fun MainContent(
@@ -161,6 +156,11 @@ private fun StationCard(
             Text(
                 text = station.name,
                 style = MaterialTheme.typography.bodyLarge,
+                modifier = Modifier.fillMaxWidth()
+            )
+            Text(
+                text = "${station.codec}:${station.bitrate}",
+                style = MaterialTheme.typography.bodySmall,
                 modifier = Modifier.fillMaxWidth()
             )
         }
