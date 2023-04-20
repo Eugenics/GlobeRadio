@@ -40,5 +40,40 @@ data class Station(
                 changeuuid = "",
                 isFavorite = 0
             )
+
+        fun newInstance(
+            stationuuid: String = "",
+            name: String = "",
+            tags: String = "",
+            homepage: String = "",
+            url: String = "",
+            urlResolved: String = "",
+            favicon: String = "",
+            bitrate: Int = 0,
+            codec: String = "",
+            country: String = "",
+            countrycode: String = "",
+            language: String = "",
+            languagecodes: String = "",
+            changeuuid: String = "",
+            isFavorite: Int = 0
+        ): Station =
+            Station(
+                stationuuid = stationuuid,
+                name = name,
+                tags = tags,
+                homepage = homepage,
+                url = url,
+                urlResolved = urlResolved,
+                favicon = favicon,
+                bitrate = bitrate,
+                codec = codec,
+                country = country,
+                countrycode = countrycode,
+                language = language,
+                languagecodes = languagecodes,
+                changeuuid = changeuuid,
+                isFavorite = isFavorite
+            )
     }
 }

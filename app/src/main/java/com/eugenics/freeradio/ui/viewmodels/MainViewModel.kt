@@ -188,11 +188,13 @@ class MainViewModel @Inject constructor(
     private fun collectNowPlaying() {
         viewModelScope.launch(ioDispatcher) {
             nowPlayingMetaData.collect { metaData ->
-                nowPlaying.value = NowPlayingStation(
+                nowPlaying.value = NowPlayingStation.newInstance(
                     name = metaData.getString(MediaMetadataCompat.METADATA_KEY_TITLE) ?: "",
                     favicon = metaData.description.iconUri.toString(),
                     nowPlayingTitle =
-                    metaData.getString(MediaMetadataCompat.METADATA_KEY_DISPLAY_TITLE) ?: ""
+                    metaData.getString(MediaMetadataCompat.METADATA_KEY_DISPLAY_TITLE) ?: "",
+                    stationUUID =
+                    metaData.getString(MediaMetadataCompat.METADATA_KEY_MEDIA_ID) ?: ""
                 )
             }
         }
