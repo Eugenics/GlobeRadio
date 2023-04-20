@@ -194,7 +194,9 @@ class MainViewModel @Inject constructor(
                     nowPlayingTitle =
                     metaData.getString(MediaMetadataCompat.METADATA_KEY_DISPLAY_TITLE) ?: "",
                     stationUUID =
-                    metaData.getString(MediaMetadataCompat.METADATA_KEY_MEDIA_ID) ?: ""
+                    metaData.getString(MediaMetadataCompat.METADATA_KEY_MEDIA_ID) ?: "",
+                    description =
+                    metaData.getString(MediaMetadataCompat.METADATA_KEY_DISPLAY_DESCRIPTION) ?: ""
                 )
             }
         }

@@ -143,6 +143,10 @@ class FreeRadioMediaServiceConnection(context: Context, serviceComponent: Compon
                         MediaMetadataCompat.METADATA_KEY_DISPLAY_TITLE,
                         mediaMetadata.title?.toString() ?: ""
                     )
+                    .putString(
+                        MediaMetadataCompat.METADATA_KEY_DISPLAY_DESCRIPTION,
+                        mediaMetadata.description?.toString() ?: ""
+                    )
                     .build()
             }
         }

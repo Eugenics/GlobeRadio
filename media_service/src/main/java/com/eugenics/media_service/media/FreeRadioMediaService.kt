@@ -339,6 +339,7 @@ class FreeRadioMediaService : MediaBrowserServiceCompat() {
                                         .setSubtitle(playerMediaItem.tags)
                                         .setDisplayTitle(playerMediaItem.name)
                                         .setArtworkUri(playerMediaItem.favicon.toUri())
+                                        .setDescription("${playerMediaItem.codec}:${playerMediaItem.bitrate}")
                                         .also {
                                             val extras = Bundle()
                                             extras.putString("url", playerMediaItem.url)
@@ -381,6 +382,10 @@ class FreeRadioMediaService : MediaBrowserServiceCompat() {
                     .putString(
                         MediaMetadataCompat.METADATA_KEY_MEDIA_URI,
                         player.currentMediaItem?.mediaMetadata?.extras?.getString("url")
+                    )
+                    .putString(
+                        MediaMetadataCompat.METADATA_KEY_DISPLAY_DESCRIPTION,
+                        player.currentMediaItem?.mediaMetadata?.description.toString()
                     )
                     .build()
                 return metaData.description
