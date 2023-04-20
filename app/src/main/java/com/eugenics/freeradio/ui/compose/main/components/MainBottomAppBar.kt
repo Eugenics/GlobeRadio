@@ -21,15 +21,16 @@ import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImagePainter
 import coil.compose.SubcomposeAsyncImage
 import coil.compose.SubcomposeAsyncImageContent
+import com.eugenics.core.model.NowPlayingStation
 import com.eugenics.freeradio.R
-import com.eugenics.freeradio.domain.model.Station
 import com.eugenics.freeradio.ui.theme.FreeRadioTheme
 
 @RequiresApi(Build.VERSION_CODES.S)
 @Composable
 fun MainBottomAppBar(
     paddingValues: PaddingValues = PaddingValues(),
-    nowPlayingStation: Station = Station(name = "Sample name..."),
+    nowPlayingStation: NowPlayingStation =
+        NowPlayingStation.newInstance(name = "Sample name..."),
     playbackState: PlaybackStateCompat,
     onPlayClick: () -> Unit = {},
     onPauseClick: () -> Unit = {}

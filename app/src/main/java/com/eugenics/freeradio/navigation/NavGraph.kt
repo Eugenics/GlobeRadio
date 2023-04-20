@@ -4,6 +4,7 @@ import android.os.Build
 import android.os.Bundle
 import androidx.annotation.RequiresApi
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -50,7 +51,7 @@ fun NavGraph(
                     )
                 },
                 nowPlayingStation = mainViewModel.nowPlaying,
-                tagsList = mainViewModel.getTagsList()
+                tagsList = mainViewModel.tagList.collectAsState().value
             )
         }
         composable(route = Screen.SettingsScreen.rout) {

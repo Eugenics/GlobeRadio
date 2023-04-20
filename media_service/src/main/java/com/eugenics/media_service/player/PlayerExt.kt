@@ -3,7 +3,7 @@ package com.eugenics.media_service.player
 import android.os.Bundle
 import android.util.Log
 import androidx.core.net.toUri
-import com.eugenics.media_service.domain.model.PlayerMediaItem
+import com.eugenics.core.model.PlayerMediaItem
 import com.google.android.exoplayer2.MediaItem
 import com.google.android.exoplayer2.MediaMetadata
 import com.google.android.exoplayer2.Player

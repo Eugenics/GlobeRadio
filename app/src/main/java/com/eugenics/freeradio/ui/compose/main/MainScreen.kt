@@ -16,9 +16,10 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
+import com.eugenics.core.model.NowPlayingStation
+import com.eugenics.core.model.Station
+import com.eugenics.core.model.Tag
 import com.eugenics.freeradio.R
-import com.eugenics.freeradio.domain.model.Station
-import com.eugenics.freeradio.domain.model.Tag
 import com.eugenics.freeradio.navigation.Screen
 import com.eugenics.freeradio.ui.compose.load.LoadContent
 import com.eugenics.freeradio.ui.compose.main.components.AppBarCard
@@ -45,7 +46,8 @@ fun MainScreen(
     onItemClick: (mediaId: String) -> Unit = {},
     onSearchClick: (query: String) -> Unit = {},
     onFavoriteClick: (stationUuid: String, isFavorite: Int) -> Unit = { _, _ -> },
-    nowPlayingStation: StateFlow<Station> = MutableStateFlow(Station()),
+    nowPlayingStation: StateFlow<NowPlayingStation> =
+        MutableStateFlow(NowPlayingStation.emptyInstance()),
     tagsList: List<Tag>
 ) {
     val stations = stationsList.collectAsState()
@@ -125,6 +127,7 @@ fun MainScreen(
                                     }
                                 )
                             }
+
                             MainViewModel.UI_STATE_REFRESH -> {
                                 Box(
                                     modifier = Modifier.fillMaxSize()

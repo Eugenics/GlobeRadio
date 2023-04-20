@@ -2,6 +2,7 @@ package com.eugenics.freeradio.di
 
 import android.content.ComponentName
 import android.content.Context
+
 import com.eugenics.media_service.media.FreeRadioMediaService
 import com.eugenics.media_service.media.FreeRadioMediaServiceConnection
 import dagger.Module
@@ -14,9 +15,12 @@ import javax.inject.Singleton
 @Module
 @InstallIn(SingletonComponent::class)
 class MainModule {
+
     @Singleton
     @Provides
-    fun provideMediaServiceConnection(@ApplicationContext context: Context): FreeRadioMediaServiceConnection =
+    fun provideMediaServiceConnection(
+        @ApplicationContext context: Context
+    ): FreeRadioMediaServiceConnection =
         FreeRadioMediaServiceConnection.getInstance(
             context = context,
             ComponentName(context, FreeRadioMediaService::class.java)

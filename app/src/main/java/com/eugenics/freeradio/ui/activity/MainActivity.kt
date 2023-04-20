@@ -10,7 +10,7 @@ import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.runtime.collectAsState
 import androidx.core.view.WindowCompat
 import androidx.navigation.compose.rememberNavController
-import com.eugenics.freeradio.domain.model.Theme
+import com.eugenics.core.enums.Theme
 import com.eugenics.freeradio.navigation.NavGraph
 import com.eugenics.freeradio.ui.theme.FreeRadioTheme
 import com.eugenics.freeradio.ui.viewmodels.MainViewModel

@@ -3,13 +3,15 @@ package com.eugenics.media_service.media
 import android.os.Bundle
 import android.os.ResultReceiver
 import android.util.Log
-import com.eugenics.media_service.data.database.enteties.StationDaoObject
-import com.eugenics.media_service.data.util.Response
-import com.eugenics.media_service.domain.core.TagsCommands
-import com.eugenics.media_service.domain.model.PlayerMediaItem
-import com.eugenics.media_service.domain.model.convertToMediaItem
-import com.eugenics.media_service.domain.interfaces.repository.IRepository
+import com.eugenics.core.enums.TagsCommands
+import com.eugenics.core.model.CurrentPrefs
+import com.eugenics.core.model.PlayerMediaItem
+import com.eugenics.data.data.database.enteties.StationDaoObject
+import com.eugenics.data.data.util.Response
+import com.eugenics.data.data.util.convertToMediaItem
+import com.eugenics.data.interfaces.repository.IRepository
 import com.eugenics.media_service.media.FreeRadioMediaServiceConnection.Companion.SET_FAVORITES_COMMAND
+import com.eugenics.media_service.util.PrefsHelper
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -17,11 +19,15 @@ import kotlinx.coroutines.flow.StateFlow
 private const val TAG = "MEDIA_SOURCE"
 
 class MediaSource(private val repository: IRepository) {
+
+    private val prefsHelper = PrefsHelper(repository = repository)
+
     private val coroutineExceptionHandler = CoroutineExceptionHandler { _, throwable ->
         throwable.printStackTrace()
         Log.e(TAG, throwable.message.toString(), throwable)
     }
     private val scope = CoroutineScope(Dispatchers.IO + coroutineExceptionHandler)
+    private val prefsScope = CoroutineScope(Dispatchers.IO + coroutineExceptionHandler)
 
     private val _mediaItems: MutableStateFlow<MutableList<PlayerMediaItem>> =
         MutableStateFlow(mutableListOf())
@@ -31,7 +37,10 @@ class MediaSource(private val repository: IRepository) {
     val state: StateFlow<Int> = _state
 
     private var startPosition: Int = 0
-    private var playOnRedy: Boolean = false
+    private var playOnReady: Boolean = false
+
+    private val prefs: MutableStateFlow<CurrentPrefs> =
+        MutableStateFlow(CurrentPrefs.getDefaultInstance())
 
     //Preload media source
     init {
@@ -43,10 +52,12 @@ class MediaSource(private val repository: IRepository) {
                         is Response.Loading -> {
                             _state.value = STATE_INITIALIZING
                         }
+
                         is Response.Error -> {
                             Log.e(TAG, response.message)
                             _state.value = STATE_ERROR
                         }
+
                         is Response.Success -> {
                             response.data?.let { stations ->
                                 repository.refreshStations(
@@ -61,10 +72,19 @@ class MediaSource(private val repository: IRepository) {
             } else {
                 _state.value = STATE_CREATED
             }
+            prefsHelper.collectPrefs(
+                prefs = prefs
+            ) { newPrefs ->
+                collectMediaSource(
+                    tag = newPrefs.tag,
+                    stationUuid = newPrefs.stationUuid,
+                    command = newPrefs.command
+                )
+            }
         }
     }
 
-    fun collectMediaSource(
+    private fun collectMediaSource(
         tag: String,
         stationUuid: String,
         command: String
@@ -79,8 +99,10 @@ class MediaSource(private val repository: IRepository) {
                             when (command) {
                                 TagsCommands.STATIONS_COMMAND.name ->
                                     stations.addAll(repository.getLocalStationByTag(tag = "%$tag%"))
+
                                 TagsCommands.FAVORITES_COMMAND.name ->
                                     stations.addAll(repository.fetchStationsByFavorites())
+
                                 else -> stations.addAll(repository.getLocalStations())
                             }
 
@@ -96,7 +118,7 @@ class MediaSource(private val repository: IRepository) {
                             _state.value = STATE_ERROR
                             Log.e(TAG, ex.message.toString())
                         }
-                        playOnRedy = false
+                        playOnReady = false
                     }
                 }
                 return@collect
@@ -204,10 +226,10 @@ class MediaSource(private val repository: IRepository) {
     fun getStartPosition(): Int = startPosition
 
     private fun setPlayOnReady(value: Boolean) {
-        playOnRedy = value
+        playOnReady = value
     }
 
-    fun getPlayOnReady(): Boolean = playOnRedy
+    fun getPlayOnReady(): Boolean = playOnReady
 
     fun onMediaItemClick(
         mediaItemId: String,
@@ -225,7 +247,7 @@ class MediaSource(private val repository: IRepository) {
                     mediaItems.value.indexOf(startMediaItem)
                 }
 
-            playOnRedy = playWhenReady
+            playOnReady = playWhenReady
             delay(DELAY_TIME)
             _state.value = STATE_INITIALIZED
         }
@@ -240,6 +262,7 @@ class MediaSource(private val repository: IRepository) {
                         is Response.Loading -> {
                             _state.value = STATE_INITIALIZING
                         }
+
                         is Response.Success -> {
                             val stations = response.data
                             stations?.let {
@@ -251,6 +274,7 @@ class MediaSource(private val repository: IRepository) {
                             }
                             _state.value = STATE_INITIALIZED
                         }
+
                         is Response.Error -> {
                             Log.e(TAG, response.message)
                             _state.value = STATE_ERROR
@@ -263,6 +287,18 @@ class MediaSource(private val repository: IRepository) {
             Log.e(TAG, ex.message.toString())
 //            resultBundle.putString(SET_FAVORITES_COMMAND, ex.message.toString())
 //            cb?.send(0, resultBundle)
+        }
+    }
+
+    fun setPrefs(
+        tag: String = prefs.value.tag,
+        stationUuid: String = prefs.value.stationUuid,
+        command: String = prefs.value.command
+    ) {
+        prefsScope.launch {
+            prefsHelper.setPrefs(
+                tag = tag, stationUuid = stationUuid, command = command
+            )
         }
     }
 
