@@ -8,6 +8,7 @@ import android.support.v4.media.session.PlaybackStateCompat
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.eugenics.core.enums.MediaSourceState
 import com.eugenics.core.enums.TagsCommands
 import com.eugenics.core.model.NowPlayingStation
 import com.eugenics.core.model.PlayerMediaItem
@@ -56,10 +57,6 @@ class MainViewModel @Inject constructor(
     private var _tagList: MutableStateFlow<List<Tag>> = MutableStateFlow(listOf())
     val tagList: StateFlow<List<Tag>> = _tagList
 
-    init {
-        getTagsList()
-    }
-
     private val subscriptionCallback = object : MediaBrowserCompat.SubscriptionCallback() {
         override fun onChildrenLoaded(
             parentId: String,
@@ -100,22 +97,25 @@ class MainViewModel @Inject constructor(
                 }
             }
             _stations.value = stationServiceContent
+            _uiState.value = UI_STATE_READY
 
-            if (_stations.value.isEmpty()) {
-                _uiState.value = when (uiState.value) {
-                    UI_STATE_FIRST_INIT -> UI_STATE_FIRST_INIT
-                    else -> UI_STATE_EMPTY
-                }
-            } else {
-                _uiState.value = UI_STATE_READY
-            }
+//            if (_stations.value.isEmpty()) {
+//                _uiState.value = when (uiState.value) {
+//                    UI_STATE_FIRST_INIT -> UI_STATE_FIRST_INIT
+//                    else -> UI_STATE_EMPTY
+//                }
+//            } else {
+//                _uiState.value = UI_STATE_READY
+//            }
         }
     }
 
     init {
+        collectMediaSourceState()
         collectNowPlaying()
         collectSettings()
         collectServiceConnection()
+        getTagsList()
     }
 
     private fun collectServiceConnection() {
@@ -206,6 +206,19 @@ class MainViewModel @Inject constructor(
         viewModelScope.launch(ioDispatcher) {
             repository.getSettings().collect {
                 _settings.value = it
+            }
+        }
+    }
+
+    private fun collectMediaSourceState() {
+        viewModelScope.launch(Dispatchers.IO) {
+            mediaServiceConnection.mediaSourceState.collect { state ->
+                when (state) {
+                    MediaSourceState.STATE_ERROR.value -> _uiState.value = UI_STATE_READY
+                    MediaSourceState.STATE_INITIALIZING.value -> _uiState.value = UI_STATE_REFRESH
+                    MediaSourceState.STATE_INITIALIZED.value -> _uiState.value = UI_STATE_READY
+                    MediaSourceState.STATE_CREATED.value -> _uiState.value = UI_STATE_READY
+                }
             }
         }
     }

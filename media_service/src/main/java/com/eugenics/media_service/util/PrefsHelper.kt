@@ -27,7 +27,6 @@ class PrefsHelper(private val repository: IRepository) {
         repository.getPrefs().collect {
             prefs.value = it
             onPrefsChanged(it)
-            return@collect
         }
     }
 }

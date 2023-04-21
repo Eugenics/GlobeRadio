@@ -89,9 +89,7 @@ class FreeRadioMediaService : MediaBrowserServiceCompat() {
 
         collectMediaState()
 
-        // Create a MediaSessionCompat
         mediaSession = MediaSessionCompat(baseContext, MEDIA_SESSION_LOG_TAG).apply {
-            // Set an initial PlaybackState with ACTION_PLAY, so media buttons can start the player
             stateBuilder = PlaybackStateCompat.Builder()
                 .setActions(
                     PlaybackStateCompat.ACTION_PLAY
@@ -101,7 +99,6 @@ class FreeRadioMediaService : MediaBrowserServiceCompat() {
 
             setCallback(mediaSessionCallbacks)
 
-            // Set the session's token so that client activities can communicate with it.
             setSessionToken(sessionToken)
             isActive = true
         }
@@ -137,15 +134,9 @@ class FreeRadioMediaService : MediaBrowserServiceCompat() {
         clientUid: Int,
         rootHints: Bundle?
     ): BrowserRoot {
-        // (Optional) Control the level of access for the specified package name.
-        // You'll need to write your own logic to do this.
         return if (allowBrowsing(clientPackageName, clientUid)) {
-            // Returns a root ID that clients can use with onLoadChildren() to retrieve
-            // the content hierarchy.
             BrowserRoot(STATIONS_ROOT, null)
         } else {
-            // Clients can connect, but this BrowserRoot is an empty hierarchy
-            // so onLoadChildren returns nothing. This disables the ability to browse for content.
             BrowserRoot(EMPTY_ROOT, null)
         }
     }
@@ -327,6 +318,7 @@ class FreeRadioMediaService : MediaBrowserServiceCompat() {
         serviceScope.launch {
             mediaSource.state.collect { state ->
                 Log.d("COLLECT_STATE", state.toString())
+                sendMediaSourceState(state = state)
                 if (state == MediaSource.STATE_INITIALIZED) {
                     player.stop()
                     player.setMediaItems(
@@ -359,7 +351,18 @@ class FreeRadioMediaService : MediaBrowserServiceCompat() {
         }
     }
 
+    private fun sendMediaSourceState(state: Int) {
+        Log.d(TAG, "MediaSource error...")
+
+        mediaSession.sendSessionEvent("MEDIA_SOURCE_STATE",
+            Bundle().also {
+                it.putInt("MEDIA_SOURCE_STATE", state)
+            }
+        )
+    }
+
     private val mediaSessionCallbacks = object : MediaSessionCompat.Callback() {
+
         override fun onPlayFromMediaId(mediaId: String?, extras: Bundle?) {
             Log.d("ON_PLAY_FROM_MEDIA_ID", mediaId.toString())
         }

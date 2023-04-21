@@ -23,9 +23,9 @@ fun NavGraph(
 ) {
     NavHost(
         navController = navController,
-        startDestination = Screen.SearchScreen.rout
+        startDestination = Screen.MainScreen.rout
     ) {
-        composable(route = Screen.SearchScreen.rout) {
+        composable(route = Screen.MainScreen.rout) {
             MainScreen(
                 navController = navController,
                 uiState = mainViewModel.uiState,

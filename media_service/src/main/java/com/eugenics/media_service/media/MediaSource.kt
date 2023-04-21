@@ -44,28 +44,36 @@ class MediaSource(private val repository: IRepository) {
 
     //Preload media source
     init {
+        Log.d(TAG, "Init...")
         _state.value = STATE_INITIALIZING
         scope.launch {
             if (repository.getLocalStations().isEmpty()) {
+                Log.d(TAG, "Load remote repository...")
                 repository.getRemoteStations().collect { response ->
                     when (response) {
                         is Response.Loading -> {
+                            Log.d(TAG, "Loading...")
                             _state.value = STATE_INITIALIZING
                         }
 
                         is Response.Error -> {
                             Log.e(TAG, response.message)
                             _state.value = STATE_ERROR
+                            return@collect
                         }
 
                         is Response.Success -> {
+                            Log.d(TAG, "Success...")
                             response.data?.let { stations ->
+                                Log.d(TAG, "Save to data base...")
                                 repository.refreshStations(
                                     stations = stations
                                         .map { station -> station.convertToDaoObject() }
                                 )
+                                Log.d(TAG, "Saved to data base...")
                             }
                             _state.value = STATE_CREATED
+                            return@collect
                         }
                     }
                 }
@@ -75,6 +83,7 @@ class MediaSource(private val repository: IRepository) {
             prefsHelper.collectPrefs(
                 prefs = prefs
             ) { newPrefs ->
+                Log.d(TAG, "Collect prefs...")
                 collectMediaSource(
                     tag = newPrefs.tag,
                     stationUuid = newPrefs.stationUuid,
@@ -236,7 +245,6 @@ class MediaSource(private val repository: IRepository) {
         playWhenReady: Boolean = true
     ) {
         scope.launch {
-            _state.value = STATE_INITIALIZING
             val startMediaItem = mediaItems.value.find {
                 it.uuid == mediaItemId
             }
@@ -249,14 +257,14 @@ class MediaSource(private val repository: IRepository) {
 
             playOnReady = playWhenReady
             delay(DELAY_TIME)
-            _state.value = STATE_INITIALIZED
         }
     }
 
     fun reloadStations() {
-        try {
+        Log.d(TAG, "Reload remote repository...")
+        scope.launch {
             _state.value = STATE_INITIALIZING
-            scope.launch {
+            try {
                 repository.getRemoteStations().collect { response ->
                     when (response) {
                         is Response.Loading -> {
@@ -278,15 +286,14 @@ class MediaSource(private val repository: IRepository) {
                         is Response.Error -> {
                             Log.e(TAG, response.message)
                             _state.value = STATE_ERROR
+
                         }
                     }
                 }
+            } catch (ex: Exception) {
+                _state.value = STATE_ERROR
+                Log.e(TAG, ex.message.toString())
             }
-        } catch (ex: Exception) {
-            _state.value = STATE_ERROR
-            Log.e(TAG, ex.message.toString())
-//            resultBundle.putString(SET_FAVORITES_COMMAND, ex.message.toString())
-//            cb?.send(0, resultBundle)
         }
     }
 
