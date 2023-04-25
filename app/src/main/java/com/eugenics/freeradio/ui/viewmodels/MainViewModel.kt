@@ -157,17 +157,18 @@ class MainViewModel @Inject constructor(
     }
 
     fun search(query: String) {
-        _uiState.value = UI_STATE_REFRESH
+//        _uiState.value = UI_STATE_REFRESH
         mediaServiceConnection.transportControls.playFromSearch(query, null)
     }
 
     fun sendCommand(command: String, extras: Bundle? = null) {
         if (command in enumValues<TagsCommands>().map { it.name }.toList()) {
-            _uiState.value = UI_STATE_REFRESH
+//            _uiState.value = UI_STATE_REFRESH
             setSettings(
                 command = command,
-                tag = extras?.getString("TAG") ?: "*"
+                tag = extras?.getString("TAG") ?: ""
             )
+            _stations.value = listOf()
         }
         mediaServiceConnection.sendCommand(
             command = command,
@@ -216,8 +217,8 @@ class MainViewModel @Inject constructor(
                 when (state) {
                     MediaSourceState.STATE_ERROR.value -> _uiState.value = UI_STATE_READY
                     MediaSourceState.STATE_INITIALIZING.value -> _uiState.value = UI_STATE_REFRESH
-                    MediaSourceState.STATE_INITIALIZED.value -> _uiState.value = UI_STATE_READY
-                    MediaSourceState.STATE_CREATED.value -> _uiState.value = UI_STATE_READY
+//                    MediaSourceState.STATE_INITIALIZED.value -> _uiState.value = UI_STATE_READY
+//                    MediaSourceState.STATE_CREATED.value -> _uiState.value = UI_STATE_READY
                 }
             }
         }

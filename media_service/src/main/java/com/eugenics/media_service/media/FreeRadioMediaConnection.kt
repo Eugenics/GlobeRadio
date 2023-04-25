@@ -11,6 +11,7 @@ import android.support.v4.media.session.MediaControllerCompat
 import android.support.v4.media.session.MediaSessionCompat
 import android.support.v4.media.session.PlaybackStateCompat
 import android.util.Log
+import com.eugenics.core.enums.MediaSourceState
 import com.google.android.exoplayer2.MediaMetadata
 import com.google.android.exoplayer2.Player
 import kotlinx.coroutines.*
@@ -19,7 +20,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 class FreeRadioMediaServiceConnection(context: Context, serviceComponent: ComponentName) {
     val isConnected = MutableStateFlow(false)
     val playbackState = MutableStateFlow(EMPTY_PLAYBACK_STATE)
-    val mediaSourceState: MutableStateFlow<Int> = MutableStateFlow(MediaSource.STATE_IDL)
+    val mediaSourceState: MutableStateFlow<Int> = MutableStateFlow(MediaSourceState.STATE_IDL.value)
 
 
     val nowPlayingItem = MutableStateFlow(NOTHING_PLAYING)

@@ -1,10 +1,9 @@
 package com.eugenics.data.data.repository
 
-import com.eugenics.core.model.CurrentPrefs
 import com.eugenics.core.model.CurrentState
 import com.eugenics.core.model.Tag
+import com.eugenics.data.data.database.enteties.PrefsDaoObject
 import com.eugenics.data.data.database.enteties.StationDaoObject
-import com.eugenics.data.data.datastore.PrefsDataSource
 import com.eugenics.data.data.datastore.SettingsDataSource
 import com.eugenics.data.data.dto.StationRespondObject
 import com.eugenics.data.data.util.Response
@@ -24,7 +23,6 @@ class IRepositoryImpl @Inject constructor(
     private val localDataSource: ILocalDataSource,
     @Named(NetworkModule.FAKE_DATA_SOURCE_NAME)
     private val fakeINetworkDataSource: INetworkDataSource,
-    private val prefsDataSource: PrefsDataSource,
     private val fileDataSource: IFileDataSource,
     private val settingsDataSource: SettingsDataSource
 ) : IRepository {
@@ -67,9 +65,6 @@ class IRepositoryImpl @Inject constructor(
 
     override suspend fun deleteEmptyTags() = localDataSource.deleteEmptyTags()
 
-    override suspend fun refreshStations(stations: List<StationDaoObject>) =
-        localDataSource.refreshStations(stations = stations)
-
     override suspend fun fetchStationsByFavorites(): List<StationDaoObject> =
         localDataSource.fetchStationsByFavorites()
 
@@ -84,9 +79,6 @@ class IRepositoryImpl @Inject constructor(
     override suspend fun reloadStations(stations: List<StationDaoObject>) =
         localDataSource.reloadStations(stations = stations)
 
-    override fun getPrefs(): Flow<CurrentPrefs> = prefsDataSource.getPrefs()
-
-    override suspend fun setPrefs(prefs: CurrentPrefs) = prefsDataSource.setPrefs(prefs)
     override suspend fun getTags(): List<Tag> =
         fileDataSource.getTags()
 
@@ -95,5 +87,23 @@ class IRepositoryImpl @Inject constructor(
 
     override suspend fun setSettings(settings: CurrentState) {
         settingsDataSource.setSettings(settings = settings)
+    }
+
+    override suspend fun checkLocalStations(): List<StationDaoObject> =
+        localDataSource.checkStations()
+
+    override suspend fun fetchPrefs(): List<PrefsDaoObject> =
+        localDataSource.fetchPrefs()
+
+    override suspend fun updatePrefs(prefs: PrefsDaoObject) {
+        localDataSource.updatePrefs(prefs = prefs)
+    }
+
+    override suspend fun insertPrefs(prefs: PrefsDaoObject) {
+        localDataSource.insertPrefs(prefs = prefs)
+    }
+
+    override suspend fun deletePrefs() {
+        localDataSource.deletePrefs()
     }
 }

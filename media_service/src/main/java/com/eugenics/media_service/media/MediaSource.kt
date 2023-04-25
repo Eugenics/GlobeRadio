@@ -3,6 +3,7 @@ package com.eugenics.media_service.media
 import android.os.Bundle
 import android.os.ResultReceiver
 import android.util.Log
+import com.eugenics.core.enums.MediaSourceState
 import com.eugenics.core.enums.TagsCommands
 import com.eugenics.core.model.CurrentPrefs
 import com.eugenics.core.model.PlayerMediaItem
@@ -16,8 +17,6 @@ import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 
-private const val TAG = "MEDIA_SOURCE"
-
 class MediaSource(private val repository: IRepository) {
 
     private val prefsHelper = PrefsHelper(repository = repository)
@@ -27,13 +26,12 @@ class MediaSource(private val repository: IRepository) {
         Log.e(TAG, throwable.message.toString(), throwable)
     }
     private val scope = CoroutineScope(Dispatchers.IO + coroutineExceptionHandler)
-    private val prefsScope = CoroutineScope(Dispatchers.IO + coroutineExceptionHandler)
 
     private val _mediaItems: MutableStateFlow<MutableList<PlayerMediaItem>> =
         MutableStateFlow(mutableListOf())
     val mediaItems: StateFlow<List<PlayerMediaItem>> = _mediaItems
 
-    private val _state: MutableStateFlow<Int> = MutableStateFlow(STATE_IDL)
+    private val _state: MutableStateFlow<Int> = MutableStateFlow(MediaSourceState.STATE_IDL.value)
     val state: StateFlow<Int> = _state
 
     private var startPosition: Int = 0
@@ -44,155 +42,71 @@ class MediaSource(private val repository: IRepository) {
 
     //Preload media source
     init {
-        Log.d(TAG, "Init...")
-        _state.value = STATE_INITIALIZING
+        Log.d(TAG, "Init media source...")
         scope.launch {
-            if (repository.getLocalStations().isEmpty()) {
+            prefs.value = prefsHelper.getPrefs()
+
+            if (repository.checkLocalStations().isEmpty()) {
                 Log.d(TAG, "Load remote repository...")
-                repository.getRemoteStations().collect { response ->
-                    when (response) {
-                        is Response.Loading -> {
-                            Log.d(TAG, "Loading...")
-                            _state.value = STATE_INITIALIZING
-                        }
-
-                        is Response.Error -> {
-                            Log.e(TAG, response.message)
-                            _state.value = STATE_ERROR
-                            return@collect
-                        }
-
-                        is Response.Success -> {
-                            Log.d(TAG, "Success...")
-                            response.data?.let { stations ->
-                                Log.d(TAG, "Save to data base...")
-                                repository.refreshStations(
-                                    stations = stations
-                                        .map { station -> station.convertToDaoObject() }
-                                )
-                                Log.d(TAG, "Saved to data base...")
-                            }
-                            _state.value = STATE_CREATED
-                            return@collect
-                        }
-                    }
-                }
+                loadStationsFromRemote()
             } else {
-                _state.value = STATE_CREATED
-            }
-            prefsHelper.collectPrefs(
-                prefs = prefs
-            ) { newPrefs ->
-                Log.d(TAG, "Collect prefs...")
+                _state.value = MediaSourceState.STATE_CREATED.value
                 collectMediaSource(
-                    tag = newPrefs.tag,
-                    stationUuid = newPrefs.stationUuid,
-                    command = newPrefs.command
+                    tag = prefs.value.tag,
+                    stationUuid = prefs.value.stationUuid,
+                    command = TagsCommands.valueOf(prefs.value.command),
+                    query = prefs.value.query
                 )
             }
         }
     }
 
-    private fun collectMediaSource(
+    fun collectMediaSource(
         tag: String,
         stationUuid: String,
-        command: String
+        command: TagsCommands,
+        query: String = ""
     ) {
         scope.launch {
-            state.collect { stateValue ->
-                when (stateValue) {
-                    STATE_CREATED -> {
-                        _state.value = STATE_INITIALIZING
-                        try {
-                            val stations = mutableListOf<StationDaoObject>()
-                            when (command) {
-                                TagsCommands.STATIONS_COMMAND.name ->
-                                    stations.addAll(repository.getLocalStationByTag(tag = "%$tag%"))
-
-                                TagsCommands.FAVORITES_COMMAND.name ->
-                                    stations.addAll(repository.fetchStationsByFavorites())
-
-                                else -> stations.addAll(repository.getLocalStations())
-                            }
-
-                            feelMediaItems(stations = stations)
-
-                            onMediaItemClick(
-                                mediaItemId = stationUuid,
-                                false
-                            )
-
-                            _state.value = STATE_INITIALIZED
-                        } catch (ex: Exception) {
-                            _state.value = STATE_ERROR
-                            Log.e(TAG, ex.message.toString())
-                        }
-                        playOnReady = false
-                    }
-                }
-                return@collect
-            }
-        }
-    }
-
-    fun searchInMediaSource(query: String) {
-        startPosition = 0
-        setPlayOnReady(value = false)
-
-        scope.launch {
-            _state.value = STATE_INITIALIZING
+            Log.d(TAG, "COLLECT MEDIA_SOURCE:$tag,$command")
+            _state.value = MediaSourceState.STATE_INITIALIZING.value
             try {
-                val stations = mutableListOf<StationDaoObject>()
-                if (query.isBlank() || query == "*") {
-                    stations.addAll(repository.getLocalStations())
-                } else {
-                    stations.addAll(
-//                        repository.getLocalStationByName(name = "%$query%")
-                        repository.getLocalStationByTag(tag = "%$query%")
+                when (command) {
+                    TagsCommands.STATIONS_COMMAND ->
+                        feelMediaItems(repository.getLocalStationByTag(tag = "%$tag%"))
+
+                    TagsCommands.FAVORITES_COMMAND ->
+                        feelMediaItems(repository.fetchStationsByFavorites())
+
+                    TagsCommands.RELOAD_ALL_STATIONS_COMMAND ->
+                        loadStationsFromRemote()
+
+                    TagsCommands.SEARCH_COMMAND ->
+                        feelMediaItems(repository.getLocalStationByName(name = "%$query%"))
+
+                    else -> feelMediaItems(repository.getLocalStations())
+                }
+
+                if (command != TagsCommands.RELOAD_ALL_STATIONS_COMMAND) {
+                    setPrefs(
+                        tag = tag,
+                        command = command.name,
+                        query = query,
+                        stationUuid = stationUuid
+                    )
+                    onMediaItemClick(
+                        mediaItemId = stationUuid,
+                        playWhenReady = false
                     )
                 }
 
-                feelMediaItems(stations = stations)
                 delay(DELAY_TIME)
-                _state.value = STATE_INITIALIZED
+                _state.value = MediaSourceState.STATE_INITIALIZED.value
             } catch (ex: Exception) {
-                _state.value = STATE_ERROR
+                _state.value = MediaSourceState.STATE_ERROR.value
                 Log.e(TAG, ex.message.toString())
             }
-        }
-    }
-
-    fun collectFavorites() {
-        startPosition = 0
-        setPlayOnReady(value = false)
-
-        scope.launch {
-            _state.value = STATE_INITIALIZING
-            try {
-                feelMediaItems(stations = repository.fetchStationsByFavorites())
-                delay(DELAY_TIME)
-                _state.value = STATE_INITIALIZED
-            } catch (ex: Exception) {
-                _state.value = STATE_ERROR
-                Log.e(TAG, ex.message.toString())
-            }
-        }
-    }
-
-    fun collectSearch(query: String) {
-        startPosition = 0
-        setPlayOnReady(value = false)
-
-        scope.launch {
-            _state.value = STATE_INITIALIZING
-            try {
-                feelMediaItems(stations = repository.getLocalStationByName(name = "%$query%"))
-                delay(DELAY_TIME)
-                _state.value = STATE_INITIALIZED
-            } catch (ex: Exception) {
-                _state.value = STATE_ERROR
-                Log.e(TAG, ex.message.toString())
-            }
+            setPlayOnReady(value = false)
         }
     }
 
@@ -212,7 +126,7 @@ class MediaSource(private val repository: IRepository) {
                 resultBundle.putString(SET_FAVORITES_COMMAND, "Success")
                 cb?.send(1, resultBundle)
             } catch (ex: Exception) {
-                _state.value = STATE_ERROR
+                _state.value = MediaSourceState.STATE_ERROR.value
                 Log.e(TAG, ex.message.toString())
                 resultBundle.putString(SET_FAVORITES_COMMAND, ex.message.toString())
                 cb?.send(0, resultBundle)
@@ -244,7 +158,11 @@ class MediaSource(private val repository: IRepository) {
         mediaItemId: String,
         playWhenReady: Boolean = true
     ) {
+        if (playWhenReady) {
+            setPrefs(stationUuid = mediaItemId)
+        }
         scope.launch {
+            _state.value = MediaSourceState.STATE_ON_CLICK.value
             val startMediaItem = mediaItems.value.find {
                 it.uuid == mediaItemId
             }
@@ -255,83 +173,68 @@ class MediaSource(private val repository: IRepository) {
                     mediaItems.value.indexOf(startMediaItem)
                 }
 
-            playOnReady = playWhenReady
+            setPlayOnReady(value = playWhenReady)
             delay(DELAY_TIME)
+            _state.value = MediaSourceState.STATE_INITIALIZED.value
         }
     }
 
-    fun reloadStations() {
-        Log.d(TAG, "Reload remote repository...")
-        scope.launch {
-            _state.value = STATE_INITIALIZING
-            try {
-                repository.getRemoteStations().collect { response ->
-                    when (response) {
-                        is Response.Loading -> {
-                            _state.value = STATE_INITIALIZING
-                        }
-
-                        is Response.Success -> {
-                            val stations = response.data
-                            stations?.let {
-                                repository.reloadStations(
-                                    stations.map { stationRespondObject ->
-                                        stationRespondObject.convertToDaoObject()
-                                    }
-                                )
-                            }
-                            _state.value = STATE_INITIALIZED
-                        }
-
-                        is Response.Error -> {
-                            Log.e(TAG, response.message)
-                            _state.value = STATE_ERROR
-
-                        }
-                    }
-                }
-            } catch (ex: Exception) {
-                _state.value = STATE_ERROR
-                Log.e(TAG, ex.message.toString())
-            }
-        }
-    }
-
-    fun setPrefs(
+    private fun setPrefs(
         tag: String = prefs.value.tag,
         stationUuid: String = prefs.value.stationUuid,
-        command: String = prefs.value.command
+        command: String = prefs.value.command,
+        query: String = prefs.value.query
     ) {
-        prefsScope.launch {
+        prefs.value = CurrentPrefs(
+            tag = tag,
+            stationUuid = stationUuid,
+            command = command,
+            query = query
+        )
+        scope.launch {
             prefsHelper.setPrefs(
-                tag = tag, stationUuid = stationUuid, command = command
+                tag = tag, stationUuid = stationUuid, command = command, query = query
             )
         }
     }
 
+    private suspend fun loadStationsFromRemote() {
+        repository.getRemoteStations().collect { response ->
+            when (response) {
+                is Response.Loading -> {
+                    Log.d(TAG, "Loading...")
+                    _state.value = MediaSourceState.STATE_INITIALIZING.value
+                }
+
+                is Response.Error -> {
+                    Log.e(TAG, response.message)
+                    _state.value = MediaSourceState.STATE_ERROR.value
+                    return@collect
+                }
+
+                is Response.Success -> {
+                    Log.d(TAG, "Success...")
+                    response.data?.let { stations ->
+                        Log.d(TAG, "Save to data base...")
+                        repository.reloadStations(
+                            stations = stations
+                                .map { station -> station.convertToDaoObject() }
+                        )
+                        Log.d(TAG, "Saved to data base...")
+                    }
+
+                    feelMediaItems(repository.getLocalStations())
+                    setPrefs(command = TagsCommands.STATIONS_COMMAND.name)
+
+                    _state.value = MediaSourceState.STATE_INITIALIZED.value
+                    return@collect
+                }
+            }
+        }
+    }
+
     companion object {
-        const val STATE_IDL = 0
-
-        /**
-         * State indicating the source was created, but no initialization has performed.
-         */
-        const val STATE_CREATED = 1
-
-        /**
-         * State indicating initialization of the source is in progress.
-         */
-        const val STATE_INITIALIZING = 2
-
-        /**
-         * State indicating the source has been initialized and is ready to be used.
-         */
-        const val STATE_INITIALIZED = 3
-
-        /**
-         * State indicating an error has occurred.
-         */
-        const val STATE_ERROR = 4
-
+        const val TAG = "MEDIA_SOURCE"
         private const val DELAY_TIME = 1000L
     }
 }

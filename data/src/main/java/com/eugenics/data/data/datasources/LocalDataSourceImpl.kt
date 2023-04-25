@@ -1,10 +1,15 @@
 package com.eugenics.data.data.datasources
 
+import com.eugenics.data.data.database.dao.PrefsDao
 import com.eugenics.data.data.database.dao.StationDao
+import com.eugenics.data.data.database.enteties.PrefsDaoObject
 import com.eugenics.data.data.database.enteties.StationDaoObject
 import com.eugenics.data.interfaces.repository.ILocalDataSource
 
-class LocalDataSourceImpl(private val dao: StationDao) : ILocalDataSource {
+class LocalDataSourceImpl(
+    private val dao: StationDao,
+    private val prefsDao: PrefsDao
+) : ILocalDataSource {
 
     override suspend fun fetchAllStations(): List<StationDaoObject> =
         dao.fetchAllStationData()
@@ -23,9 +28,6 @@ class LocalDataSourceImpl(private val dao: StationDao) : ILocalDataSource {
 
     override suspend fun deleteEmptyTags() = dao.deleteStationsWithoutTags()
 
-    override suspend fun refreshStations(stations: List<StationDaoObject>) =
-        dao.refreshStations(stationsDao = stations)
-
     override suspend fun fetchStationsByFavorites(): List<StationDaoObject> =
         dao.fetchStationsByFavorites()
 
@@ -40,7 +42,26 @@ class LocalDataSourceImpl(private val dao: StationDao) : ILocalDataSource {
     override suspend fun reloadStations(stations: List<StationDaoObject>) =
         dao.reloadAllStations(stationsDao = stations)
 
+    override suspend fun checkStations(): List<StationDaoObject> =
+        dao.checkStations()
+
+    override suspend fun fetchPrefs(): List<PrefsDaoObject> =
+        prefsDao.fetchPrefs()
+
+    override suspend fun updatePrefs(prefs: PrefsDaoObject) {
+        prefsDao.updatePrefs(prefsObject = prefs)
+    }
+
+    override suspend fun insertPrefs(prefs: PrefsDaoObject) {
+        prefsDao.insertPrefs(prefsObject = prefs)
+    }
+
+    override suspend fun deletePrefs() {
+        prefsDao.deletePrefs()
+    }
+
     companion object {
-        fun newInstance(dao: StationDao) = LocalDataSourceImpl(dao = dao)
+        fun newInstance(dao: StationDao, prefsDao: PrefsDao) =
+            LocalDataSourceImpl(dao = dao, prefsDao = prefsDao)
     }
 }

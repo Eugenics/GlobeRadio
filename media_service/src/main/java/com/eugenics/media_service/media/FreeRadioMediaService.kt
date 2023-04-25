@@ -15,6 +15,7 @@ import android.util.Log
 import androidx.core.content.ContextCompat
 import androidx.core.net.toUri
 import androidx.media.MediaBrowserServiceCompat
+import com.eugenics.core.enums.MediaSourceState
 import com.eugenics.core.enums.TagsCommands
 import com.eugenics.data.interfaces.repository.IRepository
 import com.eugenics.media_service.media.FreeRadioMediaServiceConnection.Companion.SET_FAVORITES_COMMAND
@@ -83,7 +84,6 @@ class FreeRadioMediaService : MediaBrowserServiceCompat() {
         MediaSource(repository = repository)
     }
 
-
     override fun onCreate() {
         super.onCreate()
 
@@ -149,10 +149,10 @@ class FreeRadioMediaService : MediaBrowserServiceCompat() {
         if (parentId == EMPTY_ROOT) {
             result.sendResult(null)
         } else {
-            Log.d("SERVICE_ON_LOAD_CHILDREN", "")
+            Log.d(TAG, "SERVICE_ON_LOAD_CHILDREN")
             val browserMediaItems = mutableListOf<MediaBrowserCompat.MediaItem>()
 
-            Log.d("MEDIA_SERVICE_SIZE", mediaSource.mediaItems.value.size.toString())
+            Log.d(TAG, "MEDIA_SERVICE_SIZE:${mediaSource.mediaItems.value.size}")
 
             val mediaItems = mediaSource.mediaItems.value
             for (item in mediaItems) {
@@ -184,6 +184,9 @@ class FreeRadioMediaService : MediaBrowserServiceCompat() {
 
     private fun allowBrowsing(clientPackageName: String = "", clientUid: Int = 0): Boolean = true
 
+    /**
+     * Listen for notification events.
+     */
     /**
      * Listen for notification events.
      */
@@ -222,26 +225,35 @@ class FreeRadioMediaService : MediaBrowserServiceCompat() {
         ): Boolean {
             when (command) {
                 TagsCommands.FAVORITES_COMMAND.name -> {
-                    Log.d("SERVICE_COMMAND_FAVORITES", command)
-                    mediaSource.collectFavorites()
-                    mediaSource.setPrefs(
-                        tag = "*",
-                        command = TagsCommands.FAVORITES_COMMAND.name
+                    Log.d(TAG, "SERVICE_COMMAND_FAVORITES")
+                    mediaSource.collectMediaSource(
+                        tag = "",
+                        command = TagsCommands.FAVORITES_COMMAND,
+                        stationUuid = ""
                     )
                 }
 
                 TagsCommands.STATIONS_COMMAND.name -> {
-                    Log.d("SERVICE_COMMAND_STATIONS", command)
-                    val tag = extras?.getString("TAG") ?: "*"
-                    mediaSource.searchInMediaSource(query = tag)
-                    mediaSource.setPrefs(
+                    Log.d(TAG, "SERVICE_COMMAND_STATIONS")
+                    val tag = extras?.getString("TAG") ?: ""
+                    mediaSource.collectMediaSource(
                         tag = tag,
-                        command = TagsCommands.STATIONS_COMMAND.name
+                        command = TagsCommands.STATIONS_COMMAND,
+                        stationUuid = ""
+                    )
+                }
+
+                TagsCommands.RELOAD_ALL_STATIONS_COMMAND.name -> {
+                    Log.d(TAG, "RELOAD_ALL_STATIONS_COMMAND")
+                    mediaSource.collectMediaSource(
+                        tag = "",
+                        command = TagsCommands.RELOAD_ALL_STATIONS_COMMAND,
+                        stationUuid = ""
                     )
                 }
 
                 SET_FAVORITES_COMMAND -> {
-                    Log.d("SERVICE_COMMAND_SET_FAVORITES", command)
+                    Log.d(TAG, "SERVICE_COMMAND_SET_FAVORITES")
                     extras?.let { bundle ->
                         val stationUuid = bundle.getString(SET_FAVORITES_STATION_KEY)
                         val isFavorite = bundle.getInt(SET_FAVORITES_VALUE_KEY)
@@ -253,15 +265,6 @@ class FreeRadioMediaService : MediaBrowserServiceCompat() {
                             )
                         }
                     }
-                }
-
-                TagsCommands.RELOAD_ALL_STATIONS_COMMAND.name -> {
-                    Log.d("RELOAD_ALL_STATIONS_COMMAND", command)
-                    mediaSource.reloadStations()
-                    mediaSource.setPrefs(
-                        tag = "*",
-                        command = TagsCommands.STATIONS_COMMAND.name
-                    )
                 }
             }
             return true
@@ -284,9 +287,9 @@ class FreeRadioMediaService : MediaBrowserServiceCompat() {
             playWhenReady: Boolean,
             extras: Bundle?
         ) {
-            Log.d(TAG, "OnPrepareFromMediaId...")
+            Log.d(TAG, "SERVICE_PREPARE_FROM_MEDIA_ID:$mediaId")
             preparePlayList(mediaItemId = mediaId, STATE_ON_MEDIA_ITEM)
-            mediaSource.setPrefs(stationUuid = mediaId)
+
         }
 
         override fun onPrepareFromSearch(
@@ -294,7 +297,7 @@ class FreeRadioMediaService : MediaBrowserServiceCompat() {
             playWhenReady: Boolean,
             extras: Bundle?
         ) {
-            Log.d("SERVICE_PREPARE_FROM_SEARCH", query)
+            Log.d(TAG, "SERVICE_PREPARE_FROM_SEARCH:$query")
             preparePlayList(mediaItemId = query, STATE_ON_SEARCH)
         }
 
@@ -309,7 +312,15 @@ class FreeRadioMediaService : MediaBrowserServiceCompat() {
     ) {
         Log.d(TAG, "preparePlayList... $state")
         when (state) {
-            STATE_ON_SEARCH -> mediaSource.collectSearch(query = mediaItemId)
+            STATE_ON_SEARCH -> {
+                mediaSource.collectMediaSource(
+                    tag = "",
+                    stationUuid = "",
+                    command = TagsCommands.SEARCH_COMMAND,
+                    query = mediaItemId
+                )
+            }
+
             STATE_ON_MEDIA_ITEM -> mediaSource.onMediaItemClick(mediaItemId = mediaItemId)
         }
     }
@@ -317,9 +328,9 @@ class FreeRadioMediaService : MediaBrowserServiceCompat() {
     private fun collectMediaState() {
         serviceScope.launch {
             mediaSource.state.collect { state ->
-                Log.d("COLLECT_STATE", state.toString())
-                sendMediaSourceState(state = state)
-                if (state == MediaSource.STATE_INITIALIZED) {
+                Log.d(TAG, "COLLECT_MEDIA_SOURCE_STATE:$state")
+
+                if (state == MediaSourceState.STATE_INITIALIZED.value) {
                     player.stop()
                     player.setMediaItems(
                         mediaSource.mediaItems.value.map { playerMediaItem ->
@@ -347,12 +358,14 @@ class FreeRadioMediaService : MediaBrowserServiceCompat() {
 
                     notifyChildrenChanged(STATIONS_ROOT)
                 }
+
+                sendMediaSourceState(state = state)
             }
         }
     }
 
     private fun sendMediaSourceState(state: Int) {
-        Log.d(TAG, "MediaSource error...")
+        Log.d(TAG, "SEND MEDIA_SOURCE_STATE:${MediaSourceState.getNameByValue(value = state)}")
 
         mediaSession.sendSessionEvent("MEDIA_SOURCE_STATE",
             Bundle().also {
@@ -364,7 +377,7 @@ class FreeRadioMediaService : MediaBrowserServiceCompat() {
     private val mediaSessionCallbacks = object : MediaSessionCompat.Callback() {
 
         override fun onPlayFromMediaId(mediaId: String?, extras: Bundle?) {
-            Log.d("ON_PLAY_FROM_MEDIA_ID", mediaId.toString())
+            Log.d(TAG, "ON_PLAY_FROM_MEDIA_ID:$mediaId")
         }
     }
 
@@ -399,7 +412,7 @@ class FreeRadioMediaService : MediaBrowserServiceCompat() {
 
 
     companion object {
-        const val TAG = "FreeMediaService"
+        const val TAG = "FREE_RADIO_MEDIA_SERVICE"
         private const val STATE_PREPARE = 0
         private const val STATE_ON_MEDIA_ITEM = 1
         private const val STATE_ON_SEARCH = 2

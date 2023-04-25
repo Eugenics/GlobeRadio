@@ -30,13 +30,6 @@ interface StationDao {
     @Query("DELETE FROM stations")
     fun deleteStations()
 
-    @Transaction
-    fun refreshStations(stationsDao: List<StationDaoObject>) {
-        insertStations(stationsDao = stationsDao)
-        deleteStationsWithoutTags()
-        deleteStationsWithoutName()
-    }
-
     @Query("UPDATE stations SET is_favorite = 1 WHERE stationuuid = :stationUuid")
     fun addFavorite(stationUuid: String)
 
@@ -60,6 +53,9 @@ interface StationDao {
     )
     fun restoreFavoritesStationInfo()
 
+    @Query("SELECT * FROM stations LIMIT 1")
+    fun checkStations():List<StationDaoObject>
+
     @Transaction
     fun reloadAllStations(stationsDao: List<StationDaoObject>) {
         deleteFavoritesTmp()
@@ -68,7 +64,9 @@ interface StationDao {
         })
 
         deleteStations()
-        refreshStations(stationsDao = stationsDao)
+        insertStations(stationsDao = stationsDao)
+        deleteStationsWithoutTags()
+        deleteStationsWithoutName()
 
         restoreFavoritesStationInfo()
     }
