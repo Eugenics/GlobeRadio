@@ -37,9 +37,6 @@ fun MainBottomAppBar(
 ) {
     Card(
         shape = RoundedCornerShape(percent = 35),
-//        colors = CardDefaults.cardColors(
-//            containerColor = MaterialTheme.colorScheme.primary
-//        ),
         modifier = Modifier
             .padding(
                 bottom = paddingValues.calculateBottomPadding() + 5.dp,
@@ -83,7 +80,8 @@ fun MainBottomAppBar(
                 Text(
                     text = nowPlayingStation.nowPlayingTitle.ifBlank { "" },
                     style = MaterialTheme.typography.bodySmall,
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier.fillMaxWidth(),
+                    maxLines = 4
                 )
             }
             IconButton(

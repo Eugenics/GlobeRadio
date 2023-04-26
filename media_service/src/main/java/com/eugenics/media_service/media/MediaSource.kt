@@ -160,22 +160,17 @@ class MediaSource(private val repository: IRepository) {
         if (playWhenReady) {
             setPrefs(stationUuid = mediaItemId)
         }
-        scope.launch {
-            _state.value = MediaSourceState.STATE_ON_CLICK.value
-            val startMediaItem = mediaItems.value.find {
-                it.uuid == mediaItemId
-            }
-            startPosition =
-                if (startMediaItem == null) {
-                    0
-                } else {
-                    mediaItems.value.indexOf(startMediaItem)
-                }
-
-            setPlayOnReady(value = playWhenReady)
-            delay(DELAY_TIME)
-            _state.value = MediaSourceState.STATE_INITIALIZED.value
+        val startMediaItem = mediaItems.value.find {
+            it.uuid == mediaItemId
         }
+        startPosition =
+            if (startMediaItem == null) {
+                0
+            } else {
+                mediaItems.value.indexOf(startMediaItem)
+            }
+
+        setPlayOnReady(value = playWhenReady)
     }
 
     private fun setPrefs(

@@ -16,9 +16,11 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.eugenics.core.enums.Commands
@@ -160,7 +162,7 @@ fun MainNavigationDrawer(
 
                 CustomNavigationItem(
                     text = "Save favorites",
-                    icon = Icons.Filled.Share,
+                    icon = ImageVector.vectorResource(R.drawable.baseline_file_download_24),
                     onClick = {
                         sendCommand("SAVE", null)
                         scope.launch {
@@ -171,7 +173,7 @@ fun MainNavigationDrawer(
 
                 CustomNavigationItem(
                     text = "Load favorites",
-                    icon = Icons.Filled.Share,
+                    icon = ImageVector.vectorResource(R.drawable.baseline_file_upload_24),
                     onClick = {
                         sendCommand("LOAD", null)
                         scope.launch {

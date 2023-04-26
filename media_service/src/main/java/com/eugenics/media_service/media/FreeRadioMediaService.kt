@@ -26,6 +26,7 @@ import com.google.android.exoplayer2.audio.AudioAttributes
 import com.google.android.exoplayer2.ext.mediasession.MediaSessionConnector
 import com.google.android.exoplayer2.ext.mediasession.TimelineQueueNavigator
 import com.google.android.exoplayer2.source.ProgressiveMediaSource
+import com.google.android.exoplayer2.trackselection.TrackSelectionOverride
 import com.google.android.exoplayer2.ui.PlayerNotificationManager
 import com.google.android.exoplayer2.upstream.DefaultHttpDataSource
 import dagger.hilt.android.AndroidEntryPoint
@@ -320,7 +321,13 @@ class FreeRadioMediaService : MediaBrowserServiceCompat() {
                 )
             }
 
-            STATE_ON_MEDIA_ITEM -> mediaSource.onMediaItemClick(mediaItemId = mediaItemId)
+            STATE_ON_MEDIA_ITEM -> {
+                mediaSource.onMediaItemClick(mediaItemId = mediaItemId)
+                player.stop()
+                player.seekTo(mediaSource.getStartPosition(), 0L)
+                player.playWhenReady = true
+                player.prepare()
+            }
         }
     }
 
@@ -357,7 +364,6 @@ class FreeRadioMediaService : MediaBrowserServiceCompat() {
 
                     notifyChildrenChanged(STATIONS_ROOT)
                 }
-
                 sendMediaSourceState(state = state)
             }
         }
