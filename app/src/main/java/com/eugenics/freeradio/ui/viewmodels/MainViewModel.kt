@@ -108,6 +108,8 @@ class MainViewModel @Inject constructor(
             _stations.value = stationServiceContent
             _uiState.value = UI_STATE_READY
 
+            currentMediaId = _stations.value.first().stationuuid
+
 //            if (_stations.value.isEmpty()) {
 //                _uiState.value = when (uiState.value) {
 //                    UI_STATE_FIRST_INIT -> UI_STATE_FIRST_INIT
@@ -193,7 +195,7 @@ class MainViewModel @Inject constructor(
                         Log.e(TAG, e.message.toString())
                     }
                 } else {
-                    _message.value = "No data to share..."
+                    _message.emit("No data to share...")
                 }
             }
 
@@ -283,6 +285,10 @@ class MainViewModel @Inject constructor(
         viewModelScope.launch(ioDispatcher) {
             _tagList.value = repository.getTags()
         }
+    }
+
+    fun clearMessage() {
+        _message.value = ""
     }
 
     companion object {

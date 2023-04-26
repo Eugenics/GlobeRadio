@@ -138,6 +138,7 @@ class MainActivity : ComponentActivity() {
                     if (message.isNotBlank()) {
                         withContext(Dispatchers.Main) {
                             Toast.makeText(applicationContext, message, Toast.LENGTH_SHORT).show()
+                            mainViewModel.clearMessage()
                         }
                     }
                 }
