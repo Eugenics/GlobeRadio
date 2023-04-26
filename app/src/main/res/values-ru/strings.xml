@@ -21,4 +21,10 @@
     <string name="tags_select_string">Выбор жанра…</string>
     <string name="theme_title_string">Тема</string>
     <string name="reload_all_stations_string">Обновить лист радиостанций</string>
+    <string name="share_dialog_title">Сохранить избраные станции</string>
+    <string name="no_data_to_share">Нечего сохранять…</string>
+    <string name="saved_text">Сохранено…</string>
+    <string name="not_saved_text">Не сохранено…</string>
+
+    <string name="authority">"com.eugenics.fileprovider"</string>
 </resources>

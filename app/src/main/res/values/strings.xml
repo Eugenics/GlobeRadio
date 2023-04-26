@@ -21,4 +21,10 @@
     <string name="tags_select_string">Genre select…</string>
     <string name="theme_title_string">Theme</string>
     <string name="reload_all_stations_string">Reload stations list</string>
+    <string name="share_dialog_title">Save favorites stations</string>
+    <string name="no_data_to_share">No data to save…</string>
+    <string name="saved_text">Saved…</string>
+    <string name="not_saved_text">Not saved…</string>
+
+    <string name="authority">"com.eugenics.fileprovider"</string>
 </resources>

@@ -10,6 +10,8 @@ import android.support.v4.media.MediaMetadataCompat
 import android.support.v4.media.session.MediaControllerCompat
 import android.support.v4.media.session.MediaSessionCompat
 import android.support.v4.media.session.PlaybackStateCompat
+import android.util.Log
+import com.eugenics.core.enums.MediaSourceState
 import com.google.android.exoplayer2.MediaMetadata
 import com.google.android.exoplayer2.Player
 import kotlinx.coroutines.*
@@ -18,6 +20,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 class FreeRadioMediaServiceConnection(context: Context, serviceComponent: ComponentName) {
     val isConnected = MutableStateFlow(false)
     val playbackState = MutableStateFlow(EMPTY_PLAYBACK_STATE)
+    val mediaSourceState: MutableStateFlow<Int> = MutableStateFlow(MediaSourceState.STATE_IDL.value)
 
 
     val nowPlayingItem = MutableStateFlow(NOTHING_PLAYING)
@@ -30,7 +33,8 @@ class FreeRadioMediaServiceConnection(context: Context, serviceComponent: Compon
     private val mediaBrowser = MediaBrowserCompat(
         context,
         serviceComponent,
-        mediaBrowserConnectionCallback, null
+        mediaBrowserConnectionCallback,
+        null
     ).apply {
         connect()
     }
@@ -95,7 +99,18 @@ class FreeRadioMediaServiceConnection(context: Context, serviceComponent: Compon
         }
 
         override fun onSessionEvent(event: String?, extras: Bundle?) {
-            super.onSessionEvent(event, extras)
+            when (event) {
+                "MEDIA_SOURCE_STATE" -> {
+                    CoroutineScope(Dispatchers.IO).launch {
+                        mediaSourceState.emit(
+                            extras?.getInt("MEDIA_SOURCE_STATE") ?: 0
+                        )
+                        Log.d(TAG, "MediaSource state: ${mediaSourceState.value}")
+                    }
+                }
+
+                else -> super.onSessionEvent(event, extras)
+            }
         }
 
         override fun onSessionDestroyed() {
@@ -113,10 +128,11 @@ class FreeRadioMediaServiceConnection(context: Context, serviceComponent: Compon
     }
 
     companion object {
+        const val TAG = "FreeRadioMediaServiceConnection"
+
         @Volatile
         private var instance: FreeRadioMediaServiceConnection? = null
 
-        const val SET_FAVORITES_COMMAND = "setFavorites"
         const val SET_FAVORITES_STATION_KEY = "setFavoritesStationKey"
         const val SET_FAVORITES_VALUE_KEY = "setFavoritesValueKey"
 

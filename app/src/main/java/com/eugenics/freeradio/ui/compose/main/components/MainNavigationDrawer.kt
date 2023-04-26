@@ -16,12 +16,14 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.eugenics.core.enums.TagsCommands
+import com.eugenics.core.enums.Commands
 import com.eugenics.core.model.Tag
 import com.eugenics.freeradio.R
 import com.eugenics.freeradio.ui.compose.settings.components.SoftwareInfoDialog
@@ -59,7 +61,7 @@ fun MainNavigationDrawer(
                                     val extras = Bundle()
                                     extras.putString("TAG", item.value)
                                     sendCommand(
-                                        TagsCommands.STATIONS_COMMAND.name,
+                                        Commands.STATIONS_COMMAND.name,
                                         extras
                                     )
                                 }
@@ -132,7 +134,7 @@ fun MainNavigationDrawer(
                     icon = Icons.Filled.Favorite,
                     onClick = {
                         sendCommand(
-                            TagsCommands.FAVORITES_COMMAND.name,
+                            Commands.FAVORITES_COMMAND.name,
                             null
                         )
                         scope.launch {
@@ -149,9 +151,31 @@ fun MainNavigationDrawer(
                     icon = Icons.Filled.Refresh,
                     onClick = {
                         sendCommand(
-                            TagsCommands.RELOAD_ALL_STATIONS_COMMAND.name,
+                            Commands.RELOAD_ALL_STATIONS_COMMAND.name,
                             null
                         )
+                        scope.launch {
+                            drawerState.close()
+                        }
+                    }
+                )
+
+                CustomNavigationItem(
+                    text = "Save favorites",
+                    icon = ImageVector.vectorResource(R.drawable.baseline_file_download_24),
+                    onClick = {
+                        sendCommand("SAVE", null)
+                        scope.launch {
+                            drawerState.close()
+                        }
+                    }
+                )
+
+                CustomNavigationItem(
+                    text = "Load favorites",
+                    icon = ImageVector.vectorResource(R.drawable.baseline_file_upload_24),
+                    onClick = {
+                        sendCommand("LOAD", null)
                         scope.launch {
                             drawerState.close()
                         }
