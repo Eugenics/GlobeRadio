@@ -9,7 +9,7 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.eugenics.core.enums.MediaSourceState
-import com.eugenics.core.enums.TagsCommands
+import com.eugenics.core.enums.Commands
 import com.eugenics.core.model.NowPlayingStation
 import com.eugenics.core.model.PlayerMediaItem
 import com.eugenics.core.model.Station
@@ -17,13 +17,16 @@ import com.eugenics.core.model.Tag
 import com.eugenics.data.interfaces.repository.IRepository
 import com.eugenics.core.model.CurrentState
 import com.eugenics.core.enums.Theme
+import com.eugenics.core.model.FavoriteStation
+import com.eugenics.core.model.Favorites
 import com.eugenics.media_service.media.FreeRadioMediaServiceConnection
-import com.eugenics.media_service.media.FreeRadioMediaServiceConnection.Companion.SET_FAVORITES_COMMAND
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
+import kotlinx.serialization.json.Json
+import java.util.UUID
 import javax.inject.Inject
 
 @HiltViewModel
@@ -56,6 +59,12 @@ class MainViewModel @Inject constructor(
 
     private var _tagList: MutableStateFlow<List<Tag>> = MutableStateFlow(listOf())
     val tagList: StateFlow<List<Tag>> = _tagList
+
+    private val _saveData: MutableStateFlow<String> = MutableStateFlow("")
+    val saveData: StateFlow<String> = _saveData
+
+    private val _message: MutableStateFlow<String> = MutableStateFlow("")
+    val message: StateFlow<String> = _message
 
     private val subscriptionCallback = object : MediaBrowserCompat.SubscriptionCallback() {
         override fun onChildrenLoaded(
@@ -137,7 +146,7 @@ class MainViewModel @Inject constructor(
                 else -> play()
             }
         } else {
-            Log.d("PLAY_FROM_MEDIA_ID_CLICKED", mediaId)
+            Log.d(TAG, "PLAY_FROM_MEDIA_ID_CLICKED:$mediaId")
             mediaServiceConnection.transportControls.playFromMediaId(mediaId, null)
             _state.value = STATE_PLAYING
             currentMediaId = mediaId
@@ -157,33 +166,62 @@ class MainViewModel @Inject constructor(
     }
 
     fun search(query: String) {
-//        _uiState.value = UI_STATE_REFRESH
         mediaServiceConnection.transportControls.playFromSearch(query, null)
     }
 
     fun sendCommand(command: String, extras: Bundle? = null) {
-        if (command in enumValues<TagsCommands>().map { it.name }.toList()) {
-//            _uiState.value = UI_STATE_REFRESH
-            setSettings(
-                command = command,
-                tag = extras?.getString("TAG") ?: ""
-            )
-            _stations.value = listOf()
-        }
-        mediaServiceConnection.sendCommand(
-            command = command,
-            parameters = extras,
-            resultCallback = { result, bundle ->
-                if (result == 1) {
-                    Log.d(TAG, "Command: $command success")
+        when (command) {
+            "SAVE" -> viewModelScope.launch(Dispatchers.IO) {
+                val favorites = Favorites(
+                    stationList = repository.fetchStationsByFavorites()
+                        .map { it.convertToModel() }
+                        .map {
+                            FavoriteStation(
+                                uuid = UUID.randomUUID().toString(),
+                                stationuuid = it.stationuuid
+                            )
+                        }
+                )
+                if (favorites.stationList.isNotEmpty()) {
+                    try {
+                        val jsonString = Json.encodeToString(
+                            serializer = Favorites.serializer(),
+                            value = favorites
+                        )
+                        _saveData.value = jsonString
+                    } catch (e: Exception) {
+                        Log.e(TAG, e.message.toString())
+                    }
                 } else {
-                    Log.e(
-                        TAG,
-                        bundle?.getString(SET_FAVORITES_COMMAND) ?: "Command: $command error"
-                    )
+                    _message.value = "No data to share..."
                 }
             }
-        )
+
+            in enumValues<Commands>().map { it.name }.toList() -> {
+                setSettings(
+                    command = command,
+                    tag = extras?.getString("TAG") ?: ""
+                )
+                if (command != Commands.SET_FAVORITES_COMMAND.name) {
+                    _stations.value = listOf()
+                }
+                mediaServiceConnection.sendCommand(
+                    command = command,
+                    parameters = extras,
+                    resultCallback = { result, bundle ->
+                        if (result == 1) {
+                            Log.d(TAG, "Command: $command success")
+                        } else {
+                            Log.e(
+                                TAG,
+                                bundle?.getString(Commands.SET_FAVORITES_COMMAND.name)
+                                    ?: "Command: $command error"
+                            )
+                        }
+                    }
+                )
+            }
+        }
     }
 
     private fun collectNowPlaying() {

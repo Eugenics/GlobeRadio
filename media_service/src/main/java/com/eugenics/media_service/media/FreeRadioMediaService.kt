@@ -16,9 +16,8 @@ import androidx.core.content.ContextCompat
 import androidx.core.net.toUri
 import androidx.media.MediaBrowserServiceCompat
 import com.eugenics.core.enums.MediaSourceState
-import com.eugenics.core.enums.TagsCommands
+import com.eugenics.core.enums.Commands
 import com.eugenics.data.interfaces.repository.IRepository
-import com.eugenics.media_service.media.FreeRadioMediaServiceConnection.Companion.SET_FAVORITES_COMMAND
 import com.eugenics.media_service.media.FreeRadioMediaServiceConnection.Companion.SET_FAVORITES_STATION_KEY
 import com.eugenics.media_service.media.FreeRadioMediaServiceConnection.Companion.SET_FAVORITES_VALUE_KEY
 import com.eugenics.media_service.player.getMediaItems
@@ -224,35 +223,35 @@ class FreeRadioMediaService : MediaBrowserServiceCompat() {
             cb: ResultReceiver?
         ): Boolean {
             when (command) {
-                TagsCommands.FAVORITES_COMMAND.name -> {
+                Commands.FAVORITES_COMMAND.name -> {
                     Log.d(TAG, "SERVICE_COMMAND_FAVORITES")
                     mediaSource.collectMediaSource(
                         tag = "",
-                        command = TagsCommands.FAVORITES_COMMAND,
+                        command = Commands.FAVORITES_COMMAND,
                         stationUuid = ""
                     )
                 }
 
-                TagsCommands.STATIONS_COMMAND.name -> {
+                Commands.STATIONS_COMMAND.name -> {
                     Log.d(TAG, "SERVICE_COMMAND_STATIONS")
                     val tag = extras?.getString("TAG") ?: ""
                     mediaSource.collectMediaSource(
                         tag = tag,
-                        command = TagsCommands.STATIONS_COMMAND,
+                        command = Commands.STATIONS_COMMAND,
                         stationUuid = ""
                     )
                 }
 
-                TagsCommands.RELOAD_ALL_STATIONS_COMMAND.name -> {
+                Commands.RELOAD_ALL_STATIONS_COMMAND.name -> {
                     Log.d(TAG, "RELOAD_ALL_STATIONS_COMMAND")
                     mediaSource.collectMediaSource(
                         tag = "",
-                        command = TagsCommands.RELOAD_ALL_STATIONS_COMMAND,
+                        command = Commands.RELOAD_ALL_STATIONS_COMMAND,
                         stationUuid = ""
                     )
                 }
 
-                SET_FAVORITES_COMMAND -> {
+                Commands.SET_FAVORITES_COMMAND.name -> {
                     Log.d(TAG, "SERVICE_COMMAND_SET_FAVORITES")
                     extras?.let { bundle ->
                         val stationUuid = bundle.getString(SET_FAVORITES_STATION_KEY)
@@ -316,7 +315,7 @@ class FreeRadioMediaService : MediaBrowserServiceCompat() {
                 mediaSource.collectMediaSource(
                     tag = "",
                     stationUuid = "",
-                    command = TagsCommands.SEARCH_COMMAND,
+                    command = Commands.SEARCH_COMMAND,
                     query = mediaItemId
                 )
             }

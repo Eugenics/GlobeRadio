@@ -4,14 +4,13 @@ import android.os.Bundle
 import android.os.ResultReceiver
 import android.util.Log
 import com.eugenics.core.enums.MediaSourceState
-import com.eugenics.core.enums.TagsCommands
+import com.eugenics.core.enums.Commands
 import com.eugenics.core.model.CurrentPrefs
 import com.eugenics.core.model.PlayerMediaItem
 import com.eugenics.data.data.database.enteties.StationDaoObject
 import com.eugenics.data.data.util.Response
 import com.eugenics.data.data.util.convertToMediaItem
 import com.eugenics.data.interfaces.repository.IRepository
-import com.eugenics.media_service.media.FreeRadioMediaServiceConnection.Companion.SET_FAVORITES_COMMAND
 import com.eugenics.media_service.util.PrefsHelper
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -54,7 +53,7 @@ class MediaSource(private val repository: IRepository) {
                 collectMediaSource(
                     tag = prefs.value.tag,
                     stationUuid = prefs.value.stationUuid,
-                    command = TagsCommands.valueOf(prefs.value.command),
+                    command = Commands.valueOf(prefs.value.command),
                     query = prefs.value.query
                 )
             }
@@ -64,7 +63,7 @@ class MediaSource(private val repository: IRepository) {
     fun collectMediaSource(
         tag: String,
         stationUuid: String,
-        command: TagsCommands,
+        command: Commands,
         query: String = ""
     ) {
         scope.launch {
@@ -72,22 +71,22 @@ class MediaSource(private val repository: IRepository) {
             _state.value = MediaSourceState.STATE_INITIALIZING.value
             try {
                 when (command) {
-                    TagsCommands.STATIONS_COMMAND ->
+                    Commands.STATIONS_COMMAND ->
                         feelMediaItems(repository.getLocalStationByTag(tag = "%$tag%"))
 
-                    TagsCommands.FAVORITES_COMMAND ->
+                    Commands.FAVORITES_COMMAND ->
                         feelMediaItems(repository.fetchStationsByFavorites())
 
-                    TagsCommands.RELOAD_ALL_STATIONS_COMMAND ->
+                    Commands.RELOAD_ALL_STATIONS_COMMAND ->
                         loadStationsFromRemote()
 
-                    TagsCommands.SEARCH_COMMAND ->
+                    Commands.SEARCH_COMMAND ->
                         feelMediaItems(repository.getLocalStationByName(name = "%$query%"))
 
                     else -> feelMediaItems(repository.getLocalStations())
                 }
 
-                if (command != TagsCommands.RELOAD_ALL_STATIONS_COMMAND) {
+                if (command != Commands.RELOAD_ALL_STATIONS_COMMAND) {
                     setPrefs(
                         tag = tag,
                         command = command.name,
@@ -123,12 +122,12 @@ class MediaSource(private val repository: IRepository) {
                 } else {
                     repository.deleteFavorite(stationUuid = stationUuid)
                 }
-                resultBundle.putString(SET_FAVORITES_COMMAND, "Success")
+                resultBundle.putString(Commands.SET_FAVORITES_COMMAND.name, "Success")
                 cb?.send(1, resultBundle)
             } catch (ex: Exception) {
                 _state.value = MediaSourceState.STATE_ERROR.value
                 Log.e(TAG, ex.message.toString())
-                resultBundle.putString(SET_FAVORITES_COMMAND, ex.message.toString())
+                resultBundle.putString(Commands.SET_FAVORITES_COMMAND.name, ex.message.toString())
                 cb?.send(0, resultBundle)
             }
         }
@@ -224,7 +223,7 @@ class MediaSource(private val repository: IRepository) {
                     }
 
                     feelMediaItems(repository.getLocalStations())
-                    setPrefs(command = TagsCommands.STATIONS_COMMAND.name)
+                    setPrefs(command = Commands.STATIONS_COMMAND.name)
 
                     _state.value = MediaSourceState.STATE_INITIALIZED.value
                     return@collect

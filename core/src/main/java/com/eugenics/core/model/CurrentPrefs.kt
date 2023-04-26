@@ -1,6 +1,6 @@
 package com.eugenics.core.model
 
-import com.eugenics.core.enums.TagsCommands
+import com.eugenics.core.enums.Commands
 import kotlinx.serialization.Serializable
 
 
@@ -15,7 +15,7 @@ data class CurrentPrefs(
         fun getDefaultInstance(): CurrentPrefs = CurrentPrefs(
             tag = "",
             stationUuid = "",
-            command = TagsCommands.STATIONS_COMMAND.name,
+            command = Commands.STATIONS_COMMAND.name,
             query = ""
         )
     }

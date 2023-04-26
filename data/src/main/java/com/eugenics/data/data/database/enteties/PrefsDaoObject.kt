@@ -3,7 +3,7 @@ package com.eugenics.data.data.database.enteties
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
-import com.eugenics.core.enums.TagsCommands
+import com.eugenics.core.enums.Commands
 import com.eugenics.core.model.CurrentPrefs
 import java.util.UUID
 
@@ -33,7 +33,7 @@ data class PrefsDaoObject(
             uuid: String = UUID.randomUUID().toString(),
             tag: String = "",
             stationUUID: String = "",
-            command: String = TagsCommands.STATIONS_COMMAND.name,
+            command: String = Commands.STATIONS_COMMAND.name,
             query: String = ""
         ): PrefsDaoObject =
             PrefsDaoObject(

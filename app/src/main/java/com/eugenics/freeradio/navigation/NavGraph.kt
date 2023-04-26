@@ -8,10 +8,10 @@ import androidx.compose.runtime.collectAsState
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import com.eugenics.core.enums.Commands
 import com.eugenics.freeradio.ui.compose.main.MainScreen
 import com.eugenics.freeradio.ui.compose.settings.SettingsScreen
 import com.eugenics.freeradio.ui.viewmodels.MainViewModel
-import com.eugenics.media_service.media.FreeRadioMediaServiceConnection.Companion.SET_FAVORITES_COMMAND
 import com.eugenics.media_service.media.FreeRadioMediaServiceConnection.Companion.SET_FAVORITES_STATION_KEY
 import com.eugenics.media_service.media.FreeRadioMediaServiceConnection.Companion.SET_FAVORITES_VALUE_KEY
 
@@ -46,7 +46,7 @@ fun NavGraph(
                     bundle.putString(SET_FAVORITES_STATION_KEY, stationUuid)
                     bundle.putInt(SET_FAVORITES_VALUE_KEY, isFavorite)
                     mainViewModel.sendCommand(
-                        command = SET_FAVORITES_COMMAND,
+                        command = Commands.SET_FAVORITES_COMMAND.name,
                         extras = bundle
                     )
                 },

@@ -1,7 +1,7 @@
 package com.eugenics.core.model
 
 import android.os.Parcelable
-import com.eugenics.core.enums.TagsCommands
+import com.eugenics.core.enums.Commands
 import com.eugenics.core.enums.Theme
 import kotlinx.parcelize.Parcelize
 import kotlinx.serialization.Serializable
@@ -20,7 +20,7 @@ data class CurrentState(
                 tag = "",
                 stationUuid = "",
                 theme = Theme.SYSTEM,
-                command = TagsCommands.STATIONS_COMMAND.name
+                command = Commands.STATIONS_COMMAND.name
             )
     }
 }

@@ -1,6 +1,6 @@
 package com.eugenics.core.enums
 
-enum class TagsCommands {
+enum class Commands {
     FAVORITES_COMMAND,
     STATIONS_COMMAND,
     SEARCH_COMMAND,
