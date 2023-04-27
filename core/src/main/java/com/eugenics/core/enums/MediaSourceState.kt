@@ -6,7 +6,8 @@ enum class MediaSourceState(val value: Int) {
     STATE_INITIALIZING(2),
     STATE_INITIALIZED(3),
     STATE_ERROR(4),
-    STATE_ON_CLICK(5);
+    STATE_ON_CLICK(5),
+    STATE_FIRST_INIT(10);
 
     companion object {
         fun getNameByValue(value: Int): String {

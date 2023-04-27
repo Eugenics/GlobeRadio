@@ -47,7 +47,7 @@ class MediaSource(private val repository: IRepository) {
 
             if (repository.checkLocalStations().isEmpty()) {
                 Log.d(TAG, "Load remote repository...")
-                loadStationsFromRemote()
+                loadStationsFromRemote(firstLoad = true)
             } else {
                 _state.value = MediaSourceState.STATE_CREATED.value
                 collectMediaSource(
@@ -192,12 +192,16 @@ class MediaSource(private val repository: IRepository) {
         }
     }
 
-    private suspend fun loadStationsFromRemote() {
+    private suspend fun loadStationsFromRemote(firstLoad: Boolean = false) {
         repository.getRemoteStations().collect { response ->
             when (response) {
                 is Response.Loading -> {
                     Log.d(TAG, "Loading...")
-                    _state.value = MediaSourceState.STATE_INITIALIZING.value
+                    if (firstLoad) {
+                        _state.value = MediaSourceState.STATE_FIRST_INIT.value
+                    } else {
+                        _state.value = MediaSourceState.STATE_INITIALIZING.value
+                    }
                 }
 
                 is Response.Error -> {

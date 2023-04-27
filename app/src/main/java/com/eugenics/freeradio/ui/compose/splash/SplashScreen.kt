@@ -6,28 +6,29 @@ import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
 import com.eugenics.freeradio.R
 import com.eugenics.freeradio.ui.theme.FreeRadioTheme
-import com.eugenics.freeradio.ui.viewmodels.MainViewModel
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
 
 @Composable
 fun SplashScreen(
-    uiState: StateFlow<Int> = MutableStateFlow(MainViewModel.UI_STATE_LOADING)
+    displayText:String = "Initializing..."
 ) {
     var targetValue by remember { mutableStateOf(0f) }
+
     val alpha: Float by animateFloatAsState(
         targetValue = targetValue,
-        animationSpec = tween(1000),
+        animationSpec = tween(100),
         finishedListener = { }
     )
 
@@ -37,28 +38,25 @@ fun SplashScreen(
     ) {
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
+            verticalArrangement = Arrangement.Center,
+            modifier = Modifier.fillMaxSize()
         ) {
-            Box(
-                modifier = Modifier.fillMaxSize(),
-                contentAlignment = Alignment.Center
-            ) {
-                Image(
-                    painter = painterResource(R.drawable.main),
-                    contentDescription = null,
-                    modifier = Modifier.fillMaxSize(),
-                    contentScale = ContentScale.FillBounds,
-                    alpha = alpha
-                )
-            }
-            if (uiState.collectAsState().value == MainViewModel.UI_STATE_LOADING) {
-                Text(
-                    text = stringResource(R.string.loading_string),
-                    style = MaterialTheme.typography.headlineSmall
-                )
-            }
+            Image(
+                painter = painterResource(R.drawable.free_radio_logo),
+                contentDescription = null,
+                contentScale = ContentScale.Crop,
+                modifier = Modifier
+                    .size(100.dp)
+                    .clip(shape = CircleShape),
+                alpha = alpha
+            )
+            Text(
+                text = displayText,
+                style = MaterialTheme.typography.displaySmall,
+                textAlign = TextAlign.Center,
+                modifier = Modifier.fillMaxWidth()
+            )
         }
-
         SideEffect {
             targetValue = 1f
         }

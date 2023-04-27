@@ -191,7 +191,7 @@ private fun StationCard(
 
 @Preview(uiMode = UI_MODE_NIGHT_NO)
 @Composable
-private fun StationCardPreview() {
+private fun StationCardNightPreviewDay() {
     FreeRadioTheme {
         MainContent(
             paddingValues = PaddingValues(),
@@ -204,7 +204,7 @@ private fun StationCardPreview() {
 
 @Preview(uiMode = UI_MODE_NIGHT_YES)
 @Composable
-private fun StationCardNightPreview() {
+private fun StationCardNightPreviewNight() {
     FreeRadioTheme {
         MainContent(
             paddingValues = PaddingValues(),
