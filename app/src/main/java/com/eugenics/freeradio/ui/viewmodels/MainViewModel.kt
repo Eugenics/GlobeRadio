@@ -164,6 +164,7 @@ class MainViewModel @Inject constructor(
 
     fun search(query: String) {
         setSettings(visibleIndex = 0)
+        _stations.value = listOf()
         mediaServiceConnection.transportControls.playFromSearch(query, null)
     }
 
