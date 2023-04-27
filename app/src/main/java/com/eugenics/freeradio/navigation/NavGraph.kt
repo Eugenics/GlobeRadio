@@ -29,7 +29,7 @@ fun NavGraph(
             MainScreen(
                 navController = navController,
                 uiState = mainViewModel.uiState,
-                playbackState = mainViewModel.state,
+                playbackState = mainViewModel.playBackState,
                 stationsList = mainViewModel.stations,
                 onPlayClick = { mainViewModel.play() },
                 onPauseClick = { mainViewModel.pause() },

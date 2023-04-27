@@ -1,5 +1,7 @@
 package com.eugenics.freeradio.ui.compose.main
 
+import android.content.res.Configuration.UI_MODE_NIGHT_NO
+import android.content.res.Configuration.UI_MODE_NIGHT_YES
 import android.os.Build
 import android.os.Bundle
 import android.support.v4.media.session.PlaybackStateCompat
@@ -25,7 +27,7 @@ import com.eugenics.freeradio.ui.compose.load.LoadContent
 import com.eugenics.freeradio.ui.compose.main.components.AppBarCard
 import com.eugenics.freeradio.ui.compose.main.components.MainBottomAppBar
 import com.eugenics.freeradio.ui.compose.main.components.MainNavigationDrawer
-import com.eugenics.freeradio.ui.compose.splash.SplashScreenNew
+import com.eugenics.freeradio.ui.compose.splash.SplashScreen
 import com.eugenics.freeradio.ui.theme.FreeRadioTheme
 import com.eugenics.freeradio.ui.viewmodels.MainViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -37,7 +39,7 @@ import kotlinx.coroutines.launch
 @Composable
 fun MainScreen(
     navController: NavHostController = rememberNavController(),
-    uiState: StateFlow<Int> = MutableStateFlow(MainViewModel.UI_STATE_LOADING),
+    uiState: StateFlow<Int> = MutableStateFlow(MainViewModel.UI_STATE_UPDATE_DATA),
     playbackState: StateFlow<PlaybackStateCompat> = MutableStateFlow(MainViewModel.STATE_PAUSE),
     stationsList: StateFlow<List<Station>> = MutableStateFlow(listOf()),
     sendCommand: (command: String, parameters: Bundle?) -> Unit = { _, _ -> },
@@ -61,9 +63,7 @@ fun MainScreen(
     val isScrolledUp = rememberSaveable { mutableStateOf(false) }
 
     when (listState.value) {
-        MainViewModel.UI_STATE_FIRST_INIT -> SplashScreenNew()
-        MainViewModel.UI_STATE_IDL -> SplashScreenNew()
-        MainViewModel.UI_STATE_LOADING -> SplashScreenNew()
+        MainViewModel.UI_STATE_SPLASH -> SplashScreen()
         else -> {
             Surface(
                 color = MaterialTheme.colorScheme.background
@@ -116,7 +116,7 @@ fun MainScreen(
                         }
                     ) { paddingValues ->
                         when (listState.value) {
-                            MainViewModel.UI_STATE_READY -> {
+                            MainViewModel.UI_STATE_MAIN -> {
                                 MainContent(
                                     paddingValues = paddingValues,
                                     stations = stations.value,
@@ -128,7 +128,7 @@ fun MainScreen(
                                 )
                             }
 
-                            MainViewModel.UI_STATE_REFRESH -> {
+                            MainViewModel.UI_STATE_UPDATE_DATA -> {
                                 Box(
                                     modifier = Modifier.fillMaxSize()
                                 ) {
@@ -145,8 +145,17 @@ fun MainScreen(
 
 @RequiresApi(Build.VERSION_CODES.S)
 @Composable
-@Preview
-private fun SearchScreenPreview() {
+@Preview(uiMode = UI_MODE_NIGHT_NO)
+private fun MainScreenPreviewNight() {
+    FreeRadioTheme {
+        MainScreen(tagsList = listOf())
+    }
+}
+
+@RequiresApi(Build.VERSION_CODES.S)
+@Composable
+@Preview(uiMode = UI_MODE_NIGHT_YES)
+private fun MainScreenPreviewDay() {
     FreeRadioTheme {
         MainScreen(tagsList = listOf())
     }

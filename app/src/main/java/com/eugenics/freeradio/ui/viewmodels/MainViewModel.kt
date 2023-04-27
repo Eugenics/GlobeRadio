@@ -35,21 +35,20 @@ class MainViewModel @Inject constructor(
     private val repository: IRepository
 ) : ViewModel() {
 
-    private val _uiState: MutableStateFlow<Int> = MutableStateFlow(UI_STATE_IDL)
+    private val _uiState: MutableStateFlow<Int> = MutableStateFlow(UI_STATE_SPLASH)
     val uiState: StateFlow<Int> = _uiState
 
     private val _stations: MutableStateFlow<List<Station>> = MutableStateFlow(mutableListOf())
     val stations: StateFlow<List<Station>> = _stations
 
-    private val _state = mediaServiceConnection.playbackState
-    val state: StateFlow<PlaybackStateCompat> = _state
+    private val _playBackState = mediaServiceConnection.playbackState
+    val playBackState: StateFlow<PlaybackStateCompat> = _playBackState
 
     private val _settings: MutableStateFlow<CurrentState> =
         MutableStateFlow(CurrentState.getDefaultValueInstance())
     val settings: StateFlow<CurrentState> = _settings
 
     private val nowPlayingMetaData = mediaServiceConnection.nowPlayingItem
-
     val nowPlaying = MutableStateFlow(NowPlayingStation.emptyInstance())
 
     private val ioDispatcher = Dispatchers.IO
@@ -106,7 +105,6 @@ class MainViewModel @Inject constructor(
                 }
             }
             _stations.value = stationServiceContent
-            _uiState.value = UI_STATE_READY
 
             if (_stations.value.isNotEmpty()) {
                 currentMediaId = _stations.value.first().stationuuid
@@ -127,7 +125,6 @@ class MainViewModel @Inject constructor(
             mediaServiceConnection.isConnected.collect {
                 if (it) {
                     mediaServiceConnection.subscribe(rootId, subscriptionCallback)
-                    _uiState.value = UI_STATE_FIRST_INIT
                     return@collect
                 }
             }
@@ -136,14 +133,14 @@ class MainViewModel @Inject constructor(
 
     fun onItemClick(mediaId: String) {
         if (mediaId == currentMediaId) {
-            when (state.value.state) {
+            when (playBackState.value.state) {
                 PlaybackStateCompat.STATE_PLAYING -> pause()
                 else -> play()
             }
         } else {
             Log.d(TAG, "PLAY_FROM_MEDIA_ID_CLICKED:$mediaId")
             mediaServiceConnection.transportControls.playFromMediaId(mediaId, null)
-            _state.value = STATE_PLAYING
+            _playBackState.value = STATE_PLAYING
             currentMediaId = mediaId
             setSettings(stationUuid = mediaId)
         }
@@ -151,13 +148,13 @@ class MainViewModel @Inject constructor(
 
     fun play() {
         mediaServiceConnection.transportControls.play()
-        _state.value = STATE_PLAYING
+        _playBackState.value = STATE_PLAYING
     }
 
 
     fun pause() {
         mediaServiceConnection.transportControls.pause()
-        _state.value = STATE_PAUSE
+        _playBackState.value = STATE_PAUSE
     }
 
     fun search(query: String) {
@@ -248,10 +245,13 @@ class MainViewModel @Inject constructor(
         viewModelScope.launch(Dispatchers.IO) {
             mediaServiceConnection.mediaSourceState.collect { state ->
                 when (state) {
-                    MediaSourceState.STATE_ERROR.value -> _uiState.value = UI_STATE_READY
-                    MediaSourceState.STATE_INITIALIZING.value -> _uiState.value = UI_STATE_REFRESH
-//                    MediaSourceState.STATE_INITIALIZED.value -> _uiState.value = UI_STATE_READY
-//                    MediaSourceState.STATE_CREATED.value -> _uiState.value = UI_STATE_READY
+                    MediaSourceState.STATE_FIRST_INIT.value -> _uiState.value = UI_STATE_SPLASH
+                    MediaSourceState.STATE_CREATED.value -> _uiState.value = UI_STATE_SPLASH
+                    MediaSourceState.STATE_ERROR.value -> _uiState.value = UI_STATE_ERROR
+                    MediaSourceState.STATE_INITIALIZING.value -> _uiState.value =
+                        UI_STATE_UPDATE_DATA
+
+                    MediaSourceState.STATE_INITIALIZED.value -> _uiState.value = UI_STATE_MAIN
                 }
             }
         }
@@ -287,12 +287,10 @@ class MainViewModel @Inject constructor(
     companion object {
         const val TAG = "SEARCH_VIEW_MODEL"
 
-        const val UI_STATE_LOADING = 0
-        const val UI_STATE_EMPTY = 1
-        const val UI_STATE_READY = 2
-        const val UI_STATE_IDL = 3
-        const val UI_STATE_REFRESH = 4
-        const val UI_STATE_FIRST_INIT = 5
+        const val UI_STATE_SPLASH = 10
+        const val UI_STATE_UPDATE_DATA = 11
+        const val UI_STATE_ERROR = 12
+        const val UI_STATE_MAIN = 13
 
         val STATE_PLAYING = stateBuilder(state = PlaybackStateCompat.STATE_PLAYING)
         val STATE_PAUSE = stateBuilder(state = PlaybackStateCompat.STATE_PAUSED)
