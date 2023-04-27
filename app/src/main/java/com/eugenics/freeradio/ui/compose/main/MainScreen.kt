@@ -45,7 +45,7 @@ fun MainScreen(
     sendCommand: (command: String, parameters: Bundle?) -> Unit = { _, _ -> },
     onPlayClick: () -> Unit = {},
     onPauseClick: () -> Unit = {},
-    onItemClick: (mediaId: String) -> Unit = {},
+    onItemClick: (mediaId: String, mediaItemIndex: Int) -> Unit = { _, _ -> },
     onSearchClick: (query: String) -> Unit = {},
     onFavoriteClick: (stationUuid: String, isFavorite: Int) -> Unit = { _, _ -> },
     nowPlayingStation: StateFlow<NowPlayingStation> =

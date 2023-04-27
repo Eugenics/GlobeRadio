@@ -31,7 +31,7 @@ fun MainContent(
     paddingValues: PaddingValues,
     stations: List<Station>,
     onFavoriteClick: (stationUuid: String, isFavorite: Int) -> Unit = { _, _ -> },
-    onCardClick: (mediaId: String) -> Unit,
+    onCardClick: (mediaId: String, mediaItemIndex: Int) -> Unit,
     onScrolled: (isScrolledUp: Boolean) -> Unit
 ) {
     val columnState = rememberLazyListState()
@@ -48,7 +48,6 @@ fun MainContent(
 
     Column(
         modifier = Modifier
-//            .padding(paddingValues = paddingValues)
             .fillMaxSize()
     ) {
         LazyColumn(
@@ -75,7 +74,7 @@ private fun StationCard(
     index: Int = 0,
     size: Int = 0,
     station: Station,
-    onCardClick: (mediaId: String) -> Unit = {},
+    onCardClick: (mediaId: String, mediaItemIndex: Int) -> Unit = { _, _ -> },
     onFavoriteClick: (stationUuid: String, isFavorite: Int) -> Unit = { _, _ -> }
 ) {
     val isFavorite = rememberSaveable { mutableStateOf(station.isFavorite) }
@@ -128,7 +127,7 @@ private fun StationCard(
                 end = 8.dp
             )
             .clickable {
-                onCardClick(station.stationuuid)
+                onCardClick(station.stationuuid, index)
             }
     ) {
         SubcomposeAsyncImage(
@@ -196,7 +195,7 @@ private fun StationCardNightPreviewDay() {
         MainContent(
             paddingValues = PaddingValues(),
             stations = listOf(fakeStation, fakeStation, fakeStation),
-            onCardClick = {},
+            onCardClick = { _, _ -> },
             onScrolled = {}
         )
     }
@@ -209,7 +208,7 @@ private fun StationCardNightPreviewNight() {
         MainContent(
             paddingValues = PaddingValues(),
             stations = listOf(fakeStation, fakeStation, fakeStation),
-            onCardClick = {},
+            onCardClick = { _, _ -> },
             onScrolled = {}
         )
     }

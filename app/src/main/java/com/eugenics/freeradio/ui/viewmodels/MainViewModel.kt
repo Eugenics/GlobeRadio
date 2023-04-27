@@ -131,7 +131,7 @@ class MainViewModel @Inject constructor(
         }
     }
 
-    fun onItemClick(mediaId: String) {
+    fun onItemClick(mediaId: String, mediaItemIndex: Int = 0) {
         if (mediaId == currentMediaId) {
             when (playBackState.value.state) {
                 PlaybackStateCompat.STATE_PLAYING -> pause()

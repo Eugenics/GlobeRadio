@@ -33,7 +33,12 @@ fun NavGraph(
                 stationsList = mainViewModel.stations,
                 onPlayClick = { mainViewModel.play() },
                 onPauseClick = { mainViewModel.pause() },
-                onItemClick = { mediaId -> mainViewModel.onItemClick(mediaId = mediaId) },
+                onItemClick = { mediaId, mediaItemIndex ->
+                    mainViewModel.onItemClick(
+                        mediaId = mediaId,
+                        mediaItemIndex = mediaItemIndex
+                    )
+                },
                 onSearchClick = { query -> mainViewModel.search(query = query) },
                 sendCommand = { command, parameters ->
                     mainViewModel.sendCommand(
