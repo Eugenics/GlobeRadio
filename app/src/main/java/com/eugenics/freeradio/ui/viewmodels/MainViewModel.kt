@@ -108,16 +108,9 @@ class MainViewModel @Inject constructor(
             _stations.value = stationServiceContent
             _uiState.value = UI_STATE_READY
 
-            currentMediaId = _stations.value.first().stationuuid
-
-//            if (_stations.value.isEmpty()) {
-//                _uiState.value = when (uiState.value) {
-//                    UI_STATE_FIRST_INIT -> UI_STATE_FIRST_INIT
-//                    else -> UI_STATE_EMPTY
-//                }
-//            } else {
-//                _uiState.value = UI_STATE_READY
-//            }
+            if (_stations.value.isNotEmpty()) {
+                currentMediaId = _stations.value.first().stationuuid
+            }
         }
     }
 
