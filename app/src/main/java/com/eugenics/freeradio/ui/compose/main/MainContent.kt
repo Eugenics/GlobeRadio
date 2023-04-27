@@ -25,16 +25,26 @@ import coil.compose.SubcomposeAsyncImageContent
 import com.eugenics.core.model.Station
 import com.eugenics.freeradio.R
 import com.eugenics.freeradio.ui.theme.FreeRadioTheme
+import kotlinx.coroutines.FlowPreview
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.debounce
 
+@OptIn(FlowPreview::class)
 @Composable
 fun MainContent(
     paddingValues: PaddingValues,
     stations: List<Station>,
     onFavoriteClick: (stationUuid: String, isFavorite: Int) -> Unit = { _, _ -> },
-    onCardClick: (mediaId: String, mediaItemIndex: Int) -> Unit,
-    onScrolled: (isScrolledUp: Boolean) -> Unit
+    onCardClick: (mediaId: String) -> Unit,
+    onScrolled: (isScrolledUp: Boolean) -> Unit,
+    visibleIndex: Int = 0,
+    onVisibleIndexChange: (index: Int) -> Unit = {}
 ) {
-    val columnState = rememberLazyListState()
+    val columnState = rememberLazyListState(
+        initialFirstVisibleItemIndex = visibleIndex
+    )
+
+
     val columnVisibleIndex = rememberSaveable { mutableStateOf(columnState.firstVisibleItemIndex) }
     val firstVisibleIndex = rememberSaveable { mutableStateOf(0) }
 
@@ -44,6 +54,16 @@ fun MainContent(
     } else {
         onScrolled(false)
         firstVisibleIndex.value = columnVisibleIndex.value
+    }
+
+    LaunchedEffect(columnState) {
+        snapshotFlow {
+            columnState.firstVisibleItemIndex
+        }
+            .debounce(500L)
+            .collectLatest { index ->
+                onVisibleIndexChange(index)
+            }
     }
 
     Column(
@@ -74,7 +94,7 @@ private fun StationCard(
     index: Int = 0,
     size: Int = 0,
     station: Station,
-    onCardClick: (mediaId: String, mediaItemIndex: Int) -> Unit = { _, _ -> },
+    onCardClick: (mediaId: String) -> Unit = {},
     onFavoriteClick: (stationUuid: String, isFavorite: Int) -> Unit = { _, _ -> }
 ) {
     val isFavorite = rememberSaveable { mutableStateOf(station.isFavorite) }
@@ -127,7 +147,7 @@ private fun StationCard(
                 end = 8.dp
             )
             .clickable {
-                onCardClick(station.stationuuid, index)
+                onCardClick(station.stationuuid)
             }
     ) {
         SubcomposeAsyncImage(
@@ -195,7 +215,7 @@ private fun StationCardNightPreviewDay() {
         MainContent(
             paddingValues = PaddingValues(),
             stations = listOf(fakeStation, fakeStation, fakeStation),
-            onCardClick = { _, _ -> },
+            onCardClick = {},
             onScrolled = {}
         )
     }
@@ -208,7 +228,7 @@ private fun StationCardNightPreviewNight() {
         MainContent(
             paddingValues = PaddingValues(),
             stations = listOf(fakeStation, fakeStation, fakeStation),
-            onCardClick = { _, _ -> },
+            onCardClick = {},
             onScrolled = {}
         )
     }
