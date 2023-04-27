@@ -25,16 +25,26 @@ import coil.compose.SubcomposeAsyncImageContent
 import com.eugenics.core.model.Station
 import com.eugenics.freeradio.R
 import com.eugenics.freeradio.ui.theme.FreeRadioTheme
+import kotlinx.coroutines.FlowPreview
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.debounce
 
+@OptIn(FlowPreview::class)
 @Composable
 fun MainContent(
     paddingValues: PaddingValues,
     stations: List<Station>,
     onFavoriteClick: (stationUuid: String, isFavorite: Int) -> Unit = { _, _ -> },
     onCardClick: (mediaId: String) -> Unit,
-    onScrolled: (isScrolledUp: Boolean) -> Unit
+    onScrolled: (isScrolledUp: Boolean) -> Unit,
+    visibleIndex: Int = 0,
+    onVisibleIndexChange: (index: Int) -> Unit = {}
 ) {
-    val columnState = rememberLazyListState()
+    val columnState = rememberLazyListState(
+        initialFirstVisibleItemIndex = visibleIndex
+    )
+
+
     val columnVisibleIndex = rememberSaveable { mutableStateOf(columnState.firstVisibleItemIndex) }
     val firstVisibleIndex = rememberSaveable { mutableStateOf(0) }
 
@@ -46,9 +56,18 @@ fun MainContent(
         firstVisibleIndex.value = columnVisibleIndex.value
     }
 
+    LaunchedEffect(columnState) {
+        snapshotFlow {
+            columnState.firstVisibleItemIndex
+        }
+            .debounce(500L)
+            .collectLatest { index ->
+                onVisibleIndexChange(index)
+            }
+    }
+
     Column(
         modifier = Modifier
-//            .padding(paddingValues = paddingValues)
             .fillMaxSize()
     ) {
         LazyColumn(

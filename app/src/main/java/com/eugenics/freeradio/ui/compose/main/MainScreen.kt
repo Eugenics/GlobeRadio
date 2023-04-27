@@ -50,7 +50,9 @@ fun MainScreen(
     onFavoriteClick: (stationUuid: String, isFavorite: Int) -> Unit = { _, _ -> },
     nowPlayingStation: StateFlow<NowPlayingStation> =
         MutableStateFlow(NowPlayingStation.emptyInstance()),
-    tagsList: List<Tag>
+    tagsList: List<Tag>,
+    visibleIndex: Int = 0,
+    onVisibleIndexChange: (index: Int) -> Unit = {}
 ) {
     val stations = stationsList.collectAsState()
     val listState = uiState.collectAsState()
@@ -124,7 +126,9 @@ fun MainScreen(
                                     onFavoriteClick = onFavoriteClick,
                                     onScrolled = {
                                         isScrolledUp.value = it
-                                    }
+                                    },
+                                    visibleIndex = visibleIndex,
+                                    onVisibleIndexChange = onVisibleIndexChange
                                 )
                             }
 

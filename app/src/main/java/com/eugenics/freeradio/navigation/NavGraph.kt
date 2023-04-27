@@ -33,7 +33,9 @@ fun NavGraph(
                 stationsList = mainViewModel.stations,
                 onPlayClick = { mainViewModel.play() },
                 onPauseClick = { mainViewModel.pause() },
-                onItemClick = { mediaId -> mainViewModel.onItemClick(mediaId = mediaId) },
+                onItemClick = { mediaId ->
+                    mainViewModel.onItemClick(mediaId = mediaId)
+                },
                 onSearchClick = { query -> mainViewModel.search(query = query) },
                 sendCommand = { command, parameters ->
                     mainViewModel.sendCommand(
@@ -51,7 +53,11 @@ fun NavGraph(
                     )
                 },
                 nowPlayingStation = mainViewModel.nowPlaying,
-                tagsList = mainViewModel.tagList.collectAsState().value
+                tagsList = mainViewModel.tagList.collectAsState().value,
+                visibleIndex = mainViewModel.getSettings().visibleIndex,
+                onVisibleIndexChange = { index ->
+                    mainViewModel.onVisibleIndexChanged(index = index)
+                }
             )
         }
         composable(route = Screen.SettingsScreen.rout) {

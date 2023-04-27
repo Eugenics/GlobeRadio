@@ -146,6 +146,11 @@ class MainViewModel @Inject constructor(
         }
     }
 
+    fun onVisibleIndexChanged(index: Int) {
+        Log.d(TAG, "onVisibleIndexChanged:$index")
+        setSettings(visibleIndex = index)
+    }
+
     fun play() {
         mediaServiceConnection.transportControls.play()
         _playBackState.value = STATE_PLAYING
@@ -196,6 +201,7 @@ class MainViewModel @Inject constructor(
                 )
                 if (command != Commands.SET_FAVORITES_COMMAND.name) {
                     _stations.value = listOf()
+                    setSettings(visibleIndex = 0)
                 }
                 mediaServiceConnection.sendCommand(
                     command = command,
@@ -261,16 +267,19 @@ class MainViewModel @Inject constructor(
         tag: String = settings.value.tag,
         stationUuid: String = settings.value.stationUuid,
         theme: Theme = settings.value.theme,
-        command: String = settings.value.command
+        command: String = settings.value.command,
+        visibleIndex: Int = settings.value.visibleIndex
     ) {
         viewModelScope.launch(ioDispatcher) {
             val currentState = CurrentState(
                 tag = tag,
                 stationUuid = stationUuid,
                 theme = theme,
-                command = command
+                command = command,
+                visibleIndex = visibleIndex
             )
             repository.setSettings(settings = currentState)
+            Log.d(TAG, "setSettings:$currentState")
         }
     }
 
@@ -283,6 +292,8 @@ class MainViewModel @Inject constructor(
     fun clearMessage() {
         _message.value = ""
     }
+
+    fun getSettings(): CurrentState = settings.value
 
     companion object {
         const val TAG = "SEARCH_VIEW_MODEL"
