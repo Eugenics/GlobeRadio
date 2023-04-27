@@ -25,6 +25,8 @@
     <string name="no_data_to_share">Нечего сохранять…</string>
     <string name="saved_text">Сохранено…</string>
     <string name="not_saved_text">Не сохранено…</string>
+    <string name="backup_favorites">Сохраить избранное</string>
+    <string name="restore_favorites">Восстановить избранное</string>
 
     <string name="authority">"com.eugenics.fileprovider"</string>
 </resources>

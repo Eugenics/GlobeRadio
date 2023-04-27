@@ -25,6 +25,8 @@
     <string name="no_data_to_share">No data to save…</string>
     <string name="saved_text">Saved…</string>
     <string name="not_saved_text">Not saved…</string>
+    <string name="backup_favorites">Backup favorites</string>
+    <string name="restore_favorites">Restore favorites</string>
 
     <string name="authority">"com.eugenics.fileprovider"</string>
 </resources>

@@ -161,7 +161,7 @@ fun MainNavigationDrawer(
                 )
 
                 CustomNavigationItem(
-                    text = "Save favorites",
+                    text = stringResource(R.string.backup_favorites),
                     icon = ImageVector.vectorResource(R.drawable.baseline_file_download_24),
                     onClick = {
                         sendCommand("SAVE", null)
@@ -172,7 +172,7 @@ fun MainNavigationDrawer(
                 )
 
                 CustomNavigationItem(
-                    text = "Load favorites",
+                    text = stringResource(R.string.restore_favorites),
                     icon = ImageVector.vectorResource(R.drawable.baseline_file_upload_24),
                     onClick = {
                         sendCommand("LOAD", null)
