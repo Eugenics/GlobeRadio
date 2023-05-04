@@ -2,6 +2,7 @@ package com.eugenics.data.data.datasources
 
 import com.eugenics.data.data.database.dao.PrefsDao
 import com.eugenics.data.data.database.dao.StationDao
+import com.eugenics.data.data.database.enteties.FavoritesTmpDaoObject
 import com.eugenics.data.data.database.enteties.PrefsDaoObject
 import com.eugenics.data.data.database.enteties.StationDaoObject
 import com.eugenics.data.interfaces.repository.ILocalDataSource
@@ -58,6 +59,10 @@ class LocalDataSourceImpl(
 
     override suspend fun deletePrefs() {
         prefsDao.deletePrefs()
+    }
+
+    override suspend fun restoreFavorites(favorites: List<FavoritesTmpDaoObject>) {
+        dao.restoreFavorites(favorites = favorites)
     }
 
     companion object {

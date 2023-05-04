@@ -3,25 +3,30 @@ package com.eugenics.freeradio.navigation
 import android.os.Build
 import android.os.Bundle
 import androidx.annotation.RequiresApi
+import androidx.compose.animation.ExperimentalAnimationApi
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.navigation.NavHostController
-import androidx.navigation.compose.NavHost
-import androidx.navigation.compose.composable
+import com.google.accompanist.navigation.animation.composable
 import com.eugenics.core.enums.Commands
 import com.eugenics.freeradio.ui.compose.main.MainScreen
 import com.eugenics.freeradio.ui.compose.settings.SettingsScreen
 import com.eugenics.freeradio.ui.viewmodels.MainViewModel
 import com.eugenics.media_service.media.FreeRadioMediaServiceConnection.Companion.SET_FAVORITES_STATION_KEY
 import com.eugenics.media_service.media.FreeRadioMediaServiceConnection.Companion.SET_FAVORITES_VALUE_KEY
+import com.google.accompanist.navigation.animation.AnimatedNavHost
 
+@OptIn(ExperimentalAnimationApi::class)
 @RequiresApi(Build.VERSION_CODES.S)
 @Composable
 fun NavGraph(
     navController: NavHostController,
     mainViewModel: MainViewModel
 ) {
-    NavHost(
+    AnimatedNavHost(
         navController = navController,
         startDestination = Screen.MainScreen.rout
     ) {
@@ -60,11 +65,26 @@ fun NavGraph(
                 }
             )
         }
-        composable(route = Screen.SettingsScreen.rout) {
+        composable(
+            route = Screen.SettingsScreen.rout,
+            enterTransition = {
+                fadeIn(
+                    animationSpec = tween(durationMillis = 1000),
+                    initialAlpha = 0.4f
+                )
+            },
+            exitTransition = { fadeOut(animationSpec = tween(durationMillis = 1000)) }
+        ) {
             SettingsScreen(
                 settings = mainViewModel.settings,
                 onBackPressed = { navController.popBackStack() },
-                onThemePick = { theme -> mainViewModel.setSettings(theme = theme) }
+                onThemePick = { theme -> mainViewModel.setSettings(theme = theme) },
+                sendCommand = { command, parameters ->
+                    mainViewModel.sendCommand(
+                        command = command,
+                        extras = parameters
+                    )
+                }
             )
         }
     }

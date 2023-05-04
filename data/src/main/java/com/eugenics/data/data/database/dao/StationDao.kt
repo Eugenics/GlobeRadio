@@ -54,7 +54,7 @@ interface StationDao {
     fun restoreFavoritesStationInfo()
 
     @Query("SELECT * FROM stations LIMIT 1")
-    fun checkStations():List<StationDaoObject>
+    fun checkStations(): List<StationDaoObject>
 
     @Transaction
     fun reloadAllStations(stationsDao: List<StationDaoObject>) {
@@ -68,6 +68,13 @@ interface StationDao {
         deleteStationsWithoutTags()
         deleteStationsWithoutName()
 
+        restoreFavoritesStationInfo()
+    }
+
+    @Transaction
+    fun restoreFavorites(favorites: List<FavoritesTmpDaoObject>) {
+        deleteFavoritesTmp()
+        saveFavoritesTmp(favoritesStations = favorites)
         restoreFavoritesStationInfo()
     }
 }

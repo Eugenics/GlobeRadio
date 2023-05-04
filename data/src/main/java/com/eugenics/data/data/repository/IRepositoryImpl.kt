@@ -2,6 +2,7 @@ package com.eugenics.data.data.repository
 
 import com.eugenics.core.model.CurrentState
 import com.eugenics.core.model.Tag
+import com.eugenics.data.data.database.enteties.FavoritesTmpDaoObject
 import com.eugenics.data.data.database.enteties.PrefsDaoObject
 import com.eugenics.data.data.database.enteties.StationDaoObject
 import com.eugenics.data.data.datastore.SettingsDataSource
@@ -105,5 +106,9 @@ class IRepositoryImpl @Inject constructor(
 
     override suspend fun deletePrefs() {
         localDataSource.deletePrefs()
+    }
+
+    override suspend fun restoreFavorites(favorites: List<FavoritesTmpDaoObject>) {
+        localDataSource.restoreFavorites(favorites = favorites)
     }
 }

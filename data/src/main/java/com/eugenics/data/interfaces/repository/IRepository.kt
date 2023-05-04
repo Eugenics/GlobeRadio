@@ -2,6 +2,7 @@ package com.eugenics.data.interfaces.repository
 
 import com.eugenics.core.model.CurrentState
 import com.eugenics.core.model.Tag
+import com.eugenics.data.data.database.enteties.FavoritesTmpDaoObject
 import com.eugenics.data.data.database.enteties.PrefsDaoObject
 import com.eugenics.data.data.database.enteties.StationDaoObject
 import com.eugenics.data.data.dto.StationRespondObject
@@ -30,4 +31,5 @@ interface IRepository {
     suspend fun updatePrefs(prefs: PrefsDaoObject)
     suspend fun insertPrefs(prefs: PrefsDaoObject)
     suspend fun deletePrefs()
+    suspend fun restoreFavorites(favorites: List<FavoritesTmpDaoObject>)
 }
