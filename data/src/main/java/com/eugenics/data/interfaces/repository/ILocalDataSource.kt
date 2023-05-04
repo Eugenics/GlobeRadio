@@ -2,6 +2,7 @@ package com.eugenics.data.interfaces.repository
 
 import com.eugenics.data.data.database.enteties.StationDaoObject
 import com.eugenics.core.interfaces.IDataSource
+import com.eugenics.data.data.database.enteties.FavoritesTmpDaoObject
 import com.eugenics.data.data.database.enteties.PrefsDaoObject
 
 
@@ -21,4 +22,5 @@ interface ILocalDataSource : IDataSource {
     suspend fun updatePrefs(prefs: PrefsDaoObject)
     suspend fun insertPrefs(prefs: PrefsDaoObject)
     suspend fun deletePrefs()
+    suspend fun restoreFavorites(favorites: List<FavoritesTmpDaoObject>)
 }

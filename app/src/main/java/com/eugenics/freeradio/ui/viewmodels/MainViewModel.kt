@@ -19,12 +19,15 @@ import com.eugenics.core.model.CurrentState
 import com.eugenics.core.enums.Theme
 import com.eugenics.core.model.FavoriteStation
 import com.eugenics.core.model.Favorites
+import com.eugenics.data.data.util.convertToFavoritesTmpDaoObject
+import com.eugenics.freeradio.ui.util.UICommands
 import com.eugenics.media_service.media.FreeRadioMediaServiceConnection
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.Json
 import java.util.UUID
 import javax.inject.Inject
@@ -59,11 +62,15 @@ class MainViewModel @Inject constructor(
     private var _tagList: MutableStateFlow<List<Tag>> = MutableStateFlow(listOf())
     val tagList: StateFlow<List<Tag>> = _tagList
 
-    private val _saveData: MutableStateFlow<String> = MutableStateFlow("")
-    val saveData: StateFlow<String> = _saveData
+    private val _backUpData: MutableStateFlow<String> = MutableStateFlow("")
+    val backUpData: StateFlow<String> = _backUpData
 
     private val _message: MutableStateFlow<String> = MutableStateFlow("")
     val message: StateFlow<String> = _message
+
+    private val _uiCommand: MutableStateFlow<UICommands> =
+        MutableStateFlow(UICommands.UICommand_IDL)
+    val uiCommands: StateFlow<UICommands> = _uiCommand
 
     private val subscriptionCallback = object : MediaBrowserCompat.SubscriptionCallback() {
         override fun onChildrenLoaded(
@@ -170,31 +177,9 @@ class MainViewModel @Inject constructor(
 
     fun sendCommand(command: String, extras: Bundle? = null) {
         when (command) {
-            "SAVE" -> viewModelScope.launch(Dispatchers.IO) {
-                val favorites = Favorites(
-                    stationList = repository.fetchStationsByFavorites()
-                        .map { it.convertToModel() }
-                        .map {
-                            FavoriteStation(
-                                uuid = UUID.randomUUID().toString(),
-                                stationuuid = it.stationuuid
-                            )
-                        }
-                )
-                if (favorites.stationList.isNotEmpty()) {
-                    try {
-                        val jsonString = Json.encodeToString(
-                            serializer = Favorites.serializer(),
-                            value = favorites
-                        )
-                        _saveData.value = jsonString
-                    } catch (e: Exception) {
-                        Log.e(TAG, e.message.toString())
-                    }
-                } else {
-                    _message.emit("No data to share...")
-                }
-            }
+            UICommands.UICommand_BACKUP_FAVORITES.name -> backUpFavorites()
+            UICommands.UICommand_RESTORE_FAVORITES.name -> _uiCommand.value =
+                UICommands.UICommand_RESTORE_FAVORITES
 
             in enumValues<Commands>().map { it.name }.toList() -> {
                 setSettings(
@@ -296,6 +281,66 @@ class MainViewModel @Inject constructor(
     }
 
     fun getSettings(): CurrentState = settings.value
+
+    fun setUICommand(command: UICommands) {
+        _uiCommand.value = command
+    }
+
+    private fun backUpFavorites() {
+        viewModelScope.launch(Dispatchers.IO) {
+            val favorites = Favorites(
+                stationList = repository.fetchStationsByFavorites()
+                    .map { it.convertToModel() }
+                    .map {
+                        FavoriteStation(
+                            uuid = UUID.randomUUID().toString(),
+                            stationuuid = it.stationuuid
+                        )
+                    }
+            )
+            if (favorites.stationList.isNotEmpty()) {
+                try {
+                    val jsonString = Json.encodeToString(
+                        serializer = Favorites.serializer(),
+                        value = favorites
+                    )
+                    _backUpData.value = jsonString
+                    setUICommand(UICommands.UICommand_BACKUP_FAVORITES)
+                } catch (e: Exception) {
+                    _message.value = e.message.toString()
+                    Log.e(TAG, e.toString())
+                }
+            } else {
+                _message.emit("No data to backup...")
+            }
+        }
+    }
+
+    fun restoreFavorites(favoritesJsonString: String) {
+        viewModelScope.launch(Dispatchers.IO) {
+            try {
+                if (favoritesJsonString.isNotBlank()) {
+                    val favorites = Json.decodeFromString(
+                        Favorites.serializer(),
+                        favoritesJsonString
+                    )
+                    repository.restoreFavorites(
+                        favorites = favorites.stationList.map {
+                            it.convertToFavoritesTmpDaoObject()
+                        }
+                    )
+                    withContext(Dispatchers.Main) {
+                        sendCommand(command = Commands.FAVORITES_COMMAND.name, null)
+                    }
+                } else {
+                    _message.value = "No data to restore..."
+                }
+            } catch (e: Exception) {
+                _message.value = e.message.toString()
+                Log.e(TAG, e.toString())
+            }
+        }
+    }
 
     companion object {
         const val TAG = "SEARCH_VIEW_MODEL"

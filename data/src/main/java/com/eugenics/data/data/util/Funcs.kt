@@ -1,7 +1,9 @@
 package com.eugenics.data.data.util
 
+import com.eugenics.core.model.FavoriteStation
 import com.eugenics.core.model.PlayerMediaItem
 import com.eugenics.core.model.Station
+import com.eugenics.data.data.database.enteties.FavoritesTmpDaoObject
 import com.eugenics.data.data.database.enteties.StationDaoObject
 
 fun Station.convertToDao(): StationDaoObject =
@@ -35,4 +37,10 @@ fun Station.convertToMediaItem(): PlayerMediaItem =
         bitrate = this.bitrate,
         codec = this.codec,
         isFavorite = this.isFavorite
+    )
+
+fun FavoriteStation.convertToFavoritesTmpDaoObject(): FavoritesTmpDaoObject =
+    FavoritesTmpDaoObject(
+        uuid = this.uuid,
+        stationuuid = this.stationuuid
     )
