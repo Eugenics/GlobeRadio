@@ -157,9 +157,6 @@ class MediaSource(private val repository: IRepository) {
         mediaItemId: String,
         playWhenReady: Boolean = true
     ) {
-        if (playWhenReady) {
-            setPrefs(stationUuid = mediaItemId)
-        }
         val startMediaItem = mediaItems.value.find {
             it.uuid == mediaItemId
         }
@@ -167,6 +164,7 @@ class MediaSource(private val repository: IRepository) {
             if (startMediaItem == null) {
                 0
             } else {
+                setPrefs(stationUuid = mediaItemId)
                 mediaItems.value.indexOf(startMediaItem)
             }
 

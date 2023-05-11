@@ -21,7 +21,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 const val NOW_PLAYING_CHANNEL_ID = "com.eugenics.media_service.media.NOW_PLAYING"
-const val NOW_PLAYING_NOTIFICATION_ID = 0xb339 // Arbitrary number used to identify our notification
+const val NOW_PLAYING_NOTIFICATION_ID = 0xb339
 
 internal class FreeRadioNotificationManager(
     private val context: Context,
@@ -33,7 +33,7 @@ internal class FreeRadioNotificationManager(
 
     private var player: Player? = null
     private val serviceJob = SupervisorJob()
-    private val serviceScope = CoroutineScope(Dispatchers.Main + serviceJob)
+    private val serviceScope = CoroutineScope(Dispatchers.Default + serviceJob)
     private val notificationManager: PlayerNotificationManager
 
     init {
@@ -134,4 +134,4 @@ const val NOTIFICATION_LARGE_ICON_SIZE = 144 // px
 
 private val glideOptions = RequestOptions()
     .fallback(R.drawable.pradio_wave)
-    .diskCacheStrategy(DiskCacheStrategy.DATA)
+    .diskCacheStrategy(DiskCacheStrategy.ALL)

@@ -112,10 +112,6 @@ class MainViewModel @Inject constructor(
                 }
             }
             _stations.value = stationServiceContent
-
-            if (_stations.value.isNotEmpty()) {
-                currentMediaId = _stations.value.first().stationuuid
-            }
         }
     }
 
@@ -148,7 +144,6 @@ class MainViewModel @Inject constructor(
             Log.d(TAG, "PLAY_FROM_MEDIA_ID_CLICKED:$mediaId")
             mediaServiceConnection.transportControls.playFromMediaId(mediaId, null)
             _playBackState.value = STATE_PLAYING
-            currentMediaId = mediaId
             setSettings(stationUuid = mediaId)
         }
     }
@@ -222,6 +217,7 @@ class MainViewModel @Inject constructor(
                     description =
                     metaData.getString(MediaMetadataCompat.METADATA_KEY_DISPLAY_DESCRIPTION) ?: ""
                 )
+                currentMediaId = nowPlaying.value.stationUUID
             }
         }
     }
