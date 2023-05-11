@@ -77,10 +77,11 @@ fun AppBarCard(
                     if (searchState.value) {
                         TextField(
                             modifier = Modifier.fillMaxWidth(),
-                            colors = TextFieldDefaults.textFieldColors(
-                                containerColor = Color.Transparent,
+                            colors = TextFieldDefaults.colors(
+                                focusedContainerColor = Color.Transparent,
+                                unfocusedContainerColor = Color.Transparent,
                                 cursorColor = MaterialTheme.colorScheme.onSurface,
-                                textColor = MaterialTheme.colorScheme.onSurface
+                                focusedTextColor = MaterialTheme.colorScheme.onSurface
                             ),
                             value = text.value,
                             onValueChange = { value ->
