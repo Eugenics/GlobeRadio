@@ -121,11 +121,11 @@ class MainActivity : ComponentActivity() {
             repeatOnLifecycle(state = Lifecycle.State.STARTED) {
                 mainViewModel.uiCommands.collect { command ->
                     when (command) {
-                        UICommands.UICommand_BACKUP_FAVORITES -> backUpFavorites()
-                        UICommands.UICommand_RESTORE_FAVORITES -> filePickLauncher.launch("*/*")
+                        UICommands.UI_COMMAND_BACKUP_FAVORITES -> backUpFavorites()
+                        UICommands.UI_COMMAND_RESTORE_FAVORITES -> filePickLauncher.launch("*/*")
                         else -> {}
                     }
-                    mainViewModel.setUICommand(UICommands.UICommand_IDL)
+                    mainViewModel.setUICommand(UICommands.UI_COMMAND_IDL)
                 }
             }
         }

@@ -76,7 +76,7 @@ fun SettingsScreen(
                 icon = ImageVector.vectorResource(R.drawable.baseline_file_download_24),
                 onClick = {
                     sendCommand(
-                        UICommands.UICommand_BACKUP_FAVORITES.name,
+                        UICommands.UI_COMMAND_BACKUP_FAVORITES.name,
                         null
                     )
                 }
@@ -87,7 +87,7 @@ fun SettingsScreen(
                 icon = ImageVector.vectorResource(R.drawable.baseline_file_upload_24),
                 onClick = {
                     sendCommand(
-                        UICommands.UICommand_RESTORE_FAVORITES.name,
+                        UICommands.UI_COMMAND_RESTORE_FAVORITES.name,
                         null
                     )
                     onBackPressed()

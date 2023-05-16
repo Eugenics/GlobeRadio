@@ -69,7 +69,7 @@ class MainViewModel @Inject constructor(
     val message: StateFlow<String> = _message
 
     private val _uiCommand: MutableStateFlow<UICommands> =
-        MutableStateFlow(UICommands.UICommand_IDL)
+        MutableStateFlow(UICommands.UI_COMMAND_IDL)
     val uiCommands: StateFlow<UICommands> = _uiCommand
 
     private val subscriptionCallback = object : MediaBrowserCompat.SubscriptionCallback() {
@@ -172,9 +172,9 @@ class MainViewModel @Inject constructor(
 
     fun sendCommand(command: String, extras: Bundle? = null) {
         when (command) {
-            UICommands.UICommand_BACKUP_FAVORITES.name -> backUpFavorites()
-            UICommands.UICommand_RESTORE_FAVORITES.name -> _uiCommand.value =
-                UICommands.UICommand_RESTORE_FAVORITES
+            UICommands.UI_COMMAND_BACKUP_FAVORITES.name -> backUpFavorites()
+            UICommands.UI_COMMAND_RESTORE_FAVORITES.name -> _uiCommand.value =
+                UICommands.UI_COMMAND_RESTORE_FAVORITES
 
             in enumValues<Commands>().map { it.name }.toList() -> {
                 setSettings(
@@ -301,7 +301,7 @@ class MainViewModel @Inject constructor(
                         value = favorites
                     )
                     _backUpData.value = jsonString
-                    setUICommand(UICommands.UICommand_BACKUP_FAVORITES)
+                    setUICommand(UICommands.UI_COMMAND_BACKUP_FAVORITES)
                 } catch (e: Exception) {
                     _message.value = e.message.toString()
                     Log.e(TAG, e.toString())
