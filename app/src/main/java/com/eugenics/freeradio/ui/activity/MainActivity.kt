@@ -17,7 +17,9 @@ import androidx.activity.viewModels
 import androidx.annotation.RequiresApi
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.material3.Surface
 import androidx.compose.runtime.collectAsState
+import androidx.compose.ui.unit.dp
 import androidx.core.content.FileProvider
 import androidx.core.view.WindowCompat
 import androidx.lifecycle.Lifecycle
@@ -108,10 +110,12 @@ class MainActivity : ComponentActivity() {
                 }
             ) {
                 val navController = rememberAnimatedNavController()
-                NavGraph(
-                    navController = navController,
-                    mainViewModel = mainViewModel
-                )
+                Surface(tonalElevation = 5.dp) {
+                    NavGraph(
+                        navController = navController,
+                        mainViewModel = mainViewModel
+                    )
+                }
             }
         }
     }

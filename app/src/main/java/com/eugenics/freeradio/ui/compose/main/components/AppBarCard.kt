@@ -1,12 +1,11 @@
 package com.eugenics.freeradio.ui.compose.main.components
 
 import android.content.res.Configuration.UI_MODE_NIGHT_YES
-import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material.ContentAlpha
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Menu
@@ -31,7 +30,7 @@ import androidx.compose.ui.unit.dp
 import com.eugenics.freeradio.R
 import com.eugenics.freeradio.ui.theme.FreeRadioTheme
 
-@OptIn(ExperimentalComposeUiApi::class, ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalComposeUiApi::class)
 @Composable
 fun AppBarCard(
     modifier: Modifier = Modifier,
@@ -44,95 +43,95 @@ fun AppBarCard(
     val keyboardControl = LocalSoftwareKeyboardController.current
     val focusManager = LocalFocusManager.current
 
-    Card(
-        shape = RoundedCornerShape(percent = 35),
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.Start,
         modifier = modifier
+            .background(
+                color = MaterialTheme.colorScheme.background,
+                shape = CircleShape
+            )
     ) {
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.Start,
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            if (!searchState.value) {
-                IconButton(
-                    onClick = onMenuClick,
-                    modifier = Modifier.padding(start = 16.dp)
-                ) {
-                    Image(
-                        imageVector = Icons.Filled.Menu,
-                        contentDescription = null
-                    )
-                }
-            }
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(56.dp)
+        if (!searchState.value) {
+            IconButton(
+                onClick = onMenuClick,
+                modifier = Modifier.padding(start = 16.dp)
             ) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.End,
-                    modifier = Modifier.fillMaxSize()
-                ) {
-                    if (searchState.value) {
-                        TextField(
-                            modifier = Modifier.fillMaxWidth(),
-                            colors = TextFieldDefaults.colors(
-                                focusedContainerColor = Color.Transparent,
-                                unfocusedContainerColor = Color.Transparent,
-                                cursorColor = MaterialTheme.colorScheme.onSurface,
-                                focusedTextColor = MaterialTheme.colorScheme.onSurface
-                            ),
-                            value = text.value,
-                            onValueChange = { value ->
-                                text.value = value
-                            },
-                            textStyle = MaterialTheme.typography.bodyMedium,
-                            singleLine = true,
-                            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
-                            keyboardActions = KeyboardActions(onSearch = {
-                                onSearchClick(text.value.text)
-                                keyboardControl?.hide()
-                                focusManager.clearFocus()
-                            }),
-                            placeholder = {
-                                Text(
-                                    text = stringResource(R.string.search_hint_text),
-                                    modifier = Modifier.alpha(ContentAlpha.medium),
-                                    color = MaterialTheme.colorScheme.onSurface
-                                )
-                            },
-                            trailingIcon = {
-                                IconButton(
-                                    onClick = {
-                                        if (text.value.text.isNotBlank()) {
-                                            text.value = TextFieldValue("")
-                                        } else {
-                                            searchState.value = false
-                                            keyboardControl?.hide()
-                                            focusManager.clearFocus()
-                                        }
-                                    },
-                                    modifier = Modifier.padding(end = 16.dp)
-                                ) {
-                                    Image(
-                                        imageVector = Icons.Filled.Close,
-                                        contentDescription = null
-                                    )
-                                }
-                            }
-                        )
-                    } else {
-                        IconButton(
-                            onClick = { searchState.value = true },
-                            modifier = Modifier
-                                .padding(end = 16.dp)
-                        ) {
-                            Image(
-                                imageVector = Icons.Filled.Search,
-                                contentDescription = null
+                Icon(
+                    imageVector = Icons.Filled.Menu,
+                    contentDescription = null
+                )
+            }
+        }
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(56.dp)
+        ) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.End,
+                modifier = Modifier.fillMaxSize()
+            ) {
+                if (searchState.value) {
+                    TextField(
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = CircleShape,
+                        colors = TextFieldDefaults.colors(
+                            focusedContainerColor = Color.Transparent,
+                            unfocusedContainerColor = Color.Transparent,
+                            focusedIndicatorColor = Color.Transparent,
+                            unfocusedIndicatorColor = Color.Transparent
+                        ),
+                        value = text.value,
+                        onValueChange = { value ->
+                            text.value = value
+                        },
+                        textStyle = MaterialTheme.typography.bodyMedium,
+                        singleLine = true,
+                        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
+                        keyboardActions = KeyboardActions(onSearch = {
+                            onSearchClick(text.value.text)
+                            keyboardControl?.hide()
+                            focusManager.clearFocus()
+                        }),
+                        placeholder = {
+                            Text(
+                                text = stringResource(R.string.search_hint_text),
+                                modifier = Modifier.alpha(0.5f),
+                                color = MaterialTheme.colorScheme.onSurface
                             )
+                        },
+                        trailingIcon = {
+                            IconButton(
+                                onClick = {
+                                    if (text.value.text.isNotBlank()) {
+                                        text.value = TextFieldValue("")
+                                    } else {
+                                        searchState.value = false
+                                        keyboardControl?.hide()
+                                        focusManager.clearFocus()
+                                    }
+                                },
+                                modifier = Modifier.padding(end = 16.dp)
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Filled.Close,
+                                    contentDescription = null
+                                )
+                            }
                         }
+                    )
+                } else {
+                    IconButton(
+                        onClick = { searchState.value = true },
+                        modifier = Modifier
+                            .padding(end = 16.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Filled.Search,
+                            contentDescription = null
+                        )
                     }
                 }
             }
