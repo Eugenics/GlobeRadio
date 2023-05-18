@@ -3,6 +3,7 @@ package com.eugenics.freeradio.ui.compose.main
 import android.content.res.Configuration.UI_MODE_NIGHT_NO
 import android.content.res.Configuration.UI_MODE_NIGHT_YES
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -139,23 +140,27 @@ private fun StationCard(
 
     Row(
         verticalAlignment = Alignment.CenterVertically,
-        modifier = Modifier.fillMaxSize()
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(bottom = 1.dp)
+            .background(color = MaterialTheme.colorScheme.secondaryContainer)
             .padding(
                 top = topPadding,
-                bottom = bottomPadding,
+                bottom = bottomPadding + 5.dp,
                 start = 8.dp,
                 end = 8.dp
             )
             .clickable {
                 onCardClick(station.stationuuid)
             }
+
     ) {
         SubcomposeAsyncImage(
             model = station.favicon,
             contentDescription = null,
             modifier = Modifier
                 .size(65.dp, 65.dp)
-                .padding(5.dp)
+                .padding(8.dp)
                 .clip(MaterialTheme.shapes.medium),
             contentScale = ContentScale.Fit
         ) {
@@ -230,6 +235,17 @@ private fun StationCardNightPreviewNight() {
             stations = listOf(fakeStation, fakeStation, fakeStation),
             onCardClick = {},
             onScrolled = {}
+        )
+    }
+}
+
+@Preview(uiMode = UI_MODE_NIGHT_NO)
+@Composable
+private fun CardDayPreview() {
+    FreeRadioTheme {
+        StationCard(
+            paddingValues = PaddingValues(8.dp),
+            station = fakeStation
         )
     }
 }

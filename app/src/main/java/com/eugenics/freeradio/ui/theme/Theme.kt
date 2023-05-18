@@ -1,13 +1,17 @@
 package com.eugenics.freeradio.ui.theme
 
+import android.os.Build
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.material3.darkColorScheme
+import androidx.compose.material3.dynamicDarkColorScheme
+import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.SideEffect
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.compositeOver
+import androidx.compose.ui.platform.LocalContext
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 
 
@@ -37,7 +41,12 @@ private val LightColors = lightColorScheme(
     outline = md_theme_light_outline,
     inverseOnSurface = md_theme_light_inverseOnSurface,
     inverseSurface = md_theme_light_inverseSurface,
+    inversePrimary = md_theme_light_inversePrimary,
+    surfaceTint = md_theme_light_surfaceTint,
+    outlineVariant = md_theme_light_outlineVariant,
+    scrim = md_theme_light_scrim,
 )
+
 
 private val DarkColors = darkColorScheme(
     primary = md_theme_dark_primary,
@@ -65,6 +74,10 @@ private val DarkColors = darkColorScheme(
     outline = md_theme_dark_outline,
     inverseOnSurface = md_theme_dark_inverseOnSurface,
     inverseSurface = md_theme_dark_inverseSurface,
+    inversePrimary = md_theme_dark_inversePrimary,
+    surfaceTint = md_theme_dark_surfaceTint,
+    outlineVariant = md_theme_dark_outlineVariant,
+    scrim = md_theme_dark_scrim,
 )
 
 @Composable
@@ -75,11 +88,20 @@ fun FreeRadioTheme(
     val systemUiController = rememberSystemUiController()
     val useDarkIcons: Boolean = !useDarkTheme
 
-    val colors = if (!useDarkTheme) {
-        LightColors
-    } else {
-        DarkColors
-    }
+    val context = LocalContext.current
+
+    val colors =
+        when {
+            (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) -> {
+                if (useDarkTheme)
+                    dynamicDarkColorScheme(context)
+                else
+                    dynamicLightColorScheme(context)
+            }
+
+            useDarkTheme -> DarkColors
+            else -> LightColors
+        }
 
     val blackScrim = Color(0f, 0f, 0f, 0.3f) // 30% opaque black
 

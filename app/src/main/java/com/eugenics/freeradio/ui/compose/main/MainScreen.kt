@@ -35,7 +35,6 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 
 @RequiresApi(Build.VERSION_CODES.S)
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MainScreen(
     navController: NavHostController = rememberNavController(),
@@ -67,77 +66,79 @@ fun MainScreen(
     when (listState.value) {
         MainViewModel.UI_STATE_SPLASH -> SplashScreen()
         else -> {
-            Surface(
-                color = MaterialTheme.colorScheme.background
+            MainNavigationDrawer(
+                drawerState = drawerState,
+                onSettingsClick = {
+                    navController.navigate(Screen.SettingsScreen.rout)
+                    scope.launch {
+                        drawerState.close()
+                    }
+                },
+                sendCommand = sendCommand,
+                tagsList = tagsList
             ) {
-                MainNavigationDrawer(
-                    drawerState = drawerState,
-                    onSettingsClick = {
-                        navController.navigate(Screen.SettingsScreen.rout)
-                        scope.launch {
-                            drawerState.close()
-                        }
-                    },
-                    sendCommand = sendCommand,
-                    tagsList = tagsList
-                ) {
-                    Scaffold(
-                        topBar = {
-                            AppBarCard(
-                                modifier = Modifier
-                                    .padding(
-                                        top = padding.calculateTopPadding() + 5.dp,
-                                        start = 8.dp,
-                                        end = 8.dp
-                                    )
-                                    .fillMaxWidth()
-                                    .animateContentSize(
-                                        animationSpec = tween(durationMillis = 300)
-                                    )
-                                    .height(if (isScrolledUp.value) 0.dp else 56.dp),
-                                onMenuClick = {
-                                    scope.launch {
-                                        if (drawerState.isOpen) {
-                                            drawerState.close()
-                                        } else {
-                                            drawerState.open()
-                                        }
-                                    }
-                                },
-                                onSearchClick = onSearchClick
-                            )
-                        },
-                        bottomBar = {
-                            MainBottomAppBar(
-                                paddingValues = padding,
-                                nowPlayingStation = nowPlayingStation.collectAsState().value,
-                                playbackState = playbackState.collectAsState().value,
-                                onPlayClick = onPlayClick,
-                                onPauseClick = onPauseClick
-                            )
-                        }
-                    ) { paddingValues ->
-                        when (listState.value) {
-                            MainViewModel.UI_STATE_MAIN -> {
-                                MainContent(
-                                    paddingValues = paddingValues,
-                                    stations = stations.value,
-                                    onCardClick = onItemClick,
-                                    onFavoriteClick = onFavoriteClick,
-                                    onScrolled = {
-                                        isScrolledUp.value = it
-                                    },
-                                    visibleIndex = visibleIndex,
-                                    onVisibleIndexChange = onVisibleIndexChange
+                Scaffold(
+                    topBar = {
+                        AppBarCard(
+                            modifier = Modifier
+                                .padding(
+                                    top = padding.calculateTopPadding() + 5.dp,
+                                    bottom = 16.dp,
+                                    start = 16.dp,
+                                    end = 16.dp
                                 )
-                            }
-
-                            MainViewModel.UI_STATE_UPDATE_DATA -> {
-                                Box(
-                                    modifier = Modifier.fillMaxSize()
-                                ) {
-                                    LoadContent(text = stringResource(R.string.loading_string))
+                                .fillMaxWidth()
+                                .animateContentSize(
+                                    animationSpec = tween(durationMillis = 300)
+                                ),
+//                                    .height(if (isScrolledUp.value) 0.dp else 56.dp),
+                            onMenuClick = {
+                                scope.launch {
+                                    if (drawerState.isOpen) {
+                                        drawerState.close()
+                                    } else {
+                                        drawerState.open()
+                                    }
                                 }
+                            },
+                            onSearchClick = onSearchClick
+                        )
+                    },
+                    bottomBar = {
+                        MainBottomAppBar(
+                            modifier = Modifier
+                                .padding(
+                                    bottom = padding.calculateBottomPadding() + 5.dp,
+                                    start = 16.dp,
+                                    end = 16.dp
+                                ),
+                            nowPlayingStation = nowPlayingStation.collectAsState().value,
+                            playbackState = playbackState.collectAsState().value,
+                            onPlayClick = onPlayClick,
+                            onPauseClick = onPauseClick
+                        )
+                    }
+                ) { paddingValues ->
+                    when (listState.value) {
+                        MainViewModel.UI_STATE_MAIN -> {
+                            MainContent(
+                                paddingValues = paddingValues,
+                                stations = stations.value,
+                                onCardClick = onItemClick,
+                                onFavoriteClick = onFavoriteClick,
+                                onScrolled = {
+                                    isScrolledUp.value = it
+                                },
+                                visibleIndex = visibleIndex,
+                                onVisibleIndexChange = onVisibleIndexChange
+                            )
+                        }
+
+                        MainViewModel.UI_STATE_UPDATE_DATA -> {
+                            Box(
+                                modifier = Modifier.fillMaxSize()
+                            ) {
+                                LoadContent(text = stringResource(R.string.loading_string))
                             }
                         }
                     }

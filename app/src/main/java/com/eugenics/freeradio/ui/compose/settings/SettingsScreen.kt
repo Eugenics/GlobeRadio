@@ -60,7 +60,6 @@ fun SettingsScreen(
         ) {
             Text(
                 text = stringResource(R.string.settings_text),
-                color = MaterialTheme.colorScheme.error,
                 modifier = Modifier.fillMaxWidth()
                     .padding(5.dp),
                 style = MaterialTheme.typography.bodyLarge
