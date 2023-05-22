@@ -28,9 +28,9 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import kotlinx.serialization.json.Json
 import java.util.UUID
 import javax.inject.Inject
+import kotlinx.serialization.json.Json
 
 @HiltViewModel
 class MainViewModel @Inject constructor(

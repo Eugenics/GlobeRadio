@@ -60,6 +60,8 @@ dependencies {
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.5.1")
     implementation("androidx.activity:activity-compose:1.5.1")
     implementation("androidx.compose.animation:animation-graphics:1.2.1")
+    implementation("androidx.palette:palette:1.0.0")
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.5.1")
 
 
     testImplementation 'junit:junit:4.13.2'
@@ -102,4 +104,7 @@ dependencies {
     implementation(project(":core"))
     implementation(project(":data"))
     implementation(project(":media_service"))
+
+    //Libs
+    implementation(files("libs/material-colors-util.jar"))
 }

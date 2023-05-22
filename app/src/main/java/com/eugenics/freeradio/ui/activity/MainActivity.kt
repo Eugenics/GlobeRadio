@@ -100,15 +100,12 @@ class MainActivity : ComponentActivity() {
         collectViewModelMessages()
 
         setContent {
-            val theme = mainViewModel.settings.collectAsState().value.theme
-            FreeRadioTheme(
-                useDarkTheme =
-                when (theme) {
-                    Theme.DARK -> true
-                    Theme.LIGHT -> false
-                    else -> isSystemInDarkTheme()
-                }
-            ) {
+            val isDarkTheme = when (mainViewModel.settings.collectAsState().value.theme) {
+                Theme.DARK -> true
+                Theme.LIGHT -> false
+                else -> isSystemInDarkTheme()
+            }
+            FreeRadioTheme(useDarkTheme = isDarkTheme) {
                 val navController = rememberAnimatedNavController()
                 Surface(tonalElevation = 5.dp) {
                     NavGraph(
