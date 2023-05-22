@@ -102,4 +102,7 @@ dependencies {
     implementation(project(":core"))
     implementation(project(":data"))
     implementation(project(":media_service"))
+
+    //Libs
+    implementation(files("libs/material-colors-util.jar"))
 }
