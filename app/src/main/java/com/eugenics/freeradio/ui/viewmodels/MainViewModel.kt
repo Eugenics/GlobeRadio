@@ -20,6 +20,7 @@ import com.eugenics.core.enums.Theme
 import com.eugenics.core.model.FavoriteStation
 import com.eugenics.core.model.Favorites
 import com.eugenics.data.data.util.convertToFavoritesTmpDaoObject
+import com.eugenics.freeradio.ui.util.ImageDownloadHelper
 import com.eugenics.freeradio.ui.util.UICommands
 import com.eugenics.media_service.media.FreeRadioMediaServiceConnection
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -218,6 +219,8 @@ class MainViewModel @Inject constructor(
                     metaData.getString(MediaMetadataCompat.METADATA_KEY_DISPLAY_DESCRIPTION) ?: ""
                 )
                 currentMediaId = nowPlaying.value.stationUUID
+
+                downloadFavIco(url = nowPlaying.value.favicon)
             }
         }
     }
@@ -334,6 +337,14 @@ class MainViewModel @Inject constructor(
             } catch (e: Exception) {
                 _message.value = e.message.toString()
                 Log.e(TAG, e.toString())
+            }
+        }
+    }
+
+    fun downloadFavIco(url: String) {
+        viewModelScope.launch(Dispatchers.IO) {
+            if (url.contains("http", true)) {
+                val bitmap = ImageDownloadHelper.downloadImageAsBitmap(imageUrl = url)
             }
         }
     }
