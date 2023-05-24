@@ -18,7 +18,6 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
-import com.eugenics.core.model.CurrentState
 import com.eugenics.core.model.NowPlayingStation
 import com.eugenics.core.model.Station
 import com.eugenics.core.model.Tag
@@ -52,8 +51,7 @@ fun MainScreen(
         MutableStateFlow(NowPlayingStation.emptyInstance()),
     tagsList: List<Tag>,
     visibleIndex: Int = 0,
-    onVisibleIndexChange: (index: Int) -> Unit = {},
-    settings: StateFlow<CurrentState> = MutableStateFlow(CurrentState.getDefaultValueInstance())
+    onVisibleIndexChange: (index: Int) -> Unit = {}
 ) {
     val stations = stationsList.collectAsState()
     val listState = uiState.collectAsState()
@@ -64,8 +62,6 @@ fun MainScreen(
     val padding = WindowInsets.systemBars.asPaddingValues()
 
     val isScrolledUp = rememberSaveable { mutableStateOf(false) }
-
-    val currentSettings = settings.collectAsState()
 
     when (listState.value) {
         MainViewModel.UI_STATE_SPLASH -> SplashScreen()
@@ -119,8 +115,7 @@ fun MainScreen(
                             nowPlayingStation = nowPlayingStation.collectAsState().value,
                             playbackState = playbackState.collectAsState().value,
                             onPlayClick = onPlayClick,
-                            onPauseClick = onPauseClick,
-                            theme = currentSettings.value.theme
+                            onPauseClick = onPauseClick
                         )
                     }
                 ) { paddingValues ->

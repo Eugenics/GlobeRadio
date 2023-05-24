@@ -2,6 +2,7 @@ package com.eugenics.freeradio.di
 
 import android.content.ComponentName
 import android.content.Context
+import com.eugenics.freeradio.ui.util.ImageDownloadHelper
 
 import com.eugenics.media_service.media.FreeRadioMediaService
 import com.eugenics.media_service.media.FreeRadioMediaServiceConnection
@@ -11,7 +12,6 @@ import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import okhttp3.OkHttpClient
-import java.util.concurrent.TimeUnit
 import javax.inject.Singleton
 
 @Module
@@ -27,4 +27,9 @@ class MainModule {
             context = context,
             ComponentName(context, FreeRadioMediaService::class.java)
         )
+
+    @Singleton
+    @Provides
+    fun provideImageDownloadHelper(okHttpClient: OkHttpClient) =
+        ImageDownloadHelper(httpClient = okHttpClient)
 }

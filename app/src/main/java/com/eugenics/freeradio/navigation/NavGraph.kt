@@ -62,8 +62,7 @@ fun NavGraph(
                 visibleIndex = mainViewModel.getSettings().visibleIndex,
                 onVisibleIndexChange = { index ->
                     mainViewModel.onVisibleIndexChanged(index = index)
-                },
-                settings = mainViewModel.settings
+                }
             )
         }
         composable(

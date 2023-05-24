@@ -29,6 +29,8 @@ fun ThemePicker(
     themeName.value = when (currentTheme) {
         Theme.DARK -> stringResource(R.string.dark_text)
         Theme.LIGHT -> stringResource(R.string.light_text)
+        Theme.CONTENT_LIGHT -> stringResource(R.string.content_light_text)
+        Theme.CONTENT_DARK -> stringResource(R.string.content_dark_text)
         else -> stringResource(R.string.system_text)
     }
 
@@ -113,6 +115,8 @@ private fun ThemeChooseDialog(
                                 text = when (theme) {
                                     Theme.DARK -> stringResource(R.string.dark_text)
                                     Theme.LIGHT -> stringResource(R.string.light_text)
+                                    Theme.CONTENT_LIGHT -> stringResource(R.string.content_light_text)
+                                    Theme.CONTENT_DARK -> stringResource(R.string.content_dark_text)
                                     else -> stringResource(R.string.system_text)
                                 },
                                 style = MaterialTheme.typography.bodyLarge
