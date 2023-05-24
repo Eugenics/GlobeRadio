@@ -16,7 +16,5 @@ interface ApiService {
     @POST("stations/search")
     suspend fun searchAll(
         @Body body: ApiRequest = ApiRequest()
-//        @Query("codec") codec: String = "AAC%2B",
-//        @Query("tag") tag: String = "relax"
     ): List<StationRespondObject>
 }

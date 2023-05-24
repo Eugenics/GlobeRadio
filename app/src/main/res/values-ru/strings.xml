@@ -12,6 +12,8 @@
     <string name="dark_text">Темная</string>
     <string name="light_text">Светлая</string>
     <string name="system_text">Системная</string>
+    <string name="content_light_text">Контент светлая</string>
+    <string name="content_dark_text">Контент темная</string>
     <string name="free_radio_text">Free Radio</string>
     <string name="favorites_confirm_string">Вы хотите удалить станцию из избранного?</string>
     <string name="yes_string">Да</string>

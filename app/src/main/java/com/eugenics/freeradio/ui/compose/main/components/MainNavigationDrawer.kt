@@ -27,7 +27,6 @@ import com.eugenics.freeradio.R
 import com.eugenics.freeradio.ui.compose.settings.components.SoftwareInfoDialog
 import kotlinx.coroutines.launch
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MainNavigationDrawer(
     drawerState: DrawerState = rememberDrawerState(DrawerValue.Open),
@@ -180,7 +179,6 @@ fun MainNavigationDrawer(
     )
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 @Preview(uiMode = UI_MODE_NIGHT_NO)
 private fun MainNavigationDrawerPreview() {

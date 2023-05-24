@@ -52,6 +52,10 @@ class NetworkModule {
 
     @Provides
     @Singleton
+    fun provideHttpClient():OkHttpClient = okHttpClient
+
+    @Provides
+    @Singleton
     fun provideApi(): ApiService = Retrofit.Builder()
         .baseUrl(BASE_URL)
         .addConverterFactory(gsonConverterFactory)

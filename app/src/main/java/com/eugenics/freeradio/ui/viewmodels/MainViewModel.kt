@@ -1,5 +1,6 @@
 package com.eugenics.freeradio.ui.viewmodels
 
+import android.graphics.BitmapFactory
 import android.os.Build
 import android.os.Bundle
 import android.support.v4.media.MediaBrowserCompat
@@ -8,6 +9,7 @@ import android.support.v4.media.session.PlaybackStateCompat
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.palette.graphics.Palette
 import com.eugenics.core.enums.MediaSourceState
 import com.eugenics.core.enums.Commands
 import com.eugenics.core.model.NowPlayingStation
@@ -20,6 +22,7 @@ import com.eugenics.core.enums.Theme
 import com.eugenics.core.model.FavoriteStation
 import com.eugenics.core.model.Favorites
 import com.eugenics.data.data.util.convertToFavoritesTmpDaoObject
+import com.eugenics.freeradio.ui.util.ImageDownloadHelper
 import com.eugenics.freeradio.ui.util.UICommands
 import com.eugenics.media_service.media.FreeRadioMediaServiceConnection
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -31,11 +34,16 @@ import kotlinx.coroutines.withContext
 import java.util.UUID
 import javax.inject.Inject
 import kotlinx.serialization.json.Json
+import okhttp3.Call
+import okhttp3.Callback
+import okhttp3.Response
+import java.io.IOException
 
 @HiltViewModel
 class MainViewModel @Inject constructor(
     private val mediaServiceConnection: FreeRadioMediaServiceConnection,
-    private val repository: IRepository
+    private val repository: IRepository,
+    private val imageDownloadHelper: ImageDownloadHelper
 ) : ViewModel() {
 
     private val _uiState: MutableStateFlow<Int> = MutableStateFlow(UI_STATE_SPLASH)
@@ -71,6 +79,9 @@ class MainViewModel @Inject constructor(
     private val _uiCommand: MutableStateFlow<UICommands> =
         MutableStateFlow(UICommands.UI_COMMAND_IDL)
     val uiCommands: StateFlow<UICommands> = _uiCommand
+
+    private val _primaryDynamicColor: MutableStateFlow<Int> = MutableStateFlow(0)
+    val primaryDynamicColor: StateFlow<Int> = _primaryDynamicColor
 
     private val subscriptionCallback = object : MediaBrowserCompat.SubscriptionCallback() {
         override fun onChildrenLoaded(
@@ -112,6 +123,26 @@ class MainViewModel @Inject constructor(
                 }
             }
             _stations.value = stationServiceContent
+        }
+    }
+
+    private val favIcoDownloadCallback = object : Callback {
+        override fun onFailure(call: Call, e: IOException) {
+            _message.value = e.message.toString()
+            Log.e(TAG, e.toString())
+        }
+
+        override fun onResponse(call: Call, response: Response) {
+            if (response.isSuccessful) {
+                response.body?.let { responseBody ->
+                    val bitmap = BitmapFactory.decodeStream(responseBody.byteStream())
+                    Palette.from(bitmap)
+                        .generate()
+                        .dominantSwatch?.let {
+                            _primaryDynamicColor.value = it.rgb
+                        }
+                }
+            }
         }
     }
 
@@ -218,6 +249,8 @@ class MainViewModel @Inject constructor(
                     metaData.getString(MediaMetadataCompat.METADATA_KEY_DISPLAY_DESCRIPTION) ?: ""
                 )
                 currentMediaId = nowPlaying.value.stationUUID
+
+                downloadFavIco(url = nowPlaying.value.favicon)
             }
         }
     }
@@ -336,6 +369,23 @@ class MainViewModel @Inject constructor(
                 Log.e(TAG, e.toString())
             }
         }
+    }
+
+    private fun downloadFavIco(url: String) {
+        if (url != "null" && url.isNotBlank()) {
+            try {
+                imageDownloadHelper
+                    .downloadAsync(imageUrl = url, callback = favIcoDownloadCallback)
+            } catch (e: Exception) {
+                Log.e(TAG, e.toString())
+            }
+        } else {
+            _primaryDynamicColor.value = 0
+        }
+    }
+
+    fun setPrimaryDynamicColor(rgb: Int) {
+        _primaryDynamicColor.value = rgb
     }
 
     companion object {

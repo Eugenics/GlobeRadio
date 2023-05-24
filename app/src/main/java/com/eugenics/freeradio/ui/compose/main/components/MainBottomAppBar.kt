@@ -1,151 +1,104 @@
 package com.eugenics.freeradio.ui.compose.main.components
 
-import android.content.Context
 import android.content.res.Configuration.UI_MODE_NIGHT_YES
-import android.graphics.Bitmap
-import android.graphics.drawable.BitmapDrawable
 import android.media.session.PlaybackState
 import android.os.Build
 import android.support.v4.media.session.PlaybackStateCompat
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import coil.ImageLoader
 import coil.compose.AsyncImagePainter
 import coil.compose.SubcomposeAsyncImage
 import coil.compose.SubcomposeAsyncImageContent
-import coil.request.ImageRequest
-import coil.request.SuccessResult
-import com.eugenics.core.enums.Theme
 import com.eugenics.core.model.NowPlayingStation
 import com.eugenics.freeradio.R
-import com.eugenics.freeradio.ui.theme.ContentDynamicTheme
 import com.eugenics.freeradio.ui.theme.FreeRadioTheme
-import com.eugenics.freeradio.ui.theme.getDominantColorFromBitmap
 
 @RequiresApi(Build.VERSION_CODES.S)
 @Composable
 fun MainBottomAppBar(
     modifier: Modifier = Modifier,
-    theme: Theme = Theme.SYSTEM,
     nowPlayingStation: NowPlayingStation =
         NowPlayingStation.newInstance(name = "Sample name..."),
     playbackState: PlaybackStateCompat,
     onPlayClick: () -> Unit = {},
     onPauseClick: () -> Unit = {}
 ) {
-    val context = LocalContext.current
-
-    val defaultBackgroundColor = MaterialTheme.colorScheme.background
-    val backgroundColor = remember { mutableStateOf(defaultBackgroundColor) }
-    val isSystemDarkMode = isSystemInDarkTheme()
-
-    LaunchedEffect(nowPlayingStation.favicon) {
-        val bitmap = getBitmapAsync(context, nowPlayingStation.favicon)
-        backgroundColor.value = bitmap?.let {
-            getDominantColorFromBitmap(it)?.let { rgb ->
-                Color(rgb)
-            } ?: defaultBackgroundColor
-        } ?: defaultBackgroundColor
-    }
-
-    val isDarkModeUse = remember {
-        mutableStateOf(
-            when (theme) {
-                Theme.DARK -> true
-                Theme.LIGHT -> false
-                else -> isSystemDarkMode
-            }
-        )
-    }
-
-
-    ContentDynamicTheme(
-        color = backgroundColor.value,
-        isDarkColorsScheme = isDarkModeUse.value
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.Center,
+        modifier = modifier
+            .fillMaxWidth()
+            .background(
+                color = MaterialTheme.colorScheme.background,
+                shape = MaterialTheme.shapes.medium
+            )
     ) {
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.Center,
-            modifier = modifier
-                .fillMaxWidth()
-                .background(
-                    color = MaterialTheme.colorScheme.secondaryContainer,
-                    shape = MaterialTheme.shapes.medium
-                )
+        SubcomposeAsyncImage(
+            model = nowPlayingStation.favicon,
+            contentDescription = null,
+            modifier = Modifier
+                .size(65.dp, 65.dp)
+                .padding(10.dp)
+                .clip(CircleShape),
+            contentScale = ContentScale.Fit
         ) {
-            SubcomposeAsyncImage(
-                model = nowPlayingStation.favicon,
-                contentDescription = null,
-                modifier = Modifier
-                    .size(65.dp, 65.dp)
-                    .padding(10.dp)
-                    .clip(CircleShape),
-                contentScale = ContentScale.Fit
-            ) {
-                val painterState = painter.state
-                if (painterState is AsyncImagePainter.State.Loading || painterState is AsyncImagePainter.State.Error) {
-                    Image(
-                        painter = painterResource(R.drawable.pradio_wave),
-                        contentDescription = null
-                    )
+            val painterState = painter.state
+            if (painterState is AsyncImagePainter.State.Loading || painterState is AsyncImagePainter.State.Error) {
+                Image(
+                    painter = painterResource(R.drawable.pradio_wave),
+                    contentDescription = null
+                )
+            } else {
+                SubcomposeAsyncImageContent()
+            }
+        }
+        Column(
+            modifier = Modifier.weight(1f)
+                .padding(8.dp)
+        ) {
+            Text(
+                text = nowPlayingStation.name,
+                style = MaterialTheme.typography.bodyLarge,
+                modifier = Modifier.fillMaxWidth()
+            )
+            Text(
+                text = nowPlayingStation.nowPlayingTitle.ifBlank { "" },
+                style = MaterialTheme.typography.bodySmall,
+                modifier = Modifier.fillMaxWidth(),
+                maxLines = 4
+            )
+        }
+        IconButton(
+            onClick = {
+                if (playbackState.state == PlaybackState.STATE_PLAYING) {
+                    onPauseClick()
                 } else {
-                    SubcomposeAsyncImageContent()
+                    onPlayClick()
                 }
-            }
-            Column(
-                modifier = Modifier.weight(1f)
-                    .padding(8.dp)
-            ) {
-                Text(
-                    text = nowPlayingStation.name,
-                    style = MaterialTheme.typography.bodyLarge,
-                    modifier = Modifier.fillMaxWidth()
-                )
-                Text(
-                    text = nowPlayingStation.nowPlayingTitle.ifBlank { "" },
-                    style = MaterialTheme.typography.bodySmall,
-                    modifier = Modifier.fillMaxWidth(),
-                    maxLines = 4
-                )
-            }
-            IconButton(
-                onClick = {
-                    if (playbackState.state == PlaybackState.STATE_PLAYING) {
-                        onPauseClick()
-                    } else {
-                        onPlayClick()
-                    }
+            },
+            modifier = Modifier.padding(end = 10.dp)
+        ) {
+            Icon(
+                painter = if (playbackState.state == PlaybackState.STATE_PLAYING) {
+                    painterResource(R.drawable.ic_pause)
+                } else {
+                    painterResource(R.drawable.ic_play_arrow)
                 },
-                modifier = Modifier.padding(end = 10.dp)
-            ) {
-                Icon(
-                    painter = if (playbackState.state == PlaybackState.STATE_PLAYING) {
-                        painterResource(R.drawable.ic_pause)
-                    } else {
-                        painterResource(R.drawable.ic_play_arrow)
-                    },
-                    contentDescription = null,
-                    modifier = Modifier.size(50.dp)
-                )
-            }
+                contentDescription = null,
+                modifier = Modifier.size(50.dp)
+            )
         }
     }
 }
@@ -175,18 +128,5 @@ private fun BottomAppCardPreviewDark() {
                 .setState(PlaybackStateCompat.STATE_PLAYING, 0L, 0f)
                 .build()
         )
-    }
-}
-
-private suspend fun getBitmapAsync(context: Context, pictureLink: String): Bitmap? {
-    val imageLoader = ImageLoader(context = context)
-    val imageRequest = ImageRequest.Builder(context = context)
-        .data(data = pictureLink)
-        .allowHardware(false)
-        .allowConversionToBitmap(true)
-        .build()
-    return when (val result = imageLoader.execute(imageRequest)) {
-        is SuccessResult -> (result.drawable as BitmapDrawable).bitmap
-        else -> null
     }
 }
