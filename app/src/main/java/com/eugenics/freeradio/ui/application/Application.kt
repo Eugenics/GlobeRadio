@@ -3,6 +3,8 @@ package com.eugenics.freeradio.ui.application
 import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.compose.animation.ExperimentalAnimationApi
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
@@ -16,7 +18,6 @@ import com.eugenics.core.enums.Theme
 import com.eugenics.freeradio.navigation.NavGraph
 import com.eugenics.freeradio.ui.theme.ContentDynamicTheme
 import com.eugenics.freeradio.ui.theme.DarkColors
-import com.eugenics.freeradio.ui.theme.FreeRadioTheme
 import com.eugenics.freeradio.ui.theme.LightColors
 import com.eugenics.freeradio.ui.viewmodels.MainViewModel
 import com.google.accompanist.navigation.animation.rememberAnimatedNavController
@@ -37,16 +38,15 @@ fun Application(
     }
 
     val dynamicColor = viewModel.primaryDynamicColor.collectAsState()
+    val defaultColor = if (isDarkTheme) {
+        DarkColors.primary
+    } else {
+        LightColors.primary
+    }
 
     LaunchedEffect(dynamicColor) {
         if (dynamicColor.value == 0) {
-            viewModel.setPrimaryDynamicColor(
-                if (isDarkTheme) {
-                    DarkColors.primary.toArgb()
-                } else {
-                    LightColors.primary.toArgb()
-                }
-            )
+            viewModel.setPrimaryDynamicColor(defaultColor.toArgb())
         }
     }
 
@@ -60,13 +60,19 @@ fun Application(
         }
     }
 
-    if (listOf(Theme.CONTENT_DARK, Theme.CONTENT_LIGHT).contains(theme)) {
-        ContentDynamicTheme(
-            isDarkColorsScheme = isDarkTheme,
-            color = Color(dynamicColor.value),
-            content = content
-        )
-    } else {
-        FreeRadioTheme(useDarkTheme = isDarkTheme, content = content)
-    }
+    val color = animateColorAsState(
+        targetValue =
+        if (listOf(Theme.CONTENT_DARK, Theme.CONTENT_LIGHT).contains(theme)) {
+            Color(dynamicColor.value)
+        } else {
+            defaultColor
+        },
+        animationSpec = tween(1500)
+    )
+
+    ContentDynamicTheme(
+        isDarkColorsScheme = isDarkTheme,
+        color = color.value,
+        content = content
+    )
 }
