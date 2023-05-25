@@ -1,6 +1,5 @@
 package com.eugenics.freeradio.ui.theme
 
-import android.graphics.Bitmap
 import androidx.compose.material3.ColorScheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.darkColorScheme
@@ -8,7 +7,6 @@ import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
-import androidx.palette.graphics.Palette
 import materialcontentlibrary.scheme.Scheme
 
 fun Scheme.toDarkColorScheme(): ColorScheme = darkColorScheme(
@@ -92,9 +90,4 @@ fun ContentDynamicTheme(
         typography = AppTypography,
         shapes = AppBarShape
     )
-}
-
-fun getDominantColorFromBitmap(bitmap: Bitmap): Int? {
-    val palette = Palette.from(bitmap).generate()
-    return palette.dominantSwatch?.rgb
 }
