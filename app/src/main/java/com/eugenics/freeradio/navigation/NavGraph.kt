@@ -3,10 +3,9 @@ package com.eugenics.freeradio.navigation
 import android.os.Build
 import android.os.Bundle
 import androidx.annotation.RequiresApi
+import androidx.compose.animation.AnimatedContentScope
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.core.tween
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.navigation.NavHostController
@@ -68,12 +67,17 @@ fun NavGraph(
         composable(
             route = Screen.SettingsScreen.rout,
             enterTransition = {
-                fadeIn(
-                    animationSpec = tween(durationMillis = 1000),
-                    initialAlpha = 0.4f
+                slideIntoContainer(
+                    towards = AnimatedContentScope.SlideDirection.Up,
+                    animationSpec = tween(500)
                 )
             },
-            exitTransition = { fadeOut(animationSpec = tween(durationMillis = 1000)) }
+            exitTransition = {
+                slideOutOfContainer(
+                    towards = AnimatedContentScope.SlideDirection.Down,
+                    animationSpec = tween(500)
+                )
+            }
         ) {
             SettingsScreen(
                 settings = mainViewModel.settings,
