@@ -16,6 +16,8 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.annotation.RequiresApi
 import androidx.compose.animation.ExperimentalAnimationApi
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.LaunchedEffect
@@ -34,7 +36,6 @@ import com.eugenics.freeradio.R
 import com.eugenics.freeradio.navigation.NavGraph
 import com.eugenics.freeradio.ui.theme.ContentDynamicTheme
 import com.eugenics.freeradio.ui.theme.DarkColors
-import com.eugenics.freeradio.ui.theme.FreeRadioTheme
 import com.eugenics.freeradio.ui.theme.LightColors
 import com.eugenics.freeradio.ui.util.UICommands
 import com.eugenics.freeradio.ui.viewmodels.MainViewModel
@@ -116,20 +117,19 @@ class MainActivity : ComponentActivity() {
             }
 
             val dynamicColor = mainViewModel.primaryDynamicColor.collectAsState()
+            val defaultColor = if (isDarkTheme) {
+                DarkColors.primary
+            } else {
+                LightColors.primary
+            }
 
             LaunchedEffect(dynamicColor) {
                 if (dynamicColor.value == 0) {
-                    mainViewModel.setPrimaryDynamicColor(
-                        if (isDarkTheme) {
-                            DarkColors.primary.toArgb()
-                        } else {
-                            LightColors.primary.toArgb()
-                        }
-                    )
+                    mainViewModel.setPrimaryDynamicColor(defaultColor.toArgb())
                 }
             }
 
-            val content = @Composable{
+            val content = @Composable {
                 val navController = rememberAnimatedNavController()
                 Surface(tonalElevation = 5.dp) {
                     NavGraph(
@@ -139,15 +139,21 @@ class MainActivity : ComponentActivity() {
                 }
             }
 
-            if (listOf(Theme.CONTENT_DARK, Theme.CONTENT_LIGHT).contains(theme)) {
-                ContentDynamicTheme(
-                    isDarkColorsScheme = isDarkTheme,
-                    color = Color(dynamicColor.value),
-                    content = content
-                )
-            } else {
-                FreeRadioTheme(useDarkTheme = isDarkTheme, content = content)
-            }
+            val color = animateColorAsState(
+                targetValue =
+                if (listOf(Theme.CONTENT_DARK, Theme.CONTENT_LIGHT).contains(theme)) {
+                    Color(dynamicColor.value)
+                } else {
+                    defaultColor
+                },
+                animationSpec = tween(1500)
+            )
+
+            ContentDynamicTheme(
+                isDarkColorsScheme = isDarkTheme,
+                color = color.value,
+                content = content
+            )
         }
     }
 
