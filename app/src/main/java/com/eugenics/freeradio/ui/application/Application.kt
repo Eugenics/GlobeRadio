@@ -60,6 +60,8 @@ fun Application(
         }
     }
 
+    val isSystemTheme = !listOf(Theme.CONTENT_DARK, Theme.CONTENT_LIGHT).contains(theme)
+
     val color = animateColorAsState(
         targetValue =
         if (listOf(Theme.CONTENT_DARK, Theme.CONTENT_LIGHT).contains(theme)) {
@@ -73,6 +75,7 @@ fun Application(
     ContentDynamicTheme(
         isDarkColorsScheme = isDarkTheme,
         color = color.value,
-        content = content
+        content = content,
+        isSystemTheme = isSystemTheme
     )
 }
