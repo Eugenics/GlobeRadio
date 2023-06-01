@@ -1,7 +1,7 @@
 package com.eugenics.data.data.util
 
-private const val LOADING_MESSAGE = "Loading..."
-private const val SUCCESS_MESSAGE = "Success..."
+const val LOADING_MESSAGE = "Loading..."
+const val SUCCESS_MESSAGE = "Success..."
 private const val EMPTY_STRING = ""
 
 sealed class Response<T>(

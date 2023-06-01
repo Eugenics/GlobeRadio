@@ -59,6 +59,10 @@ dependencies {
     val kotlinxSerializationVersion = "1.3.2"
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:$kotlinxSerializationVersion")
 
+    // Kotlin coroutines test
+    val kotlinCoroutinesVersion = "1.7.1"
+    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:$kotlinCoroutinesVersion")
+
     // Modules
     implementation(project(":core"))
     implementation(project(":core_database"))
