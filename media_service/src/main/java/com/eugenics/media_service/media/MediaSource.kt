@@ -7,18 +7,22 @@ import com.eugenics.core.enums.MediaSourceState
 import com.eugenics.core.enums.Commands
 import com.eugenics.core.model.CurrentPrefs
 import com.eugenics.core.model.PlayerMediaItem
-import com.eugenics.data.data.database.enteties.StationDaoObject
 import com.eugenics.data.data.util.Response
-import com.eugenics.data.data.util.convertToMediaItem
-import com.eugenics.data.interfaces.repository.IRepository
+import com.eugenics.data.data.util.asMediaItem
+import com.eugenics.core.model.Station
+import com.eugenics.data.interfaces.IPrefsRepository
+import com.eugenics.data.interfaces.IStationsRepository
 import com.eugenics.media_service.util.PrefsHelper
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 
-class MediaSource(private val repository: IRepository) {
+class MediaSource(
+    private val stationsRepository: IStationsRepository,
+    private val prefsRepository: IPrefsRepository
+) {
 
-    private val prefsHelper = PrefsHelper(repository = repository)
+    private val prefsHelper = PrefsHelper(prefsRepository = prefsRepository)
 
     private val coroutineExceptionHandler = CoroutineExceptionHandler { _, throwable ->
         throwable.printStackTrace()
@@ -45,7 +49,7 @@ class MediaSource(private val repository: IRepository) {
         scope.launch {
             prefs.value = prefsHelper.getPrefs()
 
-            if (repository.checkLocalStations().isEmpty()) {
+            if (stationsRepository.checkLocalStations().isEmpty()) {
                 Log.d(TAG, "Load remote repository...")
                 loadStationsFromRemote(firstLoad = true)
             } else {
@@ -72,18 +76,18 @@ class MediaSource(private val repository: IRepository) {
             try {
                 when (command) {
                     Commands.STATIONS_COMMAND ->
-                        feelMediaItems(repository.getLocalStationByTag(tag = "%$tag%"))
+                        feelMediaItems(stationsRepository.getLocalStationByTag(tag = "%$tag%"))
 
                     Commands.FAVORITES_COMMAND ->
-                        feelMediaItems(repository.fetchStationsByFavorites())
+                        feelMediaItems(stationsRepository.fetchStationsByFavorites())
 
                     Commands.RELOAD_ALL_STATIONS_COMMAND ->
                         loadStationsFromRemote()
 
                     Commands.SEARCH_COMMAND ->
-                        feelMediaItems(repository.getLocalStationByName(name = "%$query%"))
+                        feelMediaItems(stationsRepository.getLocalStationByName(name = "%$query%"))
 
-                    else -> feelMediaItems(repository.getLocalStations())
+                    else -> feelMediaItems(stationsRepository.getLocalStations())
                 }
 
                 if (command != Commands.RELOAD_ALL_STATIONS_COMMAND) {
@@ -118,9 +122,9 @@ class MediaSource(private val repository: IRepository) {
             val resultBundle = Bundle()
             try {
                 if (isFavorite == 1) {
-                    repository.addFavorite(stationUuid = stationUuid)
+                    stationsRepository.addFavorite(stationUuid = stationUuid)
                 } else {
-                    repository.deleteFavorite(stationUuid = stationUuid)
+                    stationsRepository.deleteFavorite(stationUuid = stationUuid)
                 }
                 resultBundle.putString(Commands.SET_FAVORITES_COMMAND.name, "Success")
                 cb?.send(1, resultBundle)
@@ -133,12 +137,12 @@ class MediaSource(private val repository: IRepository) {
         }
     }
 
-    private fun feelMediaItems(stations: List<StationDaoObject>) {
+    private fun feelMediaItems(stations: List<Station>) {
         val playerMediaItems = mutableListOf<PlayerMediaItem>()
         playerMediaItems.addAll(stations
             .distinct()
             .map { station ->
-                station.convertToModel().convertToMediaItem()
+                station.asMediaItem()
             }
         )
         playerMediaItems.sortBy { playerMediaItem -> playerMediaItem.name }
@@ -181,7 +185,8 @@ class MediaSource(private val repository: IRepository) {
             tag = tag,
             stationUuid = stationUuid,
             command = command,
-            query = query
+            query = query,
+            uuid = prefs.value.uuid
         )
         scope.launch {
             prefsHelper.setPrefs(
@@ -191,7 +196,7 @@ class MediaSource(private val repository: IRepository) {
     }
 
     private suspend fun loadStationsFromRemote(firstLoad: Boolean = false) {
-        repository.getRemoteStations().collect { response ->
+        stationsRepository.getRemoteStations().collect { response ->
             when (response) {
                 is Response.Loading -> {
                     Log.d(TAG, "Loading...")
@@ -212,14 +217,11 @@ class MediaSource(private val repository: IRepository) {
                     Log.d(TAG, "Success...")
                     response.data?.let { stations ->
                         Log.d(TAG, "Save to data base...")
-                        repository.reloadStations(
-                            stations = stations
-                                .map { station -> station.convertToDaoObject() }
-                        )
+                        stationsRepository.reloadStations(stations = stations)
                         Log.d(TAG, "Saved to data base...")
                     }
 
-                    feelMediaItems(repository.getLocalStations())
+                    feelMediaItems(stationsRepository.getLocalStations())
                     setPrefs(command = Commands.STATIONS_COMMAND.name)
 
                     _state.value = MediaSourceState.STATE_INITIALIZED.value

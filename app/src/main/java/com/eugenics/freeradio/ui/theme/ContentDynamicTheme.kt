@@ -97,8 +97,6 @@ fun ContentDynamicTheme(
         }
     }
 
-
-
     MaterialTheme(
         colorScheme = colorScheme,
         content = content,

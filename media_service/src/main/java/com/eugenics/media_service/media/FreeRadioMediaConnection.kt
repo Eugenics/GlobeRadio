@@ -18,6 +18,7 @@ import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.MutableStateFlow
 
 class FreeRadioMediaServiceConnection(context: Context, serviceComponent: ComponentName) {
+
     val isConnected = MutableStateFlow(false)
     val playbackState = MutableStateFlow(EMPTY_PLAYBACK_STATE)
     val mediaSourceState: MutableStateFlow<Int> = MutableStateFlow(MediaSourceState.STATE_IDL.value)

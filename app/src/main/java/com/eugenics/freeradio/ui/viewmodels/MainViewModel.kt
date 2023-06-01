@@ -1,5 +1,6 @@
 package com.eugenics.freeradio.ui.viewmodels
 
+import android.content.Context
 import android.graphics.BitmapFactory
 import android.os.Build
 import android.os.Bundle
@@ -7,6 +8,7 @@ import android.support.v4.media.MediaBrowserCompat
 import android.support.v4.media.MediaMetadataCompat
 import android.support.v4.media.session.PlaybackStateCompat
 import android.util.Log
+import androidx.datastore.core.DataStore
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.palette.graphics.Palette
@@ -16,14 +18,14 @@ import com.eugenics.core.model.NowPlayingStation
 import com.eugenics.core.model.PlayerMediaItem
 import com.eugenics.core.model.Station
 import com.eugenics.core.model.Tag
-import com.eugenics.data.interfaces.repository.IRepository
 import com.eugenics.core.model.CurrentState
 import com.eugenics.core.enums.Theme
 import com.eugenics.core.model.FavoriteStation
 import com.eugenics.core.model.Favorites
-import com.eugenics.data.data.util.convertToFavoritesTmpDaoObject
-import com.eugenics.freeradio.ui.util.ImageDownloadHelper
+import com.eugenics.data.interfaces.IStationsRepository
+import com.eugenics.freeradio.util.ImageHelper
 import com.eugenics.freeradio.ui.util.UICommands
+import com.eugenics.freeradio.util.FilesHelper
 import com.eugenics.media_service.media.FreeRadioMediaServiceConnection
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
@@ -42,8 +44,8 @@ import java.io.IOException
 @HiltViewModel
 class MainViewModel @Inject constructor(
     private val mediaServiceConnection: FreeRadioMediaServiceConnection,
-    private val repository: IRepository,
-    private val imageDownloadHelper: ImageDownloadHelper
+    private val stationsRepository: IStationsRepository,
+    private val dataStore: DataStore<CurrentState>
 ) : ViewModel() {
 
     private val _uiState: MutableStateFlow<Int> = MutableStateFlow(UI_STATE_SPLASH)
@@ -151,7 +153,6 @@ class MainViewModel @Inject constructor(
         collectNowPlaying()
         collectSettings()
         collectServiceConnection()
-        getTagsList()
     }
 
     private fun collectServiceConnection() {
@@ -257,7 +258,7 @@ class MainViewModel @Inject constructor(
 
     private fun collectSettings() {
         viewModelScope.launch(ioDispatcher) {
-            repository.getSettings().collect {
+            dataStore.data.collect {
                 _settings.value = it
             }
         }
@@ -294,14 +295,16 @@ class MainViewModel @Inject constructor(
                 command = command,
                 visibleIndex = visibleIndex
             )
-            repository.setSettings(settings = currentState)
+            setSettings(settings = currentState)
             Log.d(TAG, "setSettings:$currentState")
         }
     }
 
-    private fun getTagsList() {
-        viewModelScope.launch(ioDispatcher) {
-            _tagList.value = repository.getTags()
+    fun getTagsList(context: Context) {
+        if (tagList.value.isEmpty()) {
+            viewModelScope.launch(ioDispatcher) {
+                _tagList.value = FilesHelper.getTags(context = context)
+            }
         }
     }
 
@@ -318,8 +321,7 @@ class MainViewModel @Inject constructor(
     private fun backUpFavorites() {
         viewModelScope.launch(Dispatchers.IO) {
             val favorites = Favorites(
-                stationList = repository.fetchStationsByFavorites()
-                    .map { it.convertToModel() }
+                stationList = stationsRepository.fetchStationsByFavorites()
                     .map {
                         FavoriteStation(
                             uuid = UUID.randomUUID().toString(),
@@ -353,10 +355,8 @@ class MainViewModel @Inject constructor(
                         Favorites.serializer(),
                         favoritesJsonString
                     )
-                    repository.restoreFavorites(
-                        favorites = favorites.stationList.map {
-                            it.convertToFavoritesTmpDaoObject()
-                        }
+                    stationsRepository.restoreFavorites(
+                        favorites = favorites.stationList
                     )
                     withContext(Dispatchers.Main) {
                         sendCommand(command = Commands.FAVORITES_COMMAND.name, null)
@@ -374,8 +374,7 @@ class MainViewModel @Inject constructor(
     private fun downloadFavIco(url: String) {
         if (url != "null" && url.isNotBlank()) {
             try {
-                imageDownloadHelper
-                    .downloadAsync(imageUrl = url, callback = favIcoDownloadCallback)
+                ImageHelper.downloadAsync(imageUrl = url, callback = favIcoDownloadCallback)
             } catch (e: Exception) {
                 Log.e(TAG, e.toString())
             }
@@ -386,6 +385,12 @@ class MainViewModel @Inject constructor(
 
     fun setPrimaryDynamicColor(rgb: Int) {
         _primaryDynamicColor.value = rgb
+    }
+
+    private suspend fun setSettings(settings: CurrentState) {
+        dataStore.updateData {
+            settings
+        }
     }
 
     companion object {

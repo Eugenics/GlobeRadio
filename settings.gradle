@@ -15,5 +15,7 @@ dependencyResolutionManagement {
 rootProject.name = "Free Radio"
 include ':app'
 include ':media_service'
-include ':data'
+include ':core_data'
 include ':core'
+include ':core_database'
+include ':core_network'

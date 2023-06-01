@@ -2,10 +2,9 @@ package com.eugenics.media_service.util
 
 import android.util.Log
 import com.eugenics.core.model.CurrentPrefs
-import com.eugenics.data.data.database.enteties.PrefsDaoObject
-import com.eugenics.data.interfaces.repository.IRepository
+import com.eugenics.data.interfaces.IPrefsRepository
 
-class PrefsHelper(private val repository: IRepository) {
+class PrefsHelper(private val prefsRepository: IPrefsRepository) {
 
     suspend fun setPrefs(
         tag: String,
@@ -14,13 +13,12 @@ class PrefsHelper(private val repository: IRepository) {
         query: String
     ) {
         Log.d(TAG, "SET PREFS: $command")
-        val curPrefs = repository.fetchPrefs()
-        if (curPrefs.isNotEmpty()) {
-            repository.updatePrefs(
-                PrefsDaoObject.newInstance(
-                    uuid = curPrefs.first().uuid,
+        prefsRepository.fetchPrefs().apply {
+            prefsRepository.insertPrefs(
+                CurrentPrefs(
+                    uuid = this.uuid,
                     tag = tag,
-                    stationUUID = stationUuid,
+                    stationUuid = stationUuid,
                     command = command,
                     query = query
                 )
@@ -30,14 +28,7 @@ class PrefsHelper(private val repository: IRepository) {
 
     suspend fun getPrefs(): CurrentPrefs {
         Log.d(TAG, "GET PREFS...")
-        val prefsList = repository.fetchPrefs()
-        return if (prefsList.isEmpty()) {
-            val prefsDaoObject = PrefsDaoObject.newInstance()
-            repository.insertPrefs(prefs = prefsDaoObject)
-            prefsDaoObject.convertToModel()
-        } else {
-            prefsList.first().convertToModel()
-        }
+        return prefsRepository.fetchPrefs()
     }
 
     companion object {

@@ -20,7 +20,7 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
-const val NOW_PLAYING_CHANNEL_ID = "com.eugenics.media_service.media.NOW_PLAYING"
+const val NOW_PLAYING_CHANNEL_ID = "com.eugenics.media_service.media.free_radio"
 const val NOW_PLAYING_NOTIFICATION_ID = 0xb339
 
 internal class FreeRadioNotificationManager(
@@ -34,20 +34,18 @@ internal class FreeRadioNotificationManager(
     private var player: Player? = null
     private val serviceJob = SupervisorJob()
     private val serviceScope = CoroutineScope(Dispatchers.Default + serviceJob)
-    private val notificationManager: PlayerNotificationManager
-
-    init {
-        val builder = PlayerNotificationManager.Builder(
+    private val notificationManager: PlayerNotificationManager =
+        PlayerNotificationManager.Builder(
             context,
             NOW_PLAYING_NOTIFICATION_ID,
             NOW_PLAYING_CHANNEL_ID
         )
-        with(builder) {
-            setMediaDescriptionAdapter(DescriptionAdapter())
-            setNotificationListener(notificationListener)
-            setChannelNameResourceId(R.string.notification_channel)
-        }
-        notificationManager = builder.build()
+            .setMediaDescriptionAdapter(DescriptionAdapter())
+            .setNotificationListener(notificationListener)
+            .setChannelNameResourceId(R.string.notification_channel_name)
+            .build()
+
+    init {
         notificationManager.setMediaSessionToken(sessionToken)
         notificationManager.setSmallIcon(R.drawable.ic_notification)
         notificationManager.setUseRewindAction(false)
@@ -93,6 +91,7 @@ internal class FreeRadioNotificationManager(
             return when {
                 iconUri.toString().isBlank() ->
                     ContextCompat.getDrawable(context, R.drawable.pradio_wave)?.toBitmap()
+
                 iconUri != currentIconUri && iconUri != null -> {
                     currentIconUri = iconUri
                     serviceScope.launch {
@@ -101,6 +100,7 @@ internal class FreeRadioNotificationManager(
                     }
                     null
                 }
+
                 else -> currentBitmap
             }
         }

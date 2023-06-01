@@ -86,9 +86,12 @@ class MainActivity : ComponentActivity() {
 
         WindowCompat.setDecorFitsSystemWindows(window, false)
 
+        checkPostNotificationPermission()
         checkIntentData()
         collectUICommands()
         collectViewModelMessages()
+
+        mainViewModel.getTagsList(context = applicationContext)
 
         setContent {
             Application(viewModel = mainViewModel)
@@ -176,22 +179,26 @@ class MainActivity : ComponentActivity() {
         }
 
     private fun callExtStoragePermissions() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-            val appUri = Uri.parse("package:${BuildConfig.APPLICATION_ID}")
+        when {
+            Build.VERSION.SDK_INT >= Build.VERSION_CODES.R -> {
+                val appUri = Uri.parse("package:${BuildConfig.APPLICATION_ID}")
 
-            startActivity(
-                Intent(
-                    Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION,
-                    appUri
+                startActivity(
+                    Intent(
+                        Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION,
+                        appUri
+                    )
                 )
-            )
-        } else {
-            permissionsRequestLauncher.launch(
-                arrayOf(
-                    Manifest.permission.WRITE_EXTERNAL_STORAGE,
-                    Manifest.permission.READ_EXTERNAL_STORAGE
+            }
+
+            else -> {
+                permissionsRequestLauncher.launch(
+                    arrayOf(
+                        Manifest.permission.WRITE_EXTERNAL_STORAGE,
+                        Manifest.permission.READ_EXTERNAL_STORAGE
+                    )
                 )
-            )
+            }
         }
     }
 
@@ -205,6 +212,14 @@ class MainActivity : ComponentActivity() {
                 Log.d(TAG, "Grant permission and try again...")
                 callExtStoragePermissions()
             }
+        }
+    }
+
+    private fun checkPostNotificationPermission() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            permissionsRequestLauncher.launch(
+                arrayOf(Manifest.permission.POST_NOTIFICATIONS)
+            )
         }
     }
 
