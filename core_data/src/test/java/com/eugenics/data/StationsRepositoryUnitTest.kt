@@ -8,7 +8,7 @@ import org.junit.Assert.*
 import org.junit.Test
 
 class StationsRepositoryUnitTest {
-    private val fakeStationsRepository = FakeStationsRepositoryFactory().create()
+    private val fakeStationsRepository = FakeStationsRepositoryFactory.create()
     private val stationsList = FakeStationsLocalDataSource.fakeStationsDaoObjects
         .map { stationDaoObject -> stationDaoObject.asModel() }
 
