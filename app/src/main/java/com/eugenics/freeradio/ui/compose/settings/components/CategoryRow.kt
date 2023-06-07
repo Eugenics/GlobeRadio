@@ -21,7 +21,7 @@ fun CategoryRow(categoryName: String) {
         Text(
             text = categoryName,
             style = MaterialTheme.typography.bodySmall,
-            color = MaterialTheme.colorScheme.tertiary,
+            color = MaterialTheme.colorScheme.primary,
             modifier = Modifier.padding(10.dp)
                 .weight(1f)
                 .wrapContentSize(align = Alignment.CenterStart)

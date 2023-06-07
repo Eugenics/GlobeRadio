@@ -37,10 +37,10 @@ android {
 dependencies {
 
     // KotlinX Serialization
-    val kotlinxSerializationVersion = "1.3.2"
+    val kotlinxSerializationVersion = "1.5.0"
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:$kotlinxSerializationVersion")
 
-    // Retrofit
-    val retrofitVersion = "2.9.0"
-    implementation("com.squareup.retrofit2:converter-gson:$retrofitVersion")
+    //GSON
+    val gsonVersion = "2.10.1"
+    implementation("com.google.code.gson:gson:$gsonVersion")
 }

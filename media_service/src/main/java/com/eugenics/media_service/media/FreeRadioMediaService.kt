@@ -17,7 +17,8 @@ import androidx.core.net.toUri
 import androidx.media.MediaBrowserServiceCompat
 import com.eugenics.core.enums.MediaSourceState
 import com.eugenics.core.enums.Commands
-import com.eugenics.data.interfaces.repository.IRepository
+import com.eugenics.data.interfaces.IPrefsRepository
+import com.eugenics.data.interfaces.IStationsRepository
 import com.eugenics.media_service.media.FreeRadioMediaServiceConnection.Companion.SET_FAVORITES_STATION_KEY
 import com.eugenics.media_service.media.FreeRadioMediaServiceConnection.Companion.SET_FAVORITES_VALUE_KEY
 import com.eugenics.media_service.player.getMediaItems
@@ -43,7 +44,10 @@ private const val EMPTY_ROOT = "@empty@"
 class FreeRadioMediaService : MediaBrowserServiceCompat() {
 
     @Inject
-    lateinit var repository: IRepository
+    lateinit var stationsRepository: IStationsRepository
+
+    @Inject
+    lateinit var prefsRepository: IPrefsRepository
 
     private val serviceJob = SupervisorJob()
     private val serviceScope = CoroutineScope(Dispatchers.Main + serviceJob)
@@ -80,7 +84,10 @@ class FreeRadioMediaService : MediaBrowserServiceCompat() {
     private var isForegroundService = false
 
     private val mediaSource: MediaSource by lazy {
-        MediaSource(repository = repository)
+        MediaSource(
+            stationsRepository = stationsRepository,
+            prefsRepository = prefsRepository
+        )
     }
 
     override fun onCreate() {
@@ -126,6 +133,7 @@ class FreeRadioMediaService : MediaBrowserServiceCompat() {
             release()
         }
         player.release()
+        notificationManager.hideNotification()
     }
 
     override fun onGetRoot(

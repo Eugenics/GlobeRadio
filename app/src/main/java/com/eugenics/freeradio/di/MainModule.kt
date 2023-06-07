@@ -2,8 +2,10 @@ package com.eugenics.freeradio.di
 
 import android.content.ComponentName
 import android.content.Context
-import com.eugenics.freeradio.ui.util.ImageDownloadHelper
-
+import androidx.datastore.core.DataStore
+import androidx.datastore.core.DataStoreFactory
+import com.eugenics.core.model.CurrentState
+import com.eugenics.freeradio.util.SettingsSerializer
 import com.eugenics.media_service.media.FreeRadioMediaService
 import com.eugenics.media_service.media.FreeRadioMediaServiceConnection
 import dagger.Module
@@ -11,7 +13,7 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
-import okhttp3.OkHttpClient
+import java.io.File
 import javax.inject.Singleton
 
 @Module
@@ -28,8 +30,16 @@ class MainModule {
             ComponentName(context, FreeRadioMediaService::class.java)
         )
 
-    @Singleton
     @Provides
-    fun provideImageDownloadHelper(okHttpClient: OkHttpClient) =
-        ImageDownloadHelper(httpClient = okHttpClient)
+    @Singleton
+    fun provideSettingsDataStore(@ApplicationContext context: Context): DataStore<CurrentState> =
+        DataStoreFactory.create(
+            serializer = SettingsSerializer,
+            produceFile = {
+                File(
+                    context.applicationInfo.dataDir,
+                    "datastore/settings_data_store.pb"
+                )
+            }
+        )
 }

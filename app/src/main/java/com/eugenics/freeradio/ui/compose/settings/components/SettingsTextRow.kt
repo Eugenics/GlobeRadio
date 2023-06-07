@@ -11,6 +11,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 
 @Composable
 fun SettingsTextRow(
@@ -27,18 +28,22 @@ fun SettingsTextRow(
         verticalAlignment = Alignment.CenterVertically
     ) {
         Text(
+            modifier = Modifier.padding(10.dp)
+                .weight(1f)
+                .wrapContentSize(align = Alignment.CenterStart),
             text = nameText,
             style = MaterialTheme.typography.bodyLarge,
-            modifier = Modifier.padding(10.dp)
-                .weight(1f)
-                .wrapContentSize(align = Alignment.CenterStart)
+            fontSize = 20.sp
         )
         Text(
+            modifier = Modifier.padding(10.dp)
+                .weight(
+                    if (valueText.isNotBlank()) 1f else 0.1f
+                )
+                .wrapContentSize(align = Alignment.CenterEnd),
             text = valueText,
             style = MaterialTheme.typography.bodyLarge,
-            modifier = Modifier.padding(10.dp)
-                .weight(1f)
-                .wrapContentSize(align = Alignment.CenterEnd)
+            fontSize = 20.sp
         )
     }
 }

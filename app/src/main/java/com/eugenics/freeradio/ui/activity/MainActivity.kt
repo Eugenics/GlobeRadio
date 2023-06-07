@@ -15,31 +15,17 @@ import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.annotation.RequiresApi
-import androidx.compose.animation.ExperimentalAnimationApi
-import androidx.compose.animation.animateColorAsState
-import androidx.compose.animation.core.tween
-import androidx.compose.foundation.isSystemInDarkTheme
-import androidx.compose.material3.Surface
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.*
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.toArgb
-import androidx.compose.ui.unit.dp
 import androidx.core.content.FileProvider
 import androidx.core.view.WindowCompat
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
-import com.eugenics.core.enums.Theme
 import com.eugenics.freeradio.BuildConfig
 import com.eugenics.freeradio.R
-import com.eugenics.freeradio.navigation.NavGraph
-import com.eugenics.freeradio.ui.theme.ContentDynamicTheme
-import com.eugenics.freeradio.ui.theme.DarkColors
-import com.eugenics.freeradio.ui.theme.LightColors
+import com.eugenics.freeradio.ui.application.Application
 import com.eugenics.freeradio.ui.util.UICommands
 import com.eugenics.freeradio.ui.viewmodels.MainViewModel
-import com.google.accompanist.navigation.animation.rememberAnimatedNavController
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -94,66 +80,22 @@ class MainActivity : ComponentActivity() {
             }
         }
 
-    @OptIn(ExperimentalAnimationApi::class)
     @RequiresApi(Build.VERSION_CODES.S)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         WindowCompat.setDecorFitsSystemWindows(window, false)
 
+        checkPostNotificationPermission()
         checkIntentData()
-
         collectUICommands()
         collectViewModelMessages()
 
+        mainViewModel.start()
+        mainViewModel.getTagsList(context = applicationContext)
+
         setContent {
-            val theme = mainViewModel.settings.collectAsState().value.theme
-            val isDarkTheme = when (theme) {
-                Theme.DARK -> true
-                Theme.CONTENT_DARK -> true
-                Theme.LIGHT -> false
-                Theme.CONTENT_LIGHT -> false
-                else -> isSystemInDarkTheme()
-            }
-
-            val dynamicColor = mainViewModel.primaryDynamicColor.collectAsState()
-            val defaultColor = if (isDarkTheme) {
-                DarkColors.primary
-            } else {
-                LightColors.primary
-            }
-
-            LaunchedEffect(dynamicColor) {
-                if (dynamicColor.value == 0) {
-                    mainViewModel.setPrimaryDynamicColor(defaultColor.toArgb())
-                }
-            }
-
-            val content = @Composable {
-                val navController = rememberAnimatedNavController()
-                Surface(tonalElevation = 5.dp) {
-                    NavGraph(
-                        navController = navController,
-                        mainViewModel = mainViewModel
-                    )
-                }
-            }
-
-            val color = animateColorAsState(
-                targetValue =
-                if (listOf(Theme.CONTENT_DARK, Theme.CONTENT_LIGHT).contains(theme)) {
-                    Color(dynamicColor.value)
-                } else {
-                    defaultColor
-                },
-                animationSpec = tween(1500)
-            )
-
-            ContentDynamicTheme(
-                isDarkColorsScheme = isDarkTheme,
-                color = color.value,
-                content = content
-            )
+            Application(viewModel = mainViewModel)
         }
     }
 
@@ -238,22 +180,26 @@ class MainActivity : ComponentActivity() {
         }
 
     private fun callExtStoragePermissions() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-            val appUri = Uri.parse("package:${BuildConfig.APPLICATION_ID}")
+        when {
+            Build.VERSION.SDK_INT >= Build.VERSION_CODES.R -> {
+                val appUri = Uri.parse("package:${BuildConfig.APPLICATION_ID}")
 
-            startActivity(
-                Intent(
-                    Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION,
-                    appUri
+                startActivity(
+                    Intent(
+                        Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION,
+                        appUri
+                    )
                 )
-            )
-        } else {
-            permissionsRequestLauncher.launch(
-                arrayOf(
-                    Manifest.permission.WRITE_EXTERNAL_STORAGE,
-                    Manifest.permission.READ_EXTERNAL_STORAGE
+            }
+
+            else -> {
+                permissionsRequestLauncher.launch(
+                    arrayOf(
+                        Manifest.permission.WRITE_EXTERNAL_STORAGE,
+                        Manifest.permission.READ_EXTERNAL_STORAGE
+                    )
                 )
-            )
+            }
         }
     }
 
@@ -267,6 +213,14 @@ class MainActivity : ComponentActivity() {
                 Log.d(TAG, "Grant permission and try again...")
                 callExtStoragePermissions()
             }
+        }
+    }
+
+    private fun checkPostNotificationPermission() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            permissionsRequestLauncher.launch(
+                arrayOf(Manifest.permission.POST_NOTIFICATIONS)
+            )
         }
     }
 
