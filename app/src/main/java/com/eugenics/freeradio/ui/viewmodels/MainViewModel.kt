@@ -148,7 +148,7 @@ class MainViewModel @Inject constructor(
         }
     }
 
-    init {
+    fun start() {
         collectMediaSourceState()
         collectNowPlaying()
         collectSettings()

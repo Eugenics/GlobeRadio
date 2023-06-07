@@ -8,6 +8,7 @@ import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.core.tween
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import com.google.accompanist.navigation.animation.composable
 import com.eugenics.core.enums.Commands
@@ -17,13 +18,14 @@ import com.eugenics.freeradio.ui.viewmodels.MainViewModel
 import com.eugenics.media_service.media.FreeRadioMediaServiceConnection.Companion.SET_FAVORITES_STATION_KEY
 import com.eugenics.media_service.media.FreeRadioMediaServiceConnection.Companion.SET_FAVORITES_VALUE_KEY
 import com.google.accompanist.navigation.animation.AnimatedNavHost
+import com.google.accompanist.navigation.animation.rememberAnimatedNavController
 
 @OptIn(ExperimentalAnimationApi::class)
 @RequiresApi(Build.VERSION_CODES.S)
 @Composable
 fun NavGraph(
-    navController: NavHostController,
-    mainViewModel: MainViewModel
+    navController: NavHostController = rememberAnimatedNavController(),
+    mainViewModel: MainViewModel = hiltViewModel()
 ) {
     AnimatedNavHost(
         navController = navController,

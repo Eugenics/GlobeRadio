@@ -71,7 +71,8 @@ fun MainBottomAppBar(
             Text(
                 text = nowPlayingStation.name,
                 style = MaterialTheme.typography.bodyLarge,
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth(),
+                maxLines = 2
             )
             Text(
                 text = nowPlayingStation.nowPlayingTitle.ifBlank { "" },

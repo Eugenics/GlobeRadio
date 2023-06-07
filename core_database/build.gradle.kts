@@ -59,14 +59,10 @@ dependencies {
     kapt("com.google.dagger:dagger-compiler:$daggerVersion")
 
     //Room
-    // To use Kotlin annotation processing tool (kapt)
     val roomVersion = "2.4.2"
     kapt("androidx.room:room-compiler:$roomVersion")
-    // optional - Kotlin Extensions and Coroutines support for Room
     implementation("androidx.room:room-ktx:$roomVersion")
-    // optional - Test helpers
     testImplementation("androidx.room:room-testing:$roomVersion")
-    // optional - Paging 3 Integration
     implementation("androidx.room:room-paging:$roomVersion")
 
     // Core module

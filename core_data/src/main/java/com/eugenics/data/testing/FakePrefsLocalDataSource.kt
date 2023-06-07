@@ -1,4 +1,4 @@
-package com.eugenics.data
+package com.eugenics.data.testing
 
 import android.util.Log
 import com.eugenics.core.enums.Commands

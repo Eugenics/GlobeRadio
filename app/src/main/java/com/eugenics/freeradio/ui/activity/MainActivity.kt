@@ -91,6 +91,7 @@ class MainActivity : ComponentActivity() {
         collectUICommands()
         collectViewModelMessages()
 
+        mainViewModel.start()
         mainViewModel.getTagsList(context = applicationContext)
 
         setContent {

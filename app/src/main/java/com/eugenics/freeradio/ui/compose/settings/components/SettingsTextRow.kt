@@ -37,7 +37,9 @@ fun SettingsTextRow(
         )
         Text(
             modifier = Modifier.padding(10.dp)
-                .weight(1f)
+                .weight(
+                    if (valueText.isNotBlank()) 1f else 0.1f
+                )
                 .wrapContentSize(align = Alignment.CenterEnd),
             text = valueText,
             style = MaterialTheme.typography.bodyLarge,

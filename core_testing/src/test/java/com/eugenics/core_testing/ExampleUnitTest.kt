@@ -1,4 +1,4 @@
-package com.eugenics.data
+package com.eugenics.core_testing
 
 import org.junit.Test
 
