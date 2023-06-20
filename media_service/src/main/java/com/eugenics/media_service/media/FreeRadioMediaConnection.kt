@@ -11,6 +11,7 @@ import android.support.v4.media.session.MediaControllerCompat
 import android.support.v4.media.session.MediaSessionCompat
 import android.support.v4.media.session.PlaybackStateCompat
 import android.util.Log
+import com.eugenics.core.enums.Commands
 import com.eugenics.core.enums.MediaSourceState
 import com.google.android.exoplayer2.MediaMetadata
 import com.google.android.exoplayer2.Player
@@ -42,20 +43,30 @@ class FreeRadioMediaServiceConnection(context: Context, serviceComponent: Compon
 
     private lateinit var mediaController: MediaControllerCompat
 
-    fun subscribe(parentId: String, callback: MediaBrowserCompat.SubscriptionCallback) {
+    fun subscribe(
+        parentId: String,
+        callback: MediaBrowserCompat.SubscriptionCallback =
+            object : MediaBrowserCompat.SubscriptionCallback() {}
+    ) {
         mediaBrowser.subscribe(parentId, callback)
         collectNowPlaying()
+        sendCommand(Commands.PREPARE.name)
     }
 
-    fun unsubscribe(parentId: String, callback: MediaBrowserCompat.SubscriptionCallback) {
+    fun unsubscribe(
+        parentId: String,
+        callback: MediaBrowserCompat.SubscriptionCallback =
+            object : MediaBrowserCompat.SubscriptionCallback() {}
+    ) {
         mediaBrowser.unsubscribe(parentId, callback)
         nowPlayingJob?.cancel()
+        sendCommand(Commands.RELEASE.name)
     }
 
     fun sendCommand(
         command: String,
-        parameters: Bundle?,
-        resultCallback: ((Int, Bundle?) -> Unit)
+        parameters: Bundle? = null,
+        resultCallback: ((Int, Bundle?) -> Unit) = { _, _ -> }
     ) = if (mediaBrowser.isConnected) {
         mediaController.sendCommand(
             command,

@@ -99,6 +99,11 @@ class MainActivity : ComponentActivity() {
         }
     }
 
+    override fun onDestroy() {
+        super.onDestroy()
+        mainViewModel.unsubscribe()
+    }
+
     private fun collectUICommands() {
         lifecycleScope.launch(Dispatchers.Default) {
             repeatOnLifecycle(state = Lifecycle.State.STARTED) {

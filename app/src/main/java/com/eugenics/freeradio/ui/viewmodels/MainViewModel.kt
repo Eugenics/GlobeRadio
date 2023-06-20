@@ -159,6 +159,10 @@ class MainViewModel @Inject constructor(
         collectServiceConnection()
     }
 
+    fun unsubscribe(){
+        mediaServiceConnection.unsubscribe(rootId)
+    }
+
     private fun collectServiceConnection() {
         viewModelScope.launch {
             mediaServiceConnection.isConnected.collect {

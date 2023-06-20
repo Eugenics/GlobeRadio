@@ -134,6 +134,8 @@ class FreeRadioMediaService : MediaBrowserServiceCompat() {
         }
         player.release()
         notificationManager.hideNotification()
+        stopForeground(STOP_FOREGROUND_REMOVE)
+        stopSelf()
     }
 
     override fun onGetRoot(
@@ -211,8 +213,8 @@ class FreeRadioMediaService : MediaBrowserServiceCompat() {
         }
 
         override fun onNotificationCancelled(notificationId: Int, dismissedByUser: Boolean) {
-            stopForeground(STOP_FOREGROUND_REMOVE)
             isForegroundService = false
+            stopForeground(STOP_FOREGROUND_REMOVE)
             stopSelf()
         }
     }
@@ -265,6 +267,22 @@ class FreeRadioMediaService : MediaBrowserServiceCompat() {
                                 cb = cb
                             )
                         }
+                    }
+                }
+
+                Commands.RELEASE.name -> {
+                    player.stop()
+                    notificationManager.hideNotification()
+                    this@FreeRadioMediaService.stopForeground(STOP_FOREGROUND_REMOVE)
+                    this@FreeRadioMediaService.stopSelf()
+                    Log.d(TAG, "RELEASE command...")
+                }
+
+                Commands.PREPARE.name -> {
+                    if (notificationManager.notificationState ==
+                        FreeRadioNotificationManager.NOTIFICATION_IS_HIDE
+                    ) {
+                        notificationManager.showNotificationForPlayer(player)
                     }
                 }
             }
@@ -328,6 +346,20 @@ class FreeRadioMediaService : MediaBrowserServiceCompat() {
                 player.seekTo(mediaSource.getStartPosition(), 0L)
                 player.playWhenReady = true
                 player.prepare()
+            }
+
+            else -> {
+                val currentMediaId = player.currentMediaItem?.mediaId ?: ""
+                if (currentMediaId.isNotBlank()) {
+                    mediaSource.onMediaItemClick(
+                        mediaItemId = currentMediaId,
+                        playWhenReady = false
+                    )
+                    player.stop()
+                    player.seekTo(mediaSource.getStartPosition(), 0L)
+                    player.playWhenReady = true
+                    player.prepare()
+                }
             }
         }
     }

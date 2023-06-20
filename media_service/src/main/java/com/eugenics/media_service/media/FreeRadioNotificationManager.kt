@@ -29,7 +29,8 @@ internal class FreeRadioNotificationManager(
     notificationListener: PlayerNotificationManager.NotificationListener
 ) {
 
-    private var notificationState: Int = NOTIFICATION_IS_HIDE
+    var notificationState: Int = NOTIFICATION_IS_HIDE
+        private set
 
     private var player: Player? = null
     private val serviceJob = SupervisorJob()
