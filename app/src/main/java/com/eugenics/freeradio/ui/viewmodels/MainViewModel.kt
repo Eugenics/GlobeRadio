@@ -138,11 +138,15 @@ class MainViewModel @Inject constructor(
             if (response.isSuccessful) {
                 response.body?.let { responseBody ->
                     val bitmap = BitmapFactory.decodeStream(responseBody.byteStream())
-                    Palette.from(bitmap)
-                        .generate()
-                        .dominantSwatch?.let {
-                            _primaryDynamicColor.value = it.rgb
-                        }
+                    try {
+                        Palette.from(bitmap)
+                            .generate()
+                            .dominantSwatch?.let {
+                                _primaryDynamicColor.value = it.rgb
+                            }
+                    } catch (e: Exception) {
+                        Log.e(TAG, e.toString())
+                    }
                 }
             }
         }
