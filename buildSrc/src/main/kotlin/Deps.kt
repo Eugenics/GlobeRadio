@@ -1,9 +1,8 @@
 import org.gradle.plugin.use.PluginDependenciesSpec
 import org.gradle.plugin.use.PluginDependencySpec
 
-object AppConfig {
+object BaseConfig {
     const val jvmTarget = "11"
-    const val namespace = "com.eugenics.core"
     const val compileSdk = 33
     const val minSdk = 27
 }
@@ -14,6 +13,7 @@ object Deps {
     object AndroidX {
         const val coreKtx = "androidx.core:core-ktx:1.10.1"
         const val appcompat = "androidx.appcompat:appcompat:1.6.1"
+        const val media = "androidx.media:media:1.6.0"
     }
 
     object JUnit {
@@ -51,6 +51,14 @@ object Deps {
         private const val kotlinxSerializationVersion = "1.5.0"
         const val kotlinxSerialization =
             "org.jetbrains.kotlinx:kotlinx-serialization-json:$kotlinxSerializationVersion"
+
+        private const val kotlinCoroutinesVersion = "1.7.1"
+        const val kotlinxCoroutinesTest =
+            "org.jetbrains.kotlinx:kotlinx-coroutines-test:$kotlinCoroutinesVersion"
+        const val coroutinesCore =
+            "org.jetbrains.kotlinx:kotlinx-coroutines-core:$kotlinCoroutinesVersion"
+        const val coroutinesAndroid =
+            "org.jetbrains.kotlinx:kotlinx-coroutines-android:$kotlinCoroutinesVersion"
     }
 
     object Google {
@@ -66,14 +74,27 @@ object Deps {
             "com.jakewharton.retrofit:retrofit2-kotlinx-serialization-converter:0.8.0"
         const val intercepter = "com.squareup.okhttp3:logging-interceptor:4.11.0"
     }
+
+    object Exoplayer {
+        private const val exoplayerVersion = "2.18.1"
+        const val exoplayer = "com.google.android.exoplayer:exoplayer:$exoplayerVersion"
+        const val extOkhttp = "com.google.android.exoplayer:extension-okhttp:$exoplayerVersion"
+        const val extMediasession =
+            "com.google.android.exoplayer:extension-mediasession:$exoplayerVersion"
+    }
+
+    object Images {
+        const val glide = "com.github.bumptech.glide:glide:4.12.0"
+        const val coil = "io.coil-kt:coil-compose:2.2.0"
+    }
 }
 
 private typealias pdss = PluginDependenciesSpec
 private typealias pds = PluginDependencySpec
 
-inline val pdss.androidLibrary:pds get() = id("com.android.library")
-inline val pdss.kotlin:pds get() = id("org.jetbrains.kotlin.android")
-inline val pdss.parcelize:pds get() = id("kotlin-parcelize")
-inline val pdss.serialization:pds get() = id("kotlinx-serialization")
-inline val pdss.kapt:pds get() = id("kotlin-kapt")
-inline val pdss.dagger:pds get() = id("dagger.hilt.android.plugin")
+inline val pdss.androidLibrary: pds get() = id("com.android.library")
+inline val pdss.kotlin: pds get() = id("org.jetbrains.kotlin.android")
+inline val pdss.parcelize: pds get() = id("kotlin-parcelize")
+inline val pdss.serialization: pds get() = id("kotlinx-serialization")
+inline val pdss.kapt: pds get() = id("kotlin-kapt")
+inline val pdss.dagger: pds get() = id("dagger.hilt.android.plugin")

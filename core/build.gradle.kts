@@ -6,11 +6,11 @@ plugins {
 }
 
 android {
-    namespace = AppConfig.namespace
-    compileSdk = AppConfig.compileSdk
+    namespace = "com.eugenics.core"
+    compileSdk = BaseConfig.compileSdk
 
     defaultConfig {
-        minSdk = AppConfig.minSdk
+        minSdk = BaseConfig.minSdk
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles("consumer-rules.pro")
@@ -30,7 +30,7 @@ android {
         targetCompatibility = JavaVersion.VERSION_11
     }
     kotlinOptions {
-        jvmTarget = AppConfig.jvmTarget
+        jvmTarget = BaseConfig.jvmTarget
     }
 }
 

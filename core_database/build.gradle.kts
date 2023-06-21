@@ -6,11 +6,11 @@ plugins {
 }
 
 android {
-    namespace = AppConfig.namespace
-    compileSdk = AppConfig.compileSdk
+    namespace = "com.eugenics.core_database"
+    compileSdk = BaseConfig.compileSdk
 
     defaultConfig {
-        minSdk = AppConfig.minSdk
+        minSdk = BaseConfig.minSdk
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles("consumer-rules.pro")
@@ -36,7 +36,7 @@ android {
     }
 
     kotlinOptions {
-        jvmTarget = AppConfig.jvmTarget
+        jvmTarget = BaseConfig.jvmTarget
     }
 }
 

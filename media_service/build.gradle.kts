@@ -1,17 +1,18 @@
 plugins {
-    id("com.android.library")
-    id("org.jetbrains.kotlin.android")
-    id("kotlin-kapt")
-    id("kotlin-parcelize")
-    id("kotlinx-serialization")
-    id("dagger.hilt.android.plugin")
+    androidLibrary
+    kotlin
+    kapt
+    parcelize
+    serialization
+    dagger
 }
 
 android {
-    compileSdk = 33
+    compileSdk = BaseConfig.compileSdk
+    namespace = "com.eugenics.media_service"
 
     defaultConfig {
-        minSdk = 27
+        minSdk = BaseConfig.minSdk
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
@@ -30,39 +31,37 @@ android {
     }
 
     kotlinOptions {
-        jvmTarget = "11"
+        jvmTarget = BaseConfig.jvmTarget
     }
-    namespace = "com.eugenics.media_service"
 }
 
 dependencies {
 
-    implementation("androidx.core:core-ktx:1.10.1")
-    implementation("androidx.appcompat:appcompat:1.6.1")
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.1")
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.1")
+    // AndroidX
+    implementation(Deps.AndroidX.coreKtx)
+    implementation(Deps.AndroidX.appcompat)
+    implementation(Deps.KotlinX.coroutinesCore)
+    implementation(Deps.KotlinX.coroutinesAndroid)
 
-    testImplementation("junit:junit:4.13.2")
-    androidTestImplementation("androidx.test.ext:junit:1.1.5")
-    androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
+    // Tests
+    testImplementation(Deps.JUnit.junit)
+    androidTestImplementation(Deps.JUnit.junitExt)
+    androidTestImplementation(Deps.Espresso.core)
 
     // Android media player
-    implementation("androidx.media:media:1.6.0")
+    implementation(Deps.AndroidX.media)
 
     // Exoplayer
-    val exoplayerVersion = "2.18.1"
-    implementation("com.google.android.exoplayer:exoplayer:$exoplayerVersion")
-    implementation("com.google.android.exoplayer:extension-okhttp:$exoplayerVersion")
-    implementation("com.google.android.exoplayer:extension-mediasession:$exoplayerVersion")
-
+    implementation(Deps.Exoplayer.exoplayer)
+    implementation(Deps.Exoplayer.extOkhttp)
+    implementation(Deps.Exoplayer.extMediasession)
 
     // Glide dependencies
-    implementation("com.github.bumptech.glide:glide:4.12.0")
+    implementation(Deps.Images.glide)
 
     // Hilt
-    val hiltVersion = "2.45"
-    implementation("com.google.dagger:hilt-android:$hiltVersion")
-    kapt("com.google.dagger:hilt-android-compiler:$hiltVersion")
+    implementation(Deps.Hilt.hilt)
+    kapt(Deps.Hilt.compiler)
 
     // modules
     implementation(project(":core"))
