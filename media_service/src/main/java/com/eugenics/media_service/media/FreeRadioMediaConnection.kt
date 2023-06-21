@@ -2,6 +2,7 @@ package com.eugenics.media_service.media
 
 import android.content.ComponentName
 import android.content.Context
+import android.content.res.Resources
 import android.os.Bundle
 import android.os.Handler
 import android.os.ResultReceiver
@@ -11,8 +12,11 @@ import android.support.v4.media.session.MediaControllerCompat
 import android.support.v4.media.session.MediaSessionCompat
 import android.support.v4.media.session.PlaybackStateCompat
 import android.util.Log
+import com.eugenics.core.enums.Commands
 import com.eugenics.core.enums.MediaSourceState
+import com.eugenics.media_service.R
 import com.google.android.exoplayer2.MediaMetadata
+import com.google.android.exoplayer2.PlaybackException
 import com.google.android.exoplayer2.Player
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -42,20 +46,30 @@ class FreeRadioMediaServiceConnection(context: Context, serviceComponent: Compon
 
     private lateinit var mediaController: MediaControllerCompat
 
-    fun subscribe(parentId: String, callback: MediaBrowserCompat.SubscriptionCallback) {
+    fun subscribe(
+        parentId: String,
+        callback: MediaBrowserCompat.SubscriptionCallback =
+            object : MediaBrowserCompat.SubscriptionCallback() {}
+    ) {
         mediaBrowser.subscribe(parentId, callback)
         collectNowPlaying()
+        sendCommand(Commands.PREPARE.name)
     }
 
-    fun unsubscribe(parentId: String, callback: MediaBrowserCompat.SubscriptionCallback) {
+    fun unsubscribe(
+        parentId: String,
+        callback: MediaBrowserCompat.SubscriptionCallback =
+            object : MediaBrowserCompat.SubscriptionCallback() {}
+    ) {
         mediaBrowser.unsubscribe(parentId, callback)
         nowPlayingJob?.cancel()
+        sendCommand(Commands.RELEASE.name)
     }
 
     fun sendCommand(
         command: String,
-        parameters: Bundle?,
-        resultCallback: ((Int, Bundle?) -> Unit)
+        parameters: Bundle? = null,
+        resultCallback: ((Int, Bundle?) -> Unit) = { _, _ -> }
     ) = if (mediaBrowser.isConnected) {
         mediaController.sendCommand(
             command,
@@ -146,6 +160,25 @@ class FreeRadioMediaServiceConnection(context: Context, serviceComponent: Compon
         val nowPlaying = MutableStateFlow(NOTHING_PLAYING)
 
         class PlayerListener : Player.Listener {
+            override fun onPlayerError(error: PlaybackException) {
+                Log.e(com.eugenics.media_service.player.PlayerListener.TAG, error.toString())
+                nowPlaying.value = MediaMetadataCompat.Builder()
+                    .putString(
+                        MediaMetadataCompat.METADATA_KEY_TITLE,
+                        Resources.getSystem().getString(R.string.playback_error)
+                    )
+                    .putString(
+                        MediaMetadataCompat.METADATA_KEY_ART_URI, ""
+                    )
+                    .putString(
+                        MediaMetadataCompat.METADATA_KEY_DISPLAY_TITLE, ""
+                    )
+                    .putString(
+                        MediaMetadataCompat.METADATA_KEY_DISPLAY_DESCRIPTION, ""
+                    )
+                    .build()
+            }
+
             override fun onMediaMetadataChanged(mediaMetadata: MediaMetadata) {
                 nowPlaying.value = MediaMetadataCompat.Builder()
                     .putString(
