@@ -1,18 +1,17 @@
 plugins {
-    id("com.android.library")
-    id("org.jetbrains.kotlin.android")
-    id("kotlin-kapt")
-    id("kotlin-parcelize")
-    id("kotlinx-serialization")
-    id("dagger.hilt.android.plugin")
+    androidLibrary
+    kotlin
+    kapt
+    dagger
+    serialization
 }
 
 android {
     namespace = "com.eugenics.core_data"
-    compileSdk = 33
+    compileSdk = BaseConfig.compileSdk
 
     defaultConfig {
-        minSdk = 27
+        minSdk = BaseConfig.minSdk
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles("consumer-rules.pro")
     }
@@ -32,36 +31,34 @@ android {
         targetCompatibility = JavaVersion.VERSION_11
     }
     kotlinOptions {
-        jvmTarget = "11"
+        jvmTarget = BaseConfig.jvmTarget
     }
 }
 
 dependencies {
 
-    implementation("androidx.core:core-ktx:1.10.1")
-    implementation("androidx.appcompat:appcompat:1.6.1")
-    testImplementation("junit:junit:4.13.2")
-    androidTestImplementation("androidx.test.ext:junit:1.1.5")
-    androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
+    // AndroidX
+    implementation(Deps.AndroidX.coreKtx)
+    implementation(Deps.AndroidX.appcompat)
 
+    // Tests
+    testImplementation(Deps.JUnit.junit)
+    androidTestImplementation(Deps.JUnit.junitExt)
 
-    // Dagger
-    val daggerVersion = "2.45"
-    implementation("com.google.dagger:dagger:$daggerVersion")
-    kapt("com.google.dagger:dagger-compiler:$daggerVersion")
 
     // Hilt
-    val hiltVersion = "2.45"
-    implementation("com.google.dagger:hilt-android:$hiltVersion")
-    kapt("com.google.dagger:hilt-android-compiler:$hiltVersion")
+    implementation(Deps.Hilt.hilt)
+    kapt(Deps.Hilt.compiler)
+
+    // Dagger
+    implementation(Deps.Dagger.dagger)
+    kapt(Deps.Dagger.compiler)
 
     // KotlinX Serialization
-    val kotlinxSerializationVersion = "1.3.2"
-    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:$kotlinxSerializationVersion")
+    implementation(Deps.KotlinX.kotlinxSerialization)
 
     // Kotlin coroutines test
-    val kotlinCoroutinesVersion = "1.7.1"
-    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:$kotlinCoroutinesVersion")
+    testImplementation(Deps.KotlinX.kotlinxCoroutinesTest)
 
     // Modules
     implementation(project(":core"))

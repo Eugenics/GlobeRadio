@@ -1,16 +1,16 @@
 plugins {
-    id("com.android.library")
-    id("org.jetbrains.kotlin.android")
-    id("kotlin-kapt")
-    id("dagger.hilt.android.plugin")
+    androidLibrary
+    kotlin
+    kapt
+    dagger
 }
 
 android {
     namespace = "com.eugenics.core_database"
-    compileSdk = 33
+    compileSdk = BaseConfig.compileSdk
 
     defaultConfig {
-        minSdk = 27
+        minSdk = BaseConfig.minSdk
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles("consumer-rules.pro")
@@ -36,36 +36,30 @@ android {
     }
 
     kotlinOptions {
-        jvmTarget = "11"
+        jvmTarget = BaseConfig.jvmTarget
     }
 }
 
 dependencies {
 
-    implementation("androidx.core:core-ktx:1.10.1")
-    implementation("androidx.appcompat:appcompat:1.6.1")
-    testImplementation("junit:junit:4.13.2")
-    androidTestImplementation("androidx.test.ext:junit:1.1.5")
-    androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
+    // AndroidX
+    implementation(Deps.AndroidX.coreKtx)
+    implementation(Deps.AndroidX.appcompat)
 
     // Hilt
-    val hiltVersion = "2.45"
-    implementation("com.google.dagger:hilt-android:$hiltVersion")
-    kapt("com.google.dagger:hilt-android-compiler:$hiltVersion")
+    implementation(Deps.Hilt.hilt)
+    kapt(Deps.Hilt.compiler)
 
     // Dagger
-    val daggerVersion = "2.45"
-    implementation("com.google.dagger:dagger:$daggerVersion")
-    kapt("com.google.dagger:dagger-compiler:$daggerVersion")
+    implementation(Deps.Dagger.dagger)
+    kapt(Deps.Dagger.compiler)
 
     //Room
-    val roomVersion = "2.4.2"
-    kapt("androidx.room:room-compiler:$roomVersion")
-    implementation("androidx.room:room-ktx:$roomVersion")
-    testImplementation("androidx.room:room-testing:$roomVersion")
-    implementation("androidx.room:room-paging:$roomVersion")
+    kapt(Deps.Room.compiler)
+    implementation(Deps.Room.room)
+    testImplementation(Deps.Room.testing)
+    implementation(Deps.Room.paging)
 
     // Core module
     implementation(project(":core"))
-
 }

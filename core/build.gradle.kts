@@ -1,16 +1,16 @@
 plugins {
-    id("com.android.library")
-    id("org.jetbrains.kotlin.android")
-    id("kotlin-parcelize")
-    id("kotlinx-serialization")
+    androidLibrary
+    kotlin
+    parcelize
+    serialization
 }
 
 android {
     namespace = "com.eugenics.core"
-    compileSdk = 33
+    compileSdk = BaseConfig.compileSdk
 
     defaultConfig {
-        minSdk = 27
+        minSdk = BaseConfig.minSdk
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles("consumer-rules.pro")
@@ -30,17 +30,13 @@ android {
         targetCompatibility = JavaVersion.VERSION_11
     }
     kotlinOptions {
-        jvmTarget = "11"
+        jvmTarget = BaseConfig.jvmTarget
     }
 }
 
 dependencies {
-
     // KotlinX Serialization
-    val kotlinxSerializationVersion = "1.5.0"
-    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:$kotlinxSerializationVersion")
-
+    implementation(Deps.KotlinX.kotlinxSerialization)
     //GSON
-    val gsonVersion = "2.10.1"
-    implementation("com.google.code.gson:gson:$gsonVersion")
+    implementation(Deps.Google.gson)
 }

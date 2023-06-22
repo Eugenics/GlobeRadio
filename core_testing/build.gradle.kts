@@ -1,16 +1,16 @@
 plugins {
-    id("com.android.library")
-    id("org.jetbrains.kotlin.android")
-    id("kotlin-kapt")
-    id("dagger.hilt.android.plugin")
+    androidLibrary
+    kotlin
+    kapt
+    dagger
 }
 
 android {
     namespace = "com.eugenics.core_testing"
-    compileSdk = 33
+    compileSdk = BaseConfig.compileSdk
 
     defaultConfig {
-        minSdk = 27
+        minSdk = BaseConfig.minSdk
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles("consumer-rules.pro")
@@ -30,7 +30,7 @@ android {
         targetCompatibility = JavaVersion.VERSION_11
     }
     kotlinOptions {
-        jvmTarget = "11"
+        jvmTarget = BaseConfig.jvmTarget
     }
 }
 
@@ -40,7 +40,7 @@ dependencies {
     implementation("androidx.appcompat:appcompat:1.6.1")
 
     implementation("androidx.test:core-ktx:1.5.0")
-    implementation ("androidx.test:runner:1.5.2")
+    implementation("androidx.test:runner:1.5.2")
 
     testImplementation("junit:junit:4.13.2")
     androidTestImplementation("androidx.test:core:1.5.0")
