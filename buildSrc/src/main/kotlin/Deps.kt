@@ -72,6 +72,7 @@ object Deps {
         const val compiler = "com.google.dagger:hilt-android-compiler:$hiltVersion"
         const val testing = "com.google.dagger:hilt-android-testing:$hiltVersion"
         const val navigationCompose = "androidx.hilt:hilt-navigation-compose:1.0.0"
+        const val androidPlugin = "com.google.dagger:hilt-android-gradle-plugin:$hiltVersion"
     }
 
     object Dagger {
@@ -104,6 +105,7 @@ object Deps {
 
         private const val kotlinVersion = "1.8.21"
         const val kotlinStdlibJdk8 = "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlinVersion"
+        const val kotlinSerialization = "org.jetbrains.kotlin:kotlin-serialization:$kotlinVersion"
     }
 
     object Google {

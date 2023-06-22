@@ -89,7 +89,6 @@ dependencies {
     kapt(Deps.Hilt.compiler)
     implementation(Deps.Hilt.navigationCompose)
 
-
     // Kotlin
     implementation(Deps.KotlinX.kotlinStdlibJdk8)
     implementation(Deps.KotlinX.coroutinesCore)
@@ -125,6 +124,7 @@ dependencies {
     androidTestImplementation(Deps.AndroidX.testCore)
     androidTestImplementation(Deps.AndroidX.testRunner)
     androidTestImplementation(Deps.Hilt.testing)
+    kaptAndroidTest(Deps.Hilt.compiler)
 
     // Local tests
     testImplementation(Deps.JUnit.junit)
