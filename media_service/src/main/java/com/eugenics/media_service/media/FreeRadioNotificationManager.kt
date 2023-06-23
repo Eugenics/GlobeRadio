@@ -53,7 +53,6 @@ internal class FreeRadioNotificationManager(
         notificationManager.setUseNextActionInCompactView(true)
         notificationManager.setUsePreviousActionInCompactView(true)
         notificationManager.setUseChronometer(true)
-        notificationManager.setUseStopAction(true)
     }
 
     fun hideNotification() {

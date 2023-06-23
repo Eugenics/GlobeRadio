@@ -154,7 +154,6 @@ class FreeRadioMediaService : MediaBrowserServiceCompat() {
         parentId: String,
         result: Result<MutableList<MediaBrowserCompat.MediaItem>>
     ) {
-//        result.detach()
         if (parentId == EMPTY_ROOT) {
             result.sendResult(null)
         } else {
@@ -213,9 +212,6 @@ class FreeRadioMediaService : MediaBrowserServiceCompat() {
         }
 
         override fun onNotificationCancelled(notificationId: Int, dismissedByUser: Boolean) {
-            isForegroundService = false
-            stopForeground(STOP_FOREGROUND_REMOVE)
-            stopSelf()
         }
     }
 
