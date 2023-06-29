@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.offset
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.res.painterResource
@@ -73,9 +74,14 @@ fun LoadGears(modifier: Modifier = Modifier.fillMaxSize()) {
 }
 
 @Composable
-@Preview
+@Preview(
+    name = "GearsPreview",
+    apiLevel = 27
+)
 private fun PreviewLoadingScreen() {
     FreeRadioTheme {
-        LoadGears()
+        Box(modifier = Modifier.fillMaxSize()) {
+            LoadGears(modifier = Modifier.align(Alignment.Center))
+        }
     }
 }

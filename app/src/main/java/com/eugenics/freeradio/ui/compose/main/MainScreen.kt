@@ -15,6 +15,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
@@ -25,6 +26,7 @@ import com.eugenics.freeradio.R
 import com.eugenics.freeradio.navigation.Screen
 import com.eugenics.freeradio.ui.compose.load.LoadContent
 import com.eugenics.freeradio.ui.compose.main.components.AppBarCard
+import com.eugenics.freeradio.ui.compose.main.components.MainAppBar
 import com.eugenics.freeradio.ui.compose.main.components.MainBottomAppBar
 import com.eugenics.freeradio.ui.compose.main.components.MainNavigationDrawer
 import com.eugenics.freeradio.ui.compose.splash.SplashScreen
@@ -63,6 +65,14 @@ fun MainScreen(
 
     val isScrolledUp = rememberSaveable { mutableStateOf(false) }
 
+    val commonModifier = Modifier
+        .padding(
+            top = padding.calculateTopPadding() + 5.dp,
+            bottom = padding.calculateBottomPadding() + 5.dp,
+            start = padding.calculateStartPadding(LayoutDirection.Ltr) + 5.dp,
+            end = padding.calculateEndPadding(LayoutDirection.Ltr) + 5.dp
+        )
+
     when (listState.value) {
         MainViewModel.UI_STATE_SPLASH -> SplashScreen()
         else -> {
@@ -79,19 +89,8 @@ fun MainScreen(
             ) {
                 Scaffold(
                     topBar = {
-                        AppBarCard(
-                            modifier = Modifier
-                                .padding(
-                                    top = padding.calculateTopPadding() + 5.dp,
-                                    bottom = 16.dp,
-                                    start = 16.dp,
-                                    end = 16.dp
-                                )
-                                .fillMaxWidth()
-                                .animateContentSize(
-                                    animationSpec = tween(durationMillis = 300)
-                                ),
-//                                    .height(if (isScrolledUp.value) 0.dp else 56.dp),
+                        MainAppBar(
+                            modifier = commonModifier,
                             onMenuClick = {
                                 scope.launch {
                                     if (drawerState.isOpen) {
@@ -106,12 +105,7 @@ fun MainScreen(
                     },
                     bottomBar = {
                         MainBottomAppBar(
-                            modifier = Modifier
-                                .padding(
-                                    bottom = padding.calculateBottomPadding() + 5.dp,
-                                    start = 16.dp,
-                                    end = 16.dp
-                                ),
+                            modifier = commonModifier,
                             nowPlayingStation = nowPlayingStation.collectAsState().value,
                             playbackState = playbackState.collectAsState().value,
                             onPlayClick = onPlayClick,

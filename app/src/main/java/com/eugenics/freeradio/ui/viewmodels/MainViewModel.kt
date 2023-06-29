@@ -159,7 +159,7 @@ class MainViewModel @Inject constructor(
         collectServiceConnection()
     }
 
-    fun unsubscribe(){
+    fun unsubscribe() {
         mediaServiceConnection.unsubscribe(rootId)
     }
 
@@ -399,6 +399,10 @@ class MainViewModel @Inject constructor(
         dataStore.updateData {
             settings
         }
+    }
+
+    override fun onCleared() {
+        unsubscribe()
     }
 
     companion object {

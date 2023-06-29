@@ -381,6 +381,10 @@ class FreeRadioMediaService : MediaBrowserServiceCompat() {
                                         .also {
                                             val extras = Bundle()
                                             extras.putString("url", playerMediaItem.url)
+                                            extras.putString(
+                                                MediaMetadataCompat.METADATA_KEY_MEDIA_ID,
+                                                playerMediaItem.uuid
+                                            )
                                             it.setExtras(extras)
                                         }
                                         .build()
@@ -436,6 +440,10 @@ class FreeRadioMediaService : MediaBrowserServiceCompat() {
                     .putString(
                         MediaMetadataCompat.METADATA_KEY_DISPLAY_DESCRIPTION,
                         player.currentMediaItem?.mediaMetadata?.description.toString()
+                    )
+                    .putString(
+                        MediaMetadataCompat.METADATA_KEY_MEDIA_ID,
+                        player.currentMediaItem?.mediaId
                     )
                     .build()
                 return metaData.description
