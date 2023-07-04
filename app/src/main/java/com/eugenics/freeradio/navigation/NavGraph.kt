@@ -1,22 +1,19 @@
 package com.eugenics.freeradio.navigation
 
 import android.os.Build
-import android.os.Bundle
 import androidx.annotation.RequiresApi
 import androidx.compose.animation.AnimatedContentScope
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.core.tween
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.remember
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import com.google.accompanist.navigation.animation.composable
-import com.eugenics.core.enums.Commands
 import com.eugenics.freeradio.ui.compose.main.MainScreen
 import com.eugenics.freeradio.ui.compose.settings.SettingsScreen
 import com.eugenics.freeradio.ui.viewmodels.MainViewModel
-import com.eugenics.media_service.media.FreeRadioMediaServiceConnection.Companion.SET_FAVORITES_STATION_KEY
-import com.eugenics.media_service.media.FreeRadioMediaServiceConnection.Companion.SET_FAVORITES_VALUE_KEY
 import com.google.accompanist.navigation.animation.AnimatedNavHost
 import com.google.accompanist.navigation.animation.rememberAnimatedNavController
 
@@ -32,38 +29,35 @@ fun NavGraph(
         startDestination = Screen.MainScreen.rout
     ) {
         composable(route = Screen.MainScreen.rout) {
+            val playbackState = mainViewModel.playBackState.collectAsState()
+            val uiState = mainViewModel.uiState.collectAsState()
+            val stationsList = mainViewModel.stations.collectAsState()
+            val nowPlayingStation = mainViewModel.nowPlaying.collectAsState()
+            val tagsList = mainViewModel.tagList.collectAsState()
+            val visibleIndex = remember { mainViewModel.getSettings().visibleIndex }
+            val onPlayClick = remember { mainViewModel::play }
+            val onPauseClick = remember { mainViewModel::pause }
+            val onItemClick = remember { mainViewModel::onItemClick }
+            val onSearchClick = remember { mainViewModel::search }
+            val onSendCommand = remember { mainViewModel::sendCommand }
+            val onFavoriteClick = remember { mainViewModel::sendCommand }
+            val onVisibleIndexChanged = remember { mainViewModel::onVisibleIndexChanged }
+
             MainScreen(
                 navController = navController,
-                uiState = mainViewModel.uiState,
-                playbackState = mainViewModel.playBackState,
-                stationsList = mainViewModel.stations,
-                onPlayClick = { mainViewModel.play() },
-                onPauseClick = { mainViewModel.pause() },
-                onItemClick = { mediaId ->
-                    mainViewModel.onItemClick(mediaId = mediaId)
-                },
-                onSearchClick = { query -> mainViewModel.search(query = query) },
-                sendCommand = { command, parameters ->
-                    mainViewModel.sendCommand(
-                        command = command,
-                        extras = parameters
-                    )
-                },
-                onFavoriteClick = { stationUuid, isFavorite ->
-                    val bundle = Bundle()
-                    bundle.putString(SET_FAVORITES_STATION_KEY, stationUuid)
-                    bundle.putInt(SET_FAVORITES_VALUE_KEY, isFavorite)
-                    mainViewModel.sendCommand(
-                        command = Commands.SET_FAVORITES_COMMAND.name,
-                        extras = bundle
-                    )
-                },
-                nowPlayingStation = mainViewModel.nowPlaying,
-                tagsList = mainViewModel.tagList.collectAsState().value,
-                visibleIndex = mainViewModel.getSettings().visibleIndex,
-                onVisibleIndexChange = { index ->
-                    mainViewModel.onVisibleIndexChanged(index = index)
-                }
+                uiState = uiState,
+                playbackState = playbackState,
+                stationsList = stationsList,
+                onPlayClick = onPlayClick,
+                onPauseClick = onPauseClick,
+                onItemClick = onItemClick,
+                onSearchClick = onSearchClick,
+                sendCommand = onSendCommand,
+                onFavoriteClick = onFavoriteClick,
+                nowPlayingStation = nowPlayingStation,
+                tagsList = tagsList,
+                visibleIndex = visibleIndex,
+                onVisibleIndexChange = onVisibleIndexChanged
             )
         }
         composable(
@@ -81,16 +75,14 @@ fun NavGraph(
                 )
             }
         ) {
+            val settings = mainViewModel.settings.collectAsState()
+            val onSendCommand = remember { mainViewModel::sendCommand }
+
             SettingsScreen(
-                settings = mainViewModel.settings,
+                settings = settings,
                 onBackPressed = { navController.popBackStack() },
                 onThemePick = { theme -> mainViewModel.setSettings(theme = theme) },
-                sendCommand = { command, parameters ->
-                    mainViewModel.sendCommand(
-                        command = command,
-                        extras = parameters
-                    )
-                }
+                sendCommand = onSendCommand
             )
         }
     }

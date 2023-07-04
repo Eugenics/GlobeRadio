@@ -4,10 +4,7 @@ import android.content.res.Configuration.UI_MODE_NIGHT_NO
 import android.content.res.Configuration.UI_MODE_NIGHT_YES
 import android.os.Build
 import android.os.Bundle
-import android.support.v4.media.session.PlaybackStateCompat
 import androidx.annotation.RequiresApi
-import androidx.compose.animation.animateContentSize
-import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -25,55 +22,45 @@ import com.eugenics.core.model.Tag
 import com.eugenics.freeradio.R
 import com.eugenics.freeradio.navigation.Screen
 import com.eugenics.freeradio.ui.compose.load.LoadContent
-import com.eugenics.freeradio.ui.compose.main.components.AppBarCard
-import com.eugenics.freeradio.ui.compose.main.components.MainAppBar
+import com.eugenics.freeradio.ui.compose.main.components.MainTopAppBar
 import com.eugenics.freeradio.ui.compose.main.components.MainBottomAppBar
 import com.eugenics.freeradio.ui.compose.main.components.MainNavigationDrawer
 import com.eugenics.freeradio.ui.compose.splash.SplashScreen
 import com.eugenics.freeradio.ui.theme.FreeRadioTheme
+import com.eugenics.freeradio.ui.util.PlayBackState
 import com.eugenics.freeradio.ui.viewmodels.MainViewModel
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 
 @RequiresApi(Build.VERSION_CODES.S)
 @Composable
 fun MainScreen(
     navController: NavHostController = rememberNavController(),
-    uiState: StateFlow<Int> = MutableStateFlow(MainViewModel.UI_STATE_UPDATE_DATA),
-    playbackState: StateFlow<PlaybackStateCompat> = MutableStateFlow(MainViewModel.STATE_PAUSE),
-    stationsList: StateFlow<List<Station>> = MutableStateFlow(listOf()),
+    uiState: State<Int> = mutableStateOf(MainViewModel.UI_STATE_UPDATE_DATA),
+    playbackState: State<PlayBackState> = mutableStateOf(PlayBackState.Pause),
+    stationsList: State<List<Station>> = mutableStateOf(listOf()),
+    nowPlayingStation: State<NowPlayingStation> = mutableStateOf(NowPlayingStation.emptyInstance()),
     sendCommand: (command: String, parameters: Bundle?) -> Unit = { _, _ -> },
+    tagsList: State<List<Tag>>,
+    visibleIndex: Int = 0,
     onPlayClick: () -> Unit = {},
     onPauseClick: () -> Unit = {},
     onItemClick: (mediaId: String) -> Unit = {},
     onSearchClick: (query: String) -> Unit = {},
-    onFavoriteClick: (stationUuid: String, isFavorite: Int) -> Unit = { _, _ -> },
-    nowPlayingStation: StateFlow<NowPlayingStation> =
-        MutableStateFlow(NowPlayingStation.emptyInstance()),
-    tagsList: List<Tag>,
-    visibleIndex: Int = 0,
+    onFavoriteClick: (command: String, bundle: Bundle?) -> Unit = { _, _ -> },
     onVisibleIndexChange: (index: Int) -> Unit = {}
 ) {
-    val stations = stationsList.collectAsState()
-    val listState = uiState.collectAsState()
-
     val drawerState = rememberDrawerState(DrawerValue.Closed)
     val scope = rememberCoroutineScope()
-
     val padding = WindowInsets.systemBars.asPaddingValues()
-
     val isScrolledUp = rememberSaveable { mutableStateOf(false) }
 
     val commonModifier = Modifier
         .padding(
-            top = padding.calculateTopPadding() + 5.dp,
-            bottom = padding.calculateBottomPadding() + 5.dp,
             start = padding.calculateStartPadding(LayoutDirection.Ltr) + 5.dp,
             end = padding.calculateEndPadding(LayoutDirection.Ltr) + 5.dp
         )
 
-    when (listState.value) {
+    when (uiState.value) {
         MainViewModel.UI_STATE_SPLASH -> SplashScreen()
         else -> {
             MainNavigationDrawer(
@@ -89,8 +76,9 @@ fun MainScreen(
             ) {
                 Scaffold(
                     topBar = {
-                        MainAppBar(
-                            modifier = commonModifier,
+                        MainTopAppBar(
+                            modifier = commonModifier
+                                .padding(top = padding.calculateTopPadding() + 5.dp),
                             onMenuClick = {
                                 scope.launch {
                                     if (drawerState.isOpen) {
@@ -105,26 +93,28 @@ fun MainScreen(
                     },
                     bottomBar = {
                         MainBottomAppBar(
-                            modifier = commonModifier,
-                            nowPlayingStation = nowPlayingStation.collectAsState().value,
-                            playbackState = playbackState.collectAsState().value,
+                            modifier = commonModifier
+                                .padding(bottom = padding.calculateBottomPadding() + 5.dp),
+                            nowPlayingStation = nowPlayingStation,
+                            playbackState = playbackState,
                             onPlayClick = onPlayClick,
                             onPauseClick = onPauseClick
                         )
                     }
                 ) { paddingValues ->
-                    when (listState.value) {
+                    when (uiState.value) {
                         MainViewModel.UI_STATE_MAIN -> {
                             MainContent(
                                 paddingValues = paddingValues,
-                                stations = stations.value,
+                                stations = stationsList,
                                 onCardClick = onItemClick,
                                 onFavoriteClick = onFavoriteClick,
                                 onScrolled = {
                                     isScrolledUp.value = it
                                 },
                                 visibleIndex = visibleIndex,
-                                onVisibleIndexChange = onVisibleIndexChange
+                                onVisibleIndexChange = onVisibleIndexChange,
+                                nowPlayingStation = nowPlayingStation
                             )
                         }
 
@@ -146,8 +136,9 @@ fun MainScreen(
 @Composable
 @Preview(uiMode = UI_MODE_NIGHT_NO)
 private fun MainScreenPreviewNight() {
+    val tagsList = remember { mutableStateOf(listOf<Tag>()) }
     FreeRadioTheme {
-        MainScreen(tagsList = listOf())
+        MainScreen(tagsList = tagsList)
     }
 }
 
@@ -155,7 +146,8 @@ private fun MainScreenPreviewNight() {
 @Composable
 @Preview(uiMode = UI_MODE_NIGHT_YES)
 private fun MainScreenPreviewDay() {
+    val tagsList = remember { mutableStateOf(listOf<Tag>()) }
     FreeRadioTheme {
-        MainScreen(tagsList = listOf())
+        MainScreen(tagsList = tagsList)
     }
 }

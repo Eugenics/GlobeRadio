@@ -1,6 +1,9 @@
 package com.eugenics.freeradio
 
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.test.junit4.createComposeRule
+import com.eugenics.core.model.Tag
 import com.eugenics.freeradio.ui.compose.main.MainScreen
 import com.eugenics.freeradio.ui.compose.settings.SettingsScreen
 import com.eugenics.freeradio.ui.theme.FreeRadioTheme
@@ -37,7 +40,8 @@ class ApplicationTest {
     fun mainScreenTest() {
         composeRule.setContent {
             FreeRadioTheme {
-                MainScreen(tagsList = listOf())
+                val tags = remember { mutableStateOf(listOf<Tag>()) }
+                MainScreen(tagsList = tags)
             }
         }
     }

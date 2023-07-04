@@ -1,6 +1,7 @@
 package com.eugenics.freeradio.ui.compose.main.components
 
 import android.content.res.Configuration
+import android.os.Bundle
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -20,6 +21,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -33,11 +35,13 @@ import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImagePainter
 import coil.compose.SubcomposeAsyncImage
 import coil.compose.SubcomposeAsyncImageContent
+import com.eugenics.core.enums.Commands
 import com.eugenics.core.model.NowPlayingStation
 import com.eugenics.core.model.Station
 import com.eugenics.freeradio.R
 import com.eugenics.freeradio.ui.compose.main.MainContent
 import com.eugenics.freeradio.ui.theme.FreeRadioTheme
+import com.eugenics.media_service.media.FreeRadioMediaServiceConnection
 
 @Composable
 fun StationCard(
@@ -47,7 +51,7 @@ fun StationCard(
     size: Int = 0,
     station: Station,
     onCardClick: (mediaId: String) -> Unit = {},
-    onFavoriteClick: (stationUuid: String, isFavorite: Int) -> Unit = { _, _ -> }
+    onFavoriteClick: (command: String, bundle: Bundle?) -> Unit = { _, _ -> }
 ) {
     val isFavorite = rememberSaveable { mutableStateOf(station.isFavorite) }
     val standardPadding = 0.dp
@@ -67,7 +71,16 @@ fun StationCard(
             onConfirm = {
                 isFavorite.value = 0
                 showFavoriteDialog.value = false
-                onFavoriteClick(station.stationuuid, isFavorite.value)
+                val bundle = Bundle()
+                bundle.putString(
+                    FreeRadioMediaServiceConnection.SET_FAVORITES_STATION_KEY,
+                    station.stationuuid
+                )
+                bundle.putInt(
+                    FreeRadioMediaServiceConnection.SET_FAVORITES_VALUE_KEY,
+                    isFavorite.value
+                )
+                onFavoriteClick(station.stationuuid, bundle)
             }
         )
     }
@@ -135,7 +148,17 @@ fun StationCard(
             onClick = {
                 if (isFavorite.value == 0) {
                     isFavorite.value = 1
-                    onFavoriteClick(station.stationuuid, isFavorite.value)
+
+                    val bundle = Bundle()
+                    bundle.putString(
+                        FreeRadioMediaServiceConnection.SET_FAVORITES_STATION_KEY,
+                        station.stationuuid
+                    )
+                    bundle.putInt(
+                        FreeRadioMediaServiceConnection.SET_FAVORITES_VALUE_KEY,
+                        isFavorite.value
+                    )
+                    onFavoriteClick(Commands.SET_FAVORITES_COMMAND.name, bundle)
                 } else {
                     showFavoriteDialog.value = true
                 }
@@ -187,9 +210,10 @@ private fun favoriteDialog(
 @Composable
 private fun StationCardNightPreviewDay() {
     FreeRadioTheme {
+        val stations = remember { mutableStateOf(listOf(fakeStation, fakeStation, fakeStation)) }
         MainContent(
             paddingValues = PaddingValues(),
-            stations = listOf(fakeStation, fakeStation, fakeStation),
+            stations = stations,
             onCardClick = {},
             onScrolled = {}
         )
@@ -200,9 +224,10 @@ private fun StationCardNightPreviewDay() {
 @Composable
 private fun StationCardNightPreviewNight() {
     FreeRadioTheme {
+        val stations = remember { mutableStateOf(listOf(fakeStation, fakeStation, fakeStation)) }
         MainContent(
             paddingValues = PaddingValues(),
-            stations = listOf(fakeStation, fakeStation, fakeStation),
+            stations = stations,
             onCardClick = {},
             onScrolled = {}
         )

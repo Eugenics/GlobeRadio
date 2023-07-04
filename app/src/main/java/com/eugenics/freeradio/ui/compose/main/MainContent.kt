@@ -1,5 +1,6 @@
 package com.eugenics.freeradio.ui.compose.main
 
+import android.os.Bundle
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
@@ -8,7 +9,6 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
 import com.eugenics.core.model.NowPlayingStation
 import com.eugenics.core.model.Station
 import com.eugenics.freeradio.ui.compose.main.components.StationCard
@@ -20,11 +20,12 @@ import kotlinx.coroutines.flow.debounce
 @Composable
 fun MainContent(
     paddingValues: PaddingValues,
-    stations: List<Station>,
-    onFavoriteClick: (stationUuid: String, isFavorite: Int) -> Unit = { _, _ -> },
+    stations: State<List<Station>>,
+    visibleIndex: Int = 0,
+    nowPlayingStation: State<NowPlayingStation> = mutableStateOf(NowPlayingStation.emptyInstance()),
+    onFavoriteClick: (command: String, bundle: Bundle?) -> Unit = { _, _ -> },
     onCardClick: (mediaId: String) -> Unit,
     onScrolled: (isScrolledUp: Boolean) -> Unit,
-    visibleIndex: Int = 0,
     onVisibleIndexChange: (index: Int) -> Unit = {}
 ) {
     val columnState = rememberLazyListState(
@@ -61,18 +62,18 @@ fun MainContent(
             modifier = Modifier.fillMaxWidth(),
             state = columnState
         ) {
-            itemsIndexed(stations) { index, station ->
+            itemsIndexed(stations.value) { index, station ->
                 StationCard(
                     paddingValues = paddingValues,
                     index = index,
-                    size = stations.size,
+                    size = stations.value.size,
                     station = station,
                     onCardClick = { mediaId ->
                         onCardClick(mediaId)
                         activeCardIndex.value = index
                     },
                     onFavoriteClick = onFavoriteClick,
-                    isActive = activeCardIndex.value == index
+                    isActive = station.stationuuid == nowPlayingStation.value.stationUUID
                 )
             }
         }

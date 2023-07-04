@@ -24,7 +24,7 @@ import androidx.compose.ui.unit.dp
 import com.eugenics.core.enums.Commands
 import com.eugenics.core.model.Tag
 import com.eugenics.freeradio.R
-import com.eugenics.freeradio.ui.compose.settings.components.SoftwareInfoDialog
+import com.eugenics.freeradio.ui.theme.FreeRadioTheme
 import kotlinx.coroutines.launch
 
 @Composable
@@ -32,7 +32,7 @@ fun MainNavigationDrawer(
     drawerState: DrawerState = rememberDrawerState(DrawerValue.Open),
     onSettingsClick: () -> Unit = {},
     sendCommand: (command: String, parameters: Bundle?) -> Unit = { _, _ -> },
-    tagsList: List<Tag>,
+    tagsList: State<List<Tag>>,
     content: @Composable () -> Unit
 ) {
     val scope = rememberCoroutineScope()
@@ -50,7 +50,7 @@ fun MainNavigationDrawer(
             title = { Text(text = stringResource(R.string.tags_select_string)) },
             text = {
                 LazyColumn(modifier = Modifier.fillMaxWidth()) {
-                    itemsIndexed(tagsList) { index, item ->
+                    itemsIndexed(tagsList.value) { index, item ->
                         Row(
                             modifier = Modifier
                                 .clickable {
@@ -182,5 +182,8 @@ fun MainNavigationDrawer(
 @Composable
 @Preview(uiMode = UI_MODE_NIGHT_NO)
 private fun MainNavigationDrawerPreview() {
-    MainNavigationDrawer(tagsList = listOf()) { }
+    val tagsList = remember { mutableStateOf(listOf<Tag>()) }
+    FreeRadioTheme {
+        MainNavigationDrawer(tagsList = tagsList) { }
+    }
 }
