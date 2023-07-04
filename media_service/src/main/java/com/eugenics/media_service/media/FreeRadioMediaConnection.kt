@@ -165,7 +165,7 @@ class FreeRadioMediaServiceConnection(context: Context, serviceComponent: Compon
                 nowPlaying.value = MediaMetadataCompat.Builder()
                     .putString(
                         MediaMetadataCompat.METADATA_KEY_TITLE,
-                        Resources.getSystem().getString(R.string.playback_error)
+                        "Playback error..."
                     )
                     .putString(
                         MediaMetadataCompat.METADATA_KEY_ART_URI, ""
@@ -196,6 +196,11 @@ class FreeRadioMediaServiceConnection(context: Context, serviceComponent: Compon
                     .putString(
                         MediaMetadataCompat.METADATA_KEY_DISPLAY_DESCRIPTION,
                         mediaMetadata.description?.toString() ?: ""
+                    )
+                    .putString(
+                        MediaMetadataCompat.METADATA_KEY_MEDIA_ID,
+                        mediaMetadata.extras?.getString(MediaMetadataCompat.METADATA_KEY_MEDIA_ID)
+                            ?: ""
                     )
                     .build()
             }

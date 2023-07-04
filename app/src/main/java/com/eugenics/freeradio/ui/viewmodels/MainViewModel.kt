@@ -23,6 +23,7 @@ import com.eugenics.core.enums.Theme
 import com.eugenics.core.model.FavoriteStation
 import com.eugenics.core.model.Favorites
 import com.eugenics.data.interfaces.IStationsRepository
+import com.eugenics.freeradio.ui.util.PlayBackState
 import com.eugenics.freeradio.util.ImageHelper
 import com.eugenics.freeradio.ui.util.UICommands
 import com.eugenics.freeradio.util.FilesHelper
@@ -54,8 +55,9 @@ class MainViewModel @Inject constructor(
     private val _stations: MutableStateFlow<List<Station>> = MutableStateFlow(mutableListOf())
     val stations: StateFlow<List<Station>> = _stations
 
-    private val _playBackState = mediaServiceConnection.playbackState
-    val playBackState: StateFlow<PlaybackStateCompat> = _playBackState
+    private val _playBackState: MutableStateFlow<PlayBackState> =
+        MutableStateFlow(PlayBackState.Pause)
+    val playBackState: StateFlow<PlayBackState> = _playBackState
 
     private val _settings: MutableStateFlow<CurrentState> =
         MutableStateFlow(CurrentState.getDefaultValueInstance())
@@ -157,9 +159,10 @@ class MainViewModel @Inject constructor(
         collectNowPlaying()
         collectSettings()
         collectServiceConnection()
+        collectServicePlaybackState()
     }
 
-    fun unsubscribe(){
+    fun unsubscribe() {
         mediaServiceConnection.unsubscribe(rootId)
     }
 
@@ -176,14 +179,13 @@ class MainViewModel @Inject constructor(
 
     fun onItemClick(mediaId: String) {
         if (mediaId == currentMediaId) {
-            when (playBackState.value.state) {
-                PlaybackStateCompat.STATE_PLAYING -> pause()
+            when (playBackState.value) {
+                PlayBackState.Playing -> pause()
                 else -> play()
             }
         } else {
             Log.d(TAG, "PLAY_FROM_MEDIA_ID_CLICKED:$mediaId")
             mediaServiceConnection.transportControls.playFromMediaId(mediaId, null)
-            _playBackState.value = STATE_PLAYING
             setSettings(stationUuid = mediaId)
         }
     }
@@ -195,13 +197,10 @@ class MainViewModel @Inject constructor(
 
     fun play() {
         mediaServiceConnection.transportControls.play()
-        _playBackState.value = STATE_PLAYING
     }
-
 
     fun pause() {
         mediaServiceConnection.transportControls.pause()
-        _playBackState.value = STATE_PAUSE
     }
 
     fun search(query: String) {
@@ -283,6 +282,19 @@ class MainViewModel @Inject constructor(
                         UI_STATE_UPDATE_DATA
 
                     MediaSourceState.STATE_INITIALIZED.value -> _uiState.value = UI_STATE_MAIN
+                }
+            }
+        }
+    }
+
+    private fun collectServicePlaybackState() {
+        viewModelScope.launch(Dispatchers.IO) {
+            mediaServiceConnection.playbackState.collect { stateCompat ->
+                when (stateCompat.state) {
+                    PlaybackStateCompat.STATE_PLAYING -> _playBackState.value =
+                        PlayBackState.Playing
+
+                    else -> _playBackState.value = PlayBackState.Pause
                 }
             }
         }
@@ -401,6 +413,10 @@ class MainViewModel @Inject constructor(
         }
     }
 
+    override fun onCleared() {
+        unsubscribe()
+    }
+
     companion object {
         const val TAG = "SEARCH_VIEW_MODEL"
 
@@ -408,13 +424,5 @@ class MainViewModel @Inject constructor(
         const val UI_STATE_UPDATE_DATA = 11
         const val UI_STATE_ERROR = 12
         const val UI_STATE_MAIN = 13
-
-        val STATE_PLAYING = stateBuilder(state = PlaybackStateCompat.STATE_PLAYING)
-        val STATE_PAUSE = stateBuilder(state = PlaybackStateCompat.STATE_PAUSED)
-
-        private fun stateBuilder(state: Int): PlaybackStateCompat =
-            PlaybackStateCompat.Builder()
-                .setState(state, 0, 0f)
-                .build()
     }
 }

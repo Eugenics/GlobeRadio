@@ -6,7 +6,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -16,8 +16,6 @@ import androidx.compose.ui.tooling.preview.Preview
 import com.eugenics.core.model.CurrentState
 import com.eugenics.core.enums.Theme
 import com.eugenics.freeradio.ui.theme.FreeRadioTheme
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
 import com.eugenics.freeradio.R
 import com.eugenics.freeradio.ui.compose.settings.components.CategoryRow
 import com.eugenics.freeradio.ui.compose.settings.components.SettingsAppBar
@@ -27,16 +25,15 @@ import com.eugenics.freeradio.ui.util.UICommands
 
 @Composable
 fun SettingsScreen(
-    settings: StateFlow<CurrentState> = MutableStateFlow(CurrentState.getDefaultValueInstance()),
+    settings: State<CurrentState> = mutableStateOf(CurrentState.getDefaultValueInstance()),
     onBackPressed: () -> Unit = {},
     onThemePick: (theme: Theme) -> Unit = { _ -> },
     sendCommand: (command: String, parameters: Bundle?) -> Unit = { _, _ -> }
 ) {
-    val theme = settings.collectAsState().value.theme
     val showThemeDialog = remember { mutableStateOf(false) }
-    val themeName = rememberSaveable { mutableStateOf(theme.name) }
+    val themeName = rememberSaveable { mutableStateOf(settings.value.theme.name) }
 
-    themeName.value = when (theme) {
+    themeName.value = when (settings.value.theme) {
         Theme.DARK -> stringResource(R.string.dark_text)
         Theme.LIGHT -> stringResource(R.string.light_text)
         Theme.CONTENT_LIGHT -> stringResource(R.string.content_light_text)
@@ -46,9 +43,9 @@ fun SettingsScreen(
 
     if (showThemeDialog.value) {
         ThemeChooseDialog(
-            currentTheme = theme,
-            onThemeChoose = {
-                onThemePick(it)
+            currentTheme = settings.value.theme,
+            onThemeChoose = { theme ->
+                onThemePick(theme)
                 showThemeDialog.value = false
             }
         ) {

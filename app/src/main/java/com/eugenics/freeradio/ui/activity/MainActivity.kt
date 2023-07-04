@@ -3,6 +3,7 @@ package com.eugenics.freeradio.ui.activity
 import android.Manifest
 import android.app.Activity
 import android.content.Intent
+import android.content.res.Configuration
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
@@ -84,7 +85,9 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        WindowCompat.setDecorFitsSystemWindows(window, false)
+        val isFits = this.resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
+        Log.d(TAG, "Landscape orientation=$isFits")
+        WindowCompat.setDecorFitsSystemWindows(window, isFits)
 
         checkPostNotificationPermission()
         checkIntentData()
@@ -94,14 +97,12 @@ class MainActivity : ComponentActivity() {
         mainViewModel.start()
         mainViewModel.getTagsList(context = applicationContext)
 
+//        for orientation
+//        requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
+
         setContent {
             Application(viewModel = mainViewModel)
         }
-    }
-
-    override fun onDestroy() {
-        super.onDestroy()
-        mainViewModel.unsubscribe()
     }
 
     private fun collectUICommands() {

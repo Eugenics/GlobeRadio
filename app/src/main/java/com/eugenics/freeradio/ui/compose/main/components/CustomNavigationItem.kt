@@ -14,7 +14,6 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.eugenics.freeradio.ui.theme.FreeRadioTheme
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CustomNavigationItem(
     text: String = "Settings",
