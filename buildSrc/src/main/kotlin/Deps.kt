@@ -9,7 +9,7 @@ object BaseConfig {
     const val applicationId = "com.eugenics.freeradio"
     const val versionCode = 2
     const val versionName = "1.1"
-    const val kotlinCompilerExtensionVersion = "1.4.7"
+    const val kotlinCompilerExtensionVersion = "1.4.8"
 }
 
 object Deps {

@@ -49,8 +49,8 @@ dependencies {
     implementation(Deps.Retrofit.intercepter)
 
     // Hilt
-    implementation(Deps.Hilt.hilt)
-    kapt(Deps.Hilt.compiler)
+    implementation(libs.hilt.android)
+    kapt(libs.hilt.compiler)
 
     // Dagger
     implementation(Deps.Dagger.dagger)

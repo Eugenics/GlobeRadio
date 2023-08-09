@@ -43,22 +43,22 @@ android {
 dependencies {
 
     // AndroidX
-    implementation(Deps.AndroidX.coreKtx)
-    implementation(Deps.AndroidX.appcompat)
+    implementation(libs.androidx.ktx)
+    implementation(libs.androidx.appcompat)
 
     // Hilt
-    implementation(Deps.Hilt.hilt)
-    kapt(Deps.Hilt.compiler)
+    implementation(libs.hilt.android)
+    kapt(libs.hilt.compiler)
 
     // Dagger
-    implementation(Deps.Dagger.dagger)
-    kapt(Deps.Dagger.compiler)
+    implementation(libs.dagger)
+    kapt(libs.dagger.compiler)
 
     //Room
-    kapt(Deps.Room.compiler)
-    implementation(Deps.Room.room)
-    testImplementation(Deps.Room.testing)
-    implementation(Deps.Room.paging)
+    kapt(libs.room.compiler)
+    implementation(libs.room.ktx)
+    testImplementation(libs.room.testing)
+    implementation(libs.room.paging)
 
     // Core module
     implementation(project(":core"))

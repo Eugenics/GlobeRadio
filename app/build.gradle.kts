@@ -9,14 +9,14 @@ plugins {
 
 android {
     namespace = "com.eugenics.freeradio"
-    compileSdk = BaseConfig.compileSdk
+    compileSdk = libs.versions.compileSdk.get().toInt()
 
     defaultConfig {
-        applicationId = BaseConfig.applicationId
-        minSdk = BaseConfig.minSdk
-        targetSdk = BaseConfig.targetSdk
-        versionCode = BaseConfig.versionCode
-        versionName = BaseConfig.versionName
+        applicationId = libs.versions.applicationId.get()
+        minSdk = libs.versions.minSdk.get().toInt()
+        targetSdk = libs.versions.targetSdk.get().toInt()
+        versionCode = libs.versions.versionCode.get().toInt()
+        versionName = libs.versions.versionName.get()
 
         testInstrumentationRunner = "com.eugenics.core_testing.HiltTestRunner"
     }
@@ -36,7 +36,7 @@ android {
         compose = true
     }
     composeOptions {
-        kotlinCompilerExtensionVersion = BaseConfig.kotlinCompilerExtensionVersion
+        kotlinCompilerExtensionVersion = libs.versions.kotlinCompilerExtensionVersion.get()
     }
     packagingOptions {
         resources {
@@ -85,9 +85,9 @@ dependencies {
     implementation(Deps.Google.gson)
 
     // Hilt - dependency injection
-    implementation(Deps.Hilt.hilt)
-    kapt(Deps.Hilt.compiler)
-    implementation(Deps.Hilt.navigationCompose)
+    implementation(libs.hilt.android)
+    kapt(libs.hilt.compiler)
+    implementation(libs.androidx.hilt.navigationcompose)
 
     // Kotlin
     implementation(Deps.KotlinX.kotlinStdlibJdk8)

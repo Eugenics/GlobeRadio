@@ -1,5 +1,5 @@
 plugins {
-    androidLibrary
+    alias(libs.plugins.android.library)
     kotlin
     kapt
     dagger
@@ -38,7 +38,7 @@ android {
 dependencies {
 
     // AndroidX
-    implementation(Deps.AndroidX.coreKtx)
+    implementation(libs.androidx.ktx)
     implementation(Deps.AndroidX.appcompat)
 
     // Tests
