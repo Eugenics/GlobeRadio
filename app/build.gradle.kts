@@ -1,3 +1,6 @@
+import java.io.FileInputStream
+import java.util.Properties
+
 plugins {
     androidApplication
     kotlin
@@ -21,13 +24,29 @@ android {
         testInstrumentationRunner = "com.eugenics.core_testing.HiltTestRunner"
     }
 
+    val sensitiveFile = rootProject.file("sensitive.properties")
+    val sensitiveProperties: Properties = Properties()
+    sensitiveProperties.load(FileInputStream(sensitiveFile))
+
+    signingConfigs {
+        create("release") {
+            storeFile = File("${rootDir.path}//keystore.jks")
+            storePassword = sensitiveProperties.getProperty("release_password")
+            keyAlias = sensitiveProperties.getProperty("key_alias")
+            keyPassword = sensitiveProperties.getProperty("release_password")
+        }
+    }
+
     buildTypes {
         release {
             isMinifyEnabled = true
             isShrinkResources = true
+            isDebuggable = false
+            signingConfig = signingConfigs.getByName("release")
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
-                "proguard-rules.pro"
+                "proguard-rules.pro",
+                "./core_network/retrofit2.pro"
             )
         }
     }
