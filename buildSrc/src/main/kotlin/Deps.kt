@@ -2,7 +2,7 @@ import org.gradle.plugin.use.PluginDependenciesSpec
 import org.gradle.plugin.use.PluginDependencySpec
 
 object BaseConfig {
-    const val jvmTarget = "11"
+    const val jvmTarget = "17"
     const val compileSdk = 33
     const val minSdk = 27
     const val targetSdk = 33
