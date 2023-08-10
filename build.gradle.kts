@@ -1,7 +1,9 @@
 buildscript {
+    val agp_version by extra("8.1.0")
     dependencies {
         classpath(libs.hilt.plugin)
         classpath(libs.kotlin.serialization)
+        classpath("com.android.tools.build:gradle:$agp_version")
     }
 }
 
