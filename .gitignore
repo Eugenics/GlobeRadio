@@ -13,3 +13,5 @@ buildSrc/build/
 *.aab
 
 /schemas/
+/sensitive.properties
+/keystore.jks

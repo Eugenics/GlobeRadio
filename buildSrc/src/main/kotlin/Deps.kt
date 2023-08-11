@@ -2,14 +2,14 @@ import org.gradle.plugin.use.PluginDependenciesSpec
 import org.gradle.plugin.use.PluginDependencySpec
 
 object BaseConfig {
-    const val jvmTarget = "11"
+    const val jvmTarget = "17"
     const val compileSdk = 33
     const val minSdk = 27
     const val targetSdk = 33
     const val applicationId = "com.eugenics.freeradio"
     const val versionCode = 2
     const val versionName = "1.1"
-    const val kotlinCompilerExtensionVersion = "1.4.7"
+    const val kotlinCompilerExtensionVersion = "1.4.8"
 }
 
 object Deps {

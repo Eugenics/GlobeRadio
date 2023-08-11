@@ -1,3 +1,6 @@
+import java.io.FileInputStream
+import java.util.Properties
+
 plugins {
     androidApplication
     kotlin
@@ -9,34 +12,51 @@ plugins {
 
 android {
     namespace = "com.eugenics.freeradio"
-    compileSdk = BaseConfig.compileSdk
+    compileSdk = libs.versions.compileSdk.get().toInt()
 
     defaultConfig {
-        applicationId = BaseConfig.applicationId
-        minSdk = BaseConfig.minSdk
-        targetSdk = BaseConfig.targetSdk
-        versionCode = BaseConfig.versionCode
-        versionName = BaseConfig.versionName
+        applicationId = libs.versions.applicationId.get()
+        minSdk = libs.versions.minSdk.get().toInt()
+        targetSdk = libs.versions.targetSdk.get().toInt()
+        versionCode = libs.versions.versionCode.get().toInt()
+        versionName = libs.versions.versionName.get()
 
         testInstrumentationRunner = "com.eugenics.core_testing.HiltTestRunner"
+    }
+
+    val sensitiveFile = rootProject.file("sensitive.properties")
+    val sensitiveProperties: Properties = Properties()
+    sensitiveProperties.load(FileInputStream(sensitiveFile))
+
+    signingConfigs {
+        create("release") {
+            storeFile = File("${rootDir.path}//keystore.jks")
+            storePassword = sensitiveProperties.getProperty("release_password")
+            keyAlias = sensitiveProperties.getProperty("key_alias")
+            keyPassword = sensitiveProperties.getProperty("release_password")
+        }
     }
 
     buildTypes {
         release {
             isMinifyEnabled = true
             isShrinkResources = true
+            isDebuggable = false
+            signingConfig = signingConfigs.getByName("release")
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
-                "proguard-rules.pro"
+                "proguard-rules.pro",
+                "./core_network/retrofit2.pro"
             )
         }
     }
 
     buildFeatures {
         compose = true
+        buildConfig = true          // С 8 версии AGP делать вручную
     }
     composeOptions {
-        kotlinCompilerExtensionVersion = BaseConfig.kotlinCompilerExtensionVersion
+        kotlinCompilerExtensionVersion = libs.versions.kotlinCompilerExtensionVersion.get()
     }
     packagingOptions {
         resources {
@@ -45,12 +65,12 @@ android {
     }
 
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_11
-        targetCompatibility = JavaVersion.VERSION_11
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
     }
 
     kotlinOptions {
-        jvmTarget = BaseConfig.jvmTarget
+        jvmTarget = libs.versions.jvmTarget.get()
         freeCompilerArgs += "-opt-in=kotlin.RequiresOptIn"
     }
 
@@ -85,9 +105,9 @@ dependencies {
     implementation(Deps.Google.gson)
 
     // Hilt - dependency injection
-    implementation(Deps.Hilt.hilt)
-    kapt(Deps.Hilt.compiler)
-    implementation(Deps.Hilt.navigationCompose)
+    implementation(libs.hilt.android)
+    kapt(libs.hilt.compiler)
+    implementation(libs.androidx.hilt.navigationcompose)
 
     // Kotlin
     implementation(Deps.KotlinX.kotlinStdlibJdk8)

@@ -1,15 +1,18 @@
 buildscript {
+    val agp_version by extra("8.1.0")
     dependencies {
-        classpath(Deps.Hilt.androidPlugin)
-        classpath(Deps.KotlinX.kotlinSerialization)
+        classpath(libs.hilt.plugin)
+        classpath(libs.kotlin.serialization)
+        classpath("com.android.tools.build:gradle:$agp_version")
     }
-}// Top-level build file where you can add configuration options common to all sub-projects/modules.
+}
+
 plugins {
-    id("com.android.application") version "7.4.2" apply false
-    id("com.android.library") version "7.4.2" apply false
-    id("org.jetbrains.kotlin.android") version "1.8.21" apply false
-    id("org.gradle.toolchains.foojay-resolver-convention") version "0.4.0" apply false
-    id("org.jetbrains.kotlin.jvm") version "1.8.20" apply false
+    alias(libs.plugins.android.application) apply false
+    alias(libs.plugins.android.library) apply false
+    alias(libs.plugins.kotlin.android) apply false
+    alias(libs.plugins.kotlin.jvm) apply false
+    alias(libs.plugins.gradle.toolchain) apply false
 }
 
 tasks.register("clean", Delete::class) {

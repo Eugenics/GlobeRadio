@@ -7,10 +7,10 @@ plugins {
 
 android {
     namespace = "com.eugenics.core_database"
-    compileSdk = BaseConfig.compileSdk
+    compileSdk = libs.versions.compileSdk.get().toInt()
 
     defaultConfig {
-        minSdk = BaseConfig.minSdk
+        minSdk = libs.versions.minSdk.get().toInt()
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles("consumer-rules.pro")
@@ -26,8 +26,8 @@ android {
         }
     }
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_11
-        targetCompatibility = JavaVersion.VERSION_11
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
     }
 
     kapt {
@@ -36,29 +36,29 @@ android {
     }
 
     kotlinOptions {
-        jvmTarget = BaseConfig.jvmTarget
+        jvmTarget = libs.versions.jvmTarget.get()
     }
 }
 
 dependencies {
 
     // AndroidX
-    implementation(Deps.AndroidX.coreKtx)
-    implementation(Deps.AndroidX.appcompat)
+    implementation(libs.androidx.ktx)
+    implementation(libs.androidx.appcompat)
 
     // Hilt
-    implementation(Deps.Hilt.hilt)
-    kapt(Deps.Hilt.compiler)
+    implementation(libs.hilt.android)
+    kapt(libs.hilt.compiler)
 
     // Dagger
-    implementation(Deps.Dagger.dagger)
-    kapt(Deps.Dagger.compiler)
+    implementation(libs.dagger)
+    kapt(libs.dagger.compiler)
 
     //Room
-    kapt(Deps.Room.compiler)
-    implementation(Deps.Room.room)
-    testImplementation(Deps.Room.testing)
-    implementation(Deps.Room.paging)
+    kapt(libs.room.compiler)
+    implementation(libs.room.ktx)
+    testImplementation(libs.room.testing)
+    implementation(libs.room.paging)
 
     // Core module
     implementation(project(":core"))

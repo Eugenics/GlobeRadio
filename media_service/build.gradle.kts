@@ -8,11 +8,11 @@ plugins {
 }
 
 android {
-    compileSdk = BaseConfig.compileSdk
+    compileSdk = libs.versions.compileSdk.get().toInt()
     namespace = "com.eugenics.media_service"
 
     defaultConfig {
-        minSdk = BaseConfig.minSdk
+        minSdk = libs.versions.minSdk.get().toInt()
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
@@ -26,12 +26,12 @@ android {
         }
     }
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_11
-        targetCompatibility = JavaVersion.VERSION_11
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
     }
 
     kotlinOptions {
-        jvmTarget = BaseConfig.jvmTarget
+        jvmTarget = libs.versions.jvmTarget.get()
     }
 }
 
