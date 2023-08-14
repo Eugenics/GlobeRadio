@@ -29,6 +29,6 @@
     <string name="not_saved_text">Не сохранено…</string>
     <string name="backup_favorites">Сохраить избранное</string>
     <string name="restore_favorites">Восстановить избранное</string>
-
     <string name="authority">"com.eugenics.fileprovider"</string>
+    <string name="init_load_text">Загрузка списка радиостанций.\n Пожалуйста подождите…</string>
 </resources>

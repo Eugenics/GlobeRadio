@@ -97,9 +97,6 @@ class MainActivity : ComponentActivity() {
         mainViewModel.start()
         mainViewModel.getTagsList(context = applicationContext)
 
-//        for orientation
-//        requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
-
         setContent {
             Application(viewModel = mainViewModel)
         }

@@ -73,6 +73,7 @@ class FreeRadioMediaService : MediaBrowserServiceCompat() {
                 setAudioAttributes(playerAudioAttributes, true)
                 setHandleAudioBecomingNoisy(true)
                 addListener(playerListener)
+
             }
     }
 

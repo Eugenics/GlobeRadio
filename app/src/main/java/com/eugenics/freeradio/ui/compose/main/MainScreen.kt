@@ -35,7 +35,7 @@ import kotlinx.coroutines.launch
 @Composable
 fun MainScreen(
     navController: NavHostController = rememberNavController(),
-    uiState: State<Int> = mutableStateOf(MainViewModel.UI_STATE_UPDATE_DATA),
+    uiState: State<Int> = mutableStateOf(MainViewModel.UI_STATE_SPLASH),
     playbackState: State<PlayBackState> = mutableStateOf(PlayBackState.Pause),
     stationsList: State<List<Station>> = mutableStateOf(listOf()),
     nowPlayingStation: State<NowPlayingStation> = mutableStateOf(NowPlayingStation.emptyInstance()),

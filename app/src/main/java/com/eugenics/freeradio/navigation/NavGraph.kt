@@ -13,6 +13,7 @@ import androidx.navigation.NavHostController
 import com.google.accompanist.navigation.animation.composable
 import com.eugenics.freeradio.ui.compose.main.MainScreen
 import com.eugenics.freeradio.ui.compose.settings.SettingsScreen
+import com.eugenics.freeradio.ui.compose.splash.SplashScreen
 import com.eugenics.freeradio.ui.viewmodels.MainViewModel
 import com.google.accompanist.navigation.animation.AnimatedNavHost
 import com.google.accompanist.navigation.animation.rememberAnimatedNavController
@@ -26,7 +27,7 @@ fun NavGraph(
 ) {
     AnimatedNavHost(
         navController = navController,
-        startDestination = Screen.MainScreen.rout
+        startDestination = Screen.SplashScreen.rout
     ) {
         composable(route = Screen.MainScreen.rout) {
             val playbackState = mainViewModel.playBackState.collectAsState()
@@ -83,6 +84,13 @@ fun NavGraph(
                 onBackPressed = { navController.popBackStack() },
                 onThemePick = { theme -> mainViewModel.setSettings(theme = theme) },
                 sendCommand = onSendCommand
+            )
+        }
+        composable(route = Screen.SplashScreen.rout) {
+            SplashScreen(
+                isAnimated = true,
+                navHostController = navController,
+                uiState = mainViewModel.uiState.collectAsState()
             )
         }
     }

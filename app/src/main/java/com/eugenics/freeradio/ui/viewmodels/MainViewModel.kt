@@ -155,6 +155,7 @@ class MainViewModel @Inject constructor(
     }
 
     fun start() {
+        collectUiState()
         collectMediaSourceState()
         collectNowPlaying()
         collectSettings()
@@ -162,7 +163,7 @@ class MainViewModel @Inject constructor(
         collectServicePlaybackState()
     }
 
-    fun unsubscribe() {
+    private fun unsubscribe() {
         mediaServiceConnection.unsubscribe(rootId)
     }
 
@@ -275,7 +276,9 @@ class MainViewModel @Inject constructor(
         viewModelScope.launch(Dispatchers.IO) {
             mediaServiceConnection.mediaSourceState.collect { state ->
                 when (state) {
-                    MediaSourceState.STATE_FIRST_INIT.value -> _uiState.value = UI_STATE_SPLASH
+                    MediaSourceState.STATE_FIRST_INIT.value -> _uiState.value =
+                        UI_STATE_SPLASH_FIRST_INIT
+
                     MediaSourceState.STATE_CREATED.value -> _uiState.value = UI_STATE_SPLASH
                     MediaSourceState.STATE_ERROR.value -> _uiState.value = UI_STATE_ERROR
                     MediaSourceState.STATE_INITIALIZING.value -> _uiState.value =
@@ -417,6 +420,14 @@ class MainViewModel @Inject constructor(
         unsubscribe()
     }
 
+    private fun collectUiState() {
+        viewModelScope.launch {
+            uiState.collect {
+                Log.d(TAG, uiState.value.toString())
+            }
+        }
+    }
+
     companion object {
         const val TAG = "SEARCH_VIEW_MODEL"
 
@@ -424,5 +435,6 @@ class MainViewModel @Inject constructor(
         const val UI_STATE_UPDATE_DATA = 11
         const val UI_STATE_ERROR = 12
         const val UI_STATE_MAIN = 13
+        const val UI_STATE_SPLASH_FIRST_INIT = 14
     }
 }

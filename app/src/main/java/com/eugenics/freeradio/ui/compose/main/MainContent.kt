@@ -8,7 +8,10 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.LayoutDirection
+import androidx.compose.ui.unit.dp
 import com.eugenics.core.model.NowPlayingStation
 import com.eugenics.core.model.Station
 import com.eugenics.freeradio.ui.compose.main.components.StationCard
@@ -63,18 +66,31 @@ fun MainContent(
             state = columnState
         ) {
             itemsIndexed(stations.value) { index, station ->
-                StationCard(
-                    paddingValues = paddingValues,
-                    index = index,
-                    size = stations.value.size,
-                    station = station,
-                    onCardClick = { mediaId ->
-                        onCardClick(mediaId)
-                        activeCardIndex.value = index
-                    },
-                    onFavoriteClick = onFavoriteClick,
-                    isActive = station.stationuuid == nowPlayingStation.value.stationUUID
-                )
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(1.dp)
+                        .padding(
+                            top = if (index == 0) paddingValues.calculateTopPadding() + 0.dp
+                            else 0.dp,
+                            bottom = if (index == stations.value.size - 1) paddingValues.calculateBottomPadding() + 0.dp
+                            else 0.dp,
+                            start = paddingValues.calculateStartPadding(LayoutDirection.Ltr),
+                            end = paddingValues.calculateEndPadding(LayoutDirection.Ltr)
+                        )
+
+                ) {
+                    StationCard(
+                        station = station,
+                        onCardClick = { mediaId ->
+                            onCardClick(mediaId)
+                            activeCardIndex.value = index
+                        },
+                        onFavoriteClick = onFavoriteClick,
+                        isActive = station.stationuuid == nowPlayingStation.value.stationUUID
+                    )
+                }
             }
         }
     }
