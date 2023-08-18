@@ -120,7 +120,7 @@ class MainActivity : ComponentActivity() {
     private suspend fun backUpFavorites() {
         val jsonData = mainViewModel.backUpData.value
         if (jsonData.isNotBlank()) {
-            val jsonFile = File("${applicationContext.filesDir}/share.json")
+            val jsonFile = File("${applicationContext.cacheDir}/share.json")
             try {
                 jsonFile.writeBytes(jsonData.toByteArray(Charsets.UTF_8))
             } catch (e: IOException) {
