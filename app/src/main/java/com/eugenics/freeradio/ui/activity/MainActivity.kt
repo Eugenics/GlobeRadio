@@ -150,7 +150,7 @@ class MainActivity : ComponentActivity() {
             } else {
                 withContext(Dispatchers.Main) {
                     Toast.makeText(
-                        applicationContext,
+                        this@MainActivity,
                         getString(R.string.no_data_to_share),
                         Toast.LENGTH_SHORT
                     ).show()
