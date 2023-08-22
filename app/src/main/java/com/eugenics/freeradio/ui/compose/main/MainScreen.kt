@@ -5,6 +5,10 @@ import android.content.res.Configuration.UI_MODE_NIGHT_YES
 import android.os.Build
 import android.os.Bundle
 import androidx.annotation.RequiresApi
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.slideIn
+import androidx.compose.animation.slideOut
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -12,6 +16,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
@@ -68,9 +73,18 @@ fun MainScreen(
 
     val showWarningDialog = rememberSaveable { mutableStateOf(false) }
 
+    val showPlayerBar = rememberSaveable { mutableStateOf(false) }
+
     LaunchedEffect(key1 = message.value) {
         if (message.value.type == MessageType.WARNING) {
             showWarningDialog.value = true
+        }
+    }
+
+    LaunchedEffect(key1 = dataState.value) {
+        when (dataState.value) {
+            DataState.LOADING -> showPlayerBar.value = false
+            else -> showPlayerBar.value = true
         }
     }
 
@@ -102,30 +116,60 @@ fun MainScreen(
             ) {
                 Scaffold(
                     topBar = {
-                        MainTopAppBar(
-                            modifier = commonModifier
-                                .padding(top = padding.calculateTopPadding() + 5.dp),
-                            onMenuClick = {
-                                scope.launch {
-                                    if (drawerState.isOpen) {
-                                        drawerState.close()
-                                    } else {
-                                        drawerState.open()
-                                    }
-                                }
+                        AnimatedVisibility(
+                            visible = showPlayerBar.value,
+                            label = "media bar animation",
+                            enter = slideIn(
+                                animationSpec = tween(durationMillis = 1000)
+                            ) { fullSize ->
+                                IntOffset(0, -fullSize.height)
                             },
-                            onSearchClick = onSearchClick
-                        )
+                            exit = slideOut(
+                                animationSpec = tween(durationMillis = 1000)
+                            ) { fullSize ->
+                                IntOffset(0, -fullSize.width)
+                            }
+                        ) {
+                            MainTopAppBar(
+                                modifier = commonModifier
+                                    .padding(top = padding.calculateTopPadding() + 5.dp),
+                                onMenuClick = {
+                                    scope.launch {
+                                        if (drawerState.isOpen) {
+                                            drawerState.close()
+                                        } else {
+                                            drawerState.open()
+                                        }
+                                    }
+                                },
+                                onSearchClick = onSearchClick
+                            )
+                        }
                     },
                     bottomBar = {
-                        MainBottomAppBar(
-                            modifier = commonModifier
-                                .padding(bottom = padding.calculateBottomPadding() + 5.dp),
-                            nowPlayingStation = nowPlayingStation,
-                            playbackState = playbackState,
-                            onPlayClick = onPlayClick,
-                            onPauseClick = onPauseClick
-                        )
+                        AnimatedVisibility(
+                            visible = showPlayerBar.value,
+                            label = "media bar animation",
+                            enter = slideIn(
+                                animationSpec = tween(durationMillis = 1000)
+                            ) { fullSize ->
+                                IntOffset(0, fullSize.height)
+                            },
+                            exit = slideOut(
+                                animationSpec = tween(durationMillis = 1000)
+                            ) { fullSize ->
+                                IntOffset(0, fullSize.width)
+                            }
+                        ) {
+                            MainBottomAppBar(
+                                modifier = commonModifier
+                                    .padding(bottom = padding.calculateBottomPadding() + 5.dp),
+                                nowPlayingStation = nowPlayingStation,
+                                playbackState = playbackState,
+                                onPlayClick = onPlayClick,
+                                onPauseClick = onPauseClick
+                            )
+                        }
                     }
                 ) { paddingValues ->
                     when (dataState.value) {
@@ -163,8 +207,9 @@ fun MainScreen(
 @Preview(uiMode = UI_MODE_NIGHT_NO)
 private fun MainScreenPreviewNight() {
     val tagsList = remember { mutableStateOf(listOf<Tag>()) }
+    val uiState = remember { mutableStateOf(UIState.UI_STATE_MAIN) }
     FreeRadioTheme {
-        MainScreen(tagsList = tagsList)
+        MainScreen(tagsList = tagsList, uiState = uiState)
     }
 }
 
@@ -173,7 +218,8 @@ private fun MainScreenPreviewNight() {
 @Preview(uiMode = UI_MODE_NIGHT_YES)
 private fun MainScreenPreviewDay() {
     val tagsList = remember { mutableStateOf(listOf<Tag>()) }
+    val uiState = remember { mutableStateOf(UIState.UI_STATE_MAIN) }
     FreeRadioTheme {
-        MainScreen(tagsList = tagsList)
+        MainScreen(tagsList = tagsList, uiState = uiState)
     }
 }
