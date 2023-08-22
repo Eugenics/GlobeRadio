@@ -6,6 +6,7 @@ import android.os.Build
 import android.os.Bundle
 import androidx.annotation.RequiresApi
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.LinearOutSlowInEasing
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.slideIn
 import androidx.compose.animation.slideOut
@@ -151,12 +152,18 @@ fun MainScreen(
                             visible = showPlayerBar.value,
                             label = "media bar animation",
                             enter = slideIn(
-                                animationSpec = tween(durationMillis = 1000)
+                                animationSpec = tween(
+                                    durationMillis = 1000,
+                                    easing = LinearOutSlowInEasing
+                                )
                             ) { fullSize ->
                                 IntOffset(0, fullSize.height)
                             },
                             exit = slideOut(
-                                animationSpec = tween(durationMillis = 1000)
+                                animationSpec = tween(
+                                    durationMillis = 1000,
+                                    easing = LinearOutSlowInEasing
+                                )
                             ) { fullSize ->
                                 IntOffset(0, fullSize.width)
                             }
