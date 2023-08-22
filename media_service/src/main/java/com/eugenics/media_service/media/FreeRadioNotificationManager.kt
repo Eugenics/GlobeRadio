@@ -14,6 +14,7 @@ import com.bumptech.glide.request.RequestOptions
 import com.eugenics.media_service.R
 import com.google.android.exoplayer2.Player
 import com.google.android.exoplayer2.ui.PlayerNotificationManager
+import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -22,6 +23,10 @@ import kotlinx.coroutines.withContext
 
 const val NOW_PLAYING_CHANNEL_ID = "com.eugenics.media_service.media.free_radio"
 const val NOW_PLAYING_NOTIFICATION_ID = 0xb339
+
+private const val NOTIFICATION_LARGE_ICON_SIZE = 144 // px
+private const val NO_TITLE = "No title"
+private const val BITMAP_LOADING = "Bitmap loading..."
 
 internal class FreeRadioNotificationManager(
     private val context: Context,
@@ -93,12 +98,22 @@ internal class FreeRadioNotificationManager(
                     ContextCompat.getDrawable(context, R.drawable.pradio_wave)?.toBitmap()
 
                 iconUri != currentIconUri && iconUri != null -> {
+                    val coroutineExceptionHandler = CoroutineExceptionHandler { _, throwable ->
+                        Log.e(
+                            TAG,
+                            "Exception in getCurrentLargeIcon: ${throwable.message.toString()}"
+                        )
+                    }
                     currentIconUri = iconUri
-                    serviceScope.launch {
+                    val result = serviceScope.launch(coroutineExceptionHandler) {
                         currentBitmap = resolveUriAsBitmap(iconUri)
                         currentBitmap?.let { callback.onBitmap(it) }
+                        currentBitmap
                     }
-                    null
+                    while (result.isActive) {
+                        Log.d(TAG, BITMAP_LOADING)
+                    }
+                    currentBitmap
                 }
 
                 else -> currentBitmap
@@ -107,30 +122,25 @@ internal class FreeRadioNotificationManager(
 
         private suspend fun resolveUriAsBitmap(uri: Uri): Bitmap? {
             return withContext(Dispatchers.IO) {
-                try {
-                    Glide.with(context).applyDefaultRequestOptions(glideOptions)
-                        .asBitmap()
-                        .load(uri)
-                        .submit(NOTIFICATION_LARGE_ICON_SIZE, NOTIFICATION_LARGE_ICON_SIZE)
-                        .get()
-                } catch (ex: Exception) {
-                    Log.e(TAG, ex.message.toString())
-                    null
+                this.coroutineContext + CoroutineExceptionHandler { _, throwable ->
+                    Log.e(TAG, throwable.message.toString())
                 }
+                Glide.with(context).applyDefaultRequestOptions(glideOptions)
+                    .asBitmap()
+                    .load(uri)
+                    .submit(NOTIFICATION_LARGE_ICON_SIZE, NOTIFICATION_LARGE_ICON_SIZE)
+                    .get()
             }
         }
     }
 
     companion object {
-        const val TAG = "FreeRadioNotificationManager"
-        private const val NO_TITLE = "No title"
+        private const val TAG = "FreeRadioNotificationManager"
 
         const val NOTIFICATION_IS_SHOW = 1
         const val NOTIFICATION_IS_HIDE = 0
     }
 }
-
-const val NOTIFICATION_LARGE_ICON_SIZE = 144 // px
 
 private val glideOptions = RequestOptions()
     .fallback(R.drawable.pradio_wave)

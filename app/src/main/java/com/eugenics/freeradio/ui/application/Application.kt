@@ -22,6 +22,8 @@ import com.eugenics.freeradio.ui.theme.LightColors
 import com.eugenics.freeradio.ui.viewmodels.MainViewModel
 import com.google.accompanist.navigation.animation.rememberAnimatedNavController
 
+private const val THEME_ANIMATION_LABEL = "theme_dynamic_color"
+
 @RequiresApi(Build.VERSION_CODES.S)
 @OptIn(ExperimentalAnimationApi::class)
 @Composable
@@ -69,7 +71,7 @@ fun Application(
         } else {
             defaultColor
         },
-        animationSpec = tween(1500)
+        animationSpec = tween(1500), label = THEME_ANIMATION_LABEL
     )
 
     ContentDynamicTheme(

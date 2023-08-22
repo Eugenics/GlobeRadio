@@ -23,6 +23,10 @@ import com.eugenics.core.enums.Theme
 import com.eugenics.core.model.FavoriteStation
 import com.eugenics.core.model.Favorites
 import com.eugenics.data.interfaces.IStationsRepository
+import com.eugenics.freeradio.core.data.SystemMessage
+import com.eugenics.freeradio.core.enums.DataState
+import com.eugenics.freeradio.core.enums.MessageType
+import com.eugenics.freeradio.core.enums.UIState
 import com.eugenics.freeradio.ui.util.PlayBackState
 import com.eugenics.freeradio.util.ImageHelper
 import com.eugenics.freeradio.ui.util.UICommands
@@ -49,8 +53,11 @@ class MainViewModel @Inject constructor(
     private val dataStore: DataStore<CurrentState>
 ) : ViewModel() {
 
-    private val _uiState: MutableStateFlow<Int> = MutableStateFlow(UI_STATE_SPLASH)
-    val uiState: StateFlow<Int> = _uiState
+    private val _uiState: MutableStateFlow<UIState> = MutableStateFlow(UIState.UI_STATE_SPLASH)
+    val uiState: StateFlow<UIState> = _uiState
+
+    private val _dataState: MutableStateFlow<DataState> = MutableStateFlow(DataState.LOADING)
+    val dataState: StateFlow<DataState> = _dataState
 
     private val _stations: MutableStateFlow<List<Station>> = MutableStateFlow(mutableListOf())
     val stations: StateFlow<List<Station>> = _stations
@@ -77,8 +84,9 @@ class MainViewModel @Inject constructor(
     private val _backUpData: MutableStateFlow<String> = MutableStateFlow("")
     val backUpData: StateFlow<String> = _backUpData
 
-    private val _message: MutableStateFlow<String> = MutableStateFlow("")
-    val message: StateFlow<String> = _message
+    private val _message: MutableStateFlow<SystemMessage> =
+        MutableStateFlow(SystemMessage.emptyInstance())
+    val message: StateFlow<SystemMessage> = _message
 
     private val _uiCommand: MutableStateFlow<UICommands> =
         MutableStateFlow(UICommands.UI_COMMAND_IDL)
@@ -89,21 +97,18 @@ class MainViewModel @Inject constructor(
 
     private val subscriptionCallback = object : MediaBrowserCompat.SubscriptionCallback() {
         override fun onChildrenLoaded(
-            parentId: String,
-            children: List<MediaBrowserCompat.MediaItem>
+            parentId: String, children: List<MediaBrowserCompat.MediaItem>
         ) {
             val stationServiceContent = mutableListOf<Station>()
 
             for (child in children) {
-                val extras =
-                    if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
-                        child.description.extras?.getParcelable("STATION")
-                    } else {
-                        child.description.extras?.getParcelable(
-                            "STATION",
-                            PlayerMediaItem::class.java
-                        )
-                    }
+                val extras = if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
+                    child.description.extras?.getParcelable("STATION")
+                } else {
+                    child.description.extras?.getParcelable(
+                        "STATION", PlayerMediaItem::class.java
+                    )
+                }
                 extras?.let {
                     stationServiceContent.add(
                         Station(
@@ -132,7 +137,6 @@ class MainViewModel @Inject constructor(
 
     private val favIcoDownloadCallback = object : Callback {
         override fun onFailure(call: Call, e: IOException) {
-            _message.value = e.message.toString()
             Log.e(TAG, e.toString())
         }
 
@@ -141,11 +145,9 @@ class MainViewModel @Inject constructor(
                 response.body?.let { responseBody ->
                     val bitmap = BitmapFactory.decodeStream(responseBody.byteStream())
                     try {
-                        Palette.from(bitmap)
-                            .generate()
-                            .dominantSwatch?.let {
-                                _primaryDynamicColor.value = it.rgb
-                            }
+                        Palette.from(bitmap).generate().dominantSwatch?.let {
+                            _primaryDynamicColor.value = it.rgb
+                        }
                     } catch (e: Exception) {
                         Log.e(TAG, e.toString())
                     }
@@ -155,6 +157,7 @@ class MainViewModel @Inject constructor(
     }
 
     fun start() {
+        collectStates()
         collectMediaSourceState()
         collectNowPlaying()
         collectSettings()
@@ -162,7 +165,7 @@ class MainViewModel @Inject constructor(
         collectServicePlaybackState()
     }
 
-    fun unsubscribe() {
+    private fun unsubscribe() {
         mediaServiceConnection.unsubscribe(rootId)
     }
 
@@ -217,15 +220,13 @@ class MainViewModel @Inject constructor(
 
             in enumValues<Commands>().map { it.name }.toList() -> {
                 setSettings(
-                    command = command,
-                    tag = extras?.getString("TAG") ?: ""
+                    command = command, tag = extras?.getString("TAG") ?: ""
                 )
                 if (command != Commands.SET_FAVORITES_COMMAND.name) {
                     _stations.value = listOf()
                     setSettings(visibleIndex = 0)
                 }
-                mediaServiceConnection.sendCommand(
-                    command = command,
+                mediaServiceConnection.sendCommand(command = command,
                     parameters = extras,
                     resultCallback = { result, bundle ->
                         if (result == 1) {
@@ -237,8 +238,7 @@ class MainViewModel @Inject constructor(
                                     ?: "Command: $command error"
                             )
                         }
-                    }
-                )
+                    })
             }
         }
     }
@@ -249,12 +249,12 @@ class MainViewModel @Inject constructor(
                 nowPlaying.value = NowPlayingStation.newInstance(
                     name = metaData.getString(MediaMetadataCompat.METADATA_KEY_TITLE) ?: "",
                     favicon = metaData.description.iconUri.toString(),
-                    nowPlayingTitle =
-                    metaData.getString(MediaMetadataCompat.METADATA_KEY_DISPLAY_TITLE) ?: "",
-                    stationUUID =
-                    metaData.getString(MediaMetadataCompat.METADATA_KEY_MEDIA_ID) ?: "",
-                    description =
-                    metaData.getString(MediaMetadataCompat.METADATA_KEY_DISPLAY_DESCRIPTION) ?: ""
+                    nowPlayingTitle = metaData.getString(MediaMetadataCompat.METADATA_KEY_DISPLAY_TITLE)
+                        ?: "",
+                    stationUUID = metaData.getString(MediaMetadataCompat.METADATA_KEY_MEDIA_ID)
+                        ?: "",
+                    description = metaData.getString(MediaMetadataCompat.METADATA_KEY_DISPLAY_DESCRIPTION)
+                        ?: ""
                 )
                 currentMediaId = nowPlaying.value.stationUUID
 
@@ -275,13 +275,25 @@ class MainViewModel @Inject constructor(
         viewModelScope.launch(Dispatchers.IO) {
             mediaServiceConnection.mediaSourceState.collect { state ->
                 when (state) {
-                    MediaSourceState.STATE_FIRST_INIT.value -> _uiState.value = UI_STATE_SPLASH
-                    MediaSourceState.STATE_CREATED.value -> _uiState.value = UI_STATE_SPLASH
-                    MediaSourceState.STATE_ERROR.value -> _uiState.value = UI_STATE_ERROR
-                    MediaSourceState.STATE_INITIALIZING.value -> _uiState.value =
-                        UI_STATE_UPDATE_DATA
+                    MediaSourceState.STATE_FIRST_INIT.value -> {
+                        _uiState.value = UIState.UI_STATE_SPLASH
+                    }
 
-                    MediaSourceState.STATE_INITIALIZED.value -> _uiState.value = UI_STATE_MAIN
+                    MediaSourceState.STATE_CREATED.value -> _uiState.value = UIState.UI_STATE_SPLASH
+                    MediaSourceState.STATE_ERROR.value -> {
+                        _uiState.value = UIState.UI_STATE_MAIN
+                        _dataState.value = DataState.ERROR
+                    }
+
+                    MediaSourceState.STATE_INITIALIZING.value -> {
+                        _uiState.value = UIState.UI_STATE_MAIN
+                        _dataState.value = DataState.LOADING
+                    }
+
+                    MediaSourceState.STATE_INITIALIZED.value -> {
+                        _uiState.value = UIState.UI_STATE_MAIN
+                        _dataState.value = DataState.PREPARED
+                    }
                 }
             }
         }
@@ -328,10 +340,6 @@ class MainViewModel @Inject constructor(
         }
     }
 
-    fun clearMessage() {
-        _message.value = ""
-    }
-
     fun getSettings(): CurrentState = settings.value
 
     fun setUICommand(command: UICommands) {
@@ -340,29 +348,25 @@ class MainViewModel @Inject constructor(
 
     private fun backUpFavorites() {
         viewModelScope.launch(Dispatchers.IO) {
-            val favorites = Favorites(
-                stationList = stationsRepository.fetchStationsByFavorites()
-                    .map {
-                        FavoriteStation(
-                            uuid = UUID.randomUUID().toString(),
-                            stationuuid = it.stationuuid
-                        )
-                    }
-            )
+            val favorites =
+                Favorites(stationList = stationsRepository.fetchStationsByFavorites().map {
+                    FavoriteStation(
+                        uuid = UUID.randomUUID().toString(), stationuuid = it.stationuuid
+                    )
+                })
             if (favorites.stationList.isNotEmpty()) {
                 try {
                     val jsonString = Json.encodeToString(
-                        serializer = Favorites.serializer(),
-                        value = favorites
+                        serializer = Favorites.serializer(), value = favorites
                     )
                     _backUpData.value = jsonString
                     setUICommand(UICommands.UI_COMMAND_BACKUP_FAVORITES)
                 } catch (e: Exception) {
-                    _message.value = e.message.toString()
+                    sendMessage(MessageType.ERROR, e.message.toString())
                     Log.e(TAG, e.toString())
                 }
             } else {
-                _message.emit("No data to backup...")
+                sendMessage(MessageType.ERROR, NO_DATA_TO_BACKUP)
             }
         }
     }
@@ -372,8 +376,7 @@ class MainViewModel @Inject constructor(
             try {
                 if (favoritesJsonString.isNotBlank()) {
                     val favorites = Json.decodeFromString(
-                        Favorites.serializer(),
-                        favoritesJsonString
+                        Favorites.serializer(), favoritesJsonString
                     )
                     stationsRepository.restoreFavorites(
                         favorites = favorites.stationList
@@ -382,10 +385,10 @@ class MainViewModel @Inject constructor(
                         sendCommand(command = Commands.FAVORITES_COMMAND.name, null)
                     }
                 } else {
-                    _message.value = "No data to restore..."
+                    sendMessage(MessageType.ERROR, NO_DATA_TO_RESTORE)
                 }
             } catch (e: Exception) {
-                _message.value = e.message.toString()
+                sendMessage(MessageType.ERROR, e.message.toString())
                 Log.e(TAG, e.toString())
             }
         }
@@ -417,12 +420,33 @@ class MainViewModel @Inject constructor(
         unsubscribe()
     }
 
-    companion object {
-        const val TAG = "SEARCH_VIEW_MODEL"
+    fun sendMessage(type: MessageType, message: String) {
+        _message.value = SystemMessage.newInstance(
+            id = UUID.randomUUID().toString(),
+            type = type,
+            message = message
+        )
+        Log.d(TAG, message)
+    }
 
-        const val UI_STATE_SPLASH = 10
-        const val UI_STATE_UPDATE_DATA = 11
-        const val UI_STATE_ERROR = 12
-        const val UI_STATE_MAIN = 13
+    private fun collectStates() {
+        viewModelScope.launch {
+            uiState.collect {
+                Log.d(TAG, it.name)
+            }
+        }
+        viewModelScope.launch {
+            dataState.collect {
+                Log.d(TAG, it.name)
+            }
+        }
+    }
+
+    companion object {
+        const val TAG = "MAIN_VIEW_MODEL"
+
+        private const val NO_DATA_TO_RESTORE = "No data to restore..."
+        private const val NO_DATA_TO_BACKUP = "No data to backup..."
+
     }
 }

@@ -8,8 +8,6 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.calculateEndPadding
-import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -30,7 +28,6 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImagePainter
 import coil.compose.SubcomposeAsyncImage
@@ -45,28 +42,16 @@ import com.eugenics.media_service.media.FreeRadioMediaServiceConnection
 
 @Composable
 fun StationCard(
-    paddingValues: PaddingValues = PaddingValues(),
     isActive: Boolean = false,
-    index: Int = 0,
-    size: Int = 0,
     station: Station,
     onCardClick: (mediaId: String) -> Unit = {},
     onFavoriteClick: (command: String, bundle: Bundle?) -> Unit = { _, _ -> }
 ) {
     val isFavorite = rememberSaveable { mutableStateOf(station.isFavorite) }
-    val standardPadding = 0.dp
-    val topPadding =
-        if (index == 0) paddingValues.calculateTopPadding() + 0.dp
-        else standardPadding
-    val bottomPadding =
-        if (index == size - 1) paddingValues.calculateBottomPadding() + 0.dp
-        else standardPadding
-
     val showFavoriteDialog = rememberSaveable { mutableStateOf(false) }
 
-
     if (showFavoriteDialog.value) {
-        favoriteDialog(
+        FavoriteDialog(
             onDismiss = { showFavoriteDialog.value = false },
             onConfirm = {
                 isFavorite.value = 0
@@ -80,7 +65,7 @@ fun StationCard(
                     FreeRadioMediaServiceConnection.SET_FAVORITES_VALUE_KEY,
                     isFavorite.value
                 )
-                onFavoriteClick(station.stationuuid, bundle)
+                onFavoriteClick(Commands.SET_FAVORITES_COMMAND.name, bundle)
             }
         )
     }
@@ -89,19 +74,12 @@ fun StationCard(
         verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier
             .fillMaxWidth()
-            .padding(bottom = 1.dp)
             .background(
                 color = if (isActive) {
-                    MaterialTheme.colorScheme.tertiaryContainer
+                    MaterialTheme.colorScheme.background
                 } else {
                     MaterialTheme.colorScheme.secondaryContainer
                 }
-            )
-            .padding(
-                top = topPadding,
-                bottom = bottomPadding,
-                start = paddingValues.calculateStartPadding(LayoutDirection.Ltr),
-                end = paddingValues.calculateEndPadding(LayoutDirection.Ltr)
             )
             .clickable {
                 onCardClick(station.stationuuid)
@@ -177,7 +155,7 @@ fun StationCard(
 }
 
 @Composable
-private fun favoriteDialog(
+private fun FavoriteDialog(
     onDismiss: () -> Unit,
     onConfirm: () -> Unit
 ) {
@@ -239,7 +217,6 @@ private fun StationCardNightPreviewNight() {
 private fun CardDayPreview() {
     FreeRadioTheme {
         StationCard(
-            paddingValues = PaddingValues(8.dp),
             station = fakeStation
         )
     }

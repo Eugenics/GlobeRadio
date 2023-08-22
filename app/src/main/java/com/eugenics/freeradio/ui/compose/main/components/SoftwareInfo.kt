@@ -6,9 +6,11 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.stringResource
 import com.eugenics.freeradio.R
+import java.util.Calendar
 
 @Composable
 fun SoftwareInfoDialog(onDismiss: () -> Unit) {
+    val calendar = Calendar.getInstance()
     AlertDialog(
         onDismissRequest = onDismiss,
         confirmButton = {},
@@ -22,7 +24,7 @@ fun SoftwareInfoDialog(onDismiss: () -> Unit) {
         },
         text = {
             Text(
-                text = "Created by Eugene Podzorov ${'\u00A9'} 2022"
+                text = "Created by Eugene Podzorov ${'\u00A9'} ${calendar.get(Calendar.YEAR)}"
             )
         }
     )

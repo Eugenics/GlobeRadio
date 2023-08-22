@@ -2,38 +2,49 @@ package com.eugenics.freeradio.ui.compose.splash
 
 import android.content.res.Configuration.UI_MODE_NIGHT_NO
 import android.content.res.Configuration.UI_MODE_NIGHT_YES
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.LinearOutSlowInEasing
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
+import androidx.compose.animation.slideIn
+import androidx.compose.animation.slideOut
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import com.eugenics.freeradio.R
+import com.eugenics.freeradio.ui.compose.service.components.ServiceCard
 import com.eugenics.freeradio.ui.theme.FreeRadioTheme
 
 @Composable
 fun SplashScreen(
     modifier: Modifier = Modifier,
-    isAnimated: Boolean = false
+    message: String = ""
 ) {
-    var targetValue by remember { mutableStateOf(0f) }
+    val targetValue = rememberSaveable { mutableStateOf(0f) }
 
     val alpha: Float by animateFloatAsState(
-        targetValue = targetValue,
-        animationSpec = tween(100),
-        finishedListener = { }
+        targetValue = targetValue.value,
+        animationSpec = tween(500),
+        finishedListener = { },
+        label = ""
     )
 
+    val systemPadding = WindowInsets.systemBars.asPaddingValues()
+
+    val animationVisibility = remember { mutableStateOf(true) }
+
     Box(
-        modifier = modifier
-            .fillMaxSize()
+        modifier = modifier.fillMaxSize()
     ) {
         Image(
             painter = painterResource(R.drawable.free_radio_logo),
@@ -42,20 +53,45 @@ fun SplashScreen(
             modifier = Modifier
                 .size(125.dp)
                 .clip(shape = CircleShape)
-                .align(Alignment.Center),
-            alpha = if (isAnimated) alpha else 1f
+                .align(alignment = Alignment.Center),
+            alpha = alpha
         )
+        AnimatedVisibility(
+            modifier = Modifier
+                .align(Alignment.BottomCenter)
+                .padding(bottom = systemPadding.calculateBottomPadding() + 5.dp),
+            visible = animationVisibility.value,
+            enter = slideIn(
+                tween(
+                    durationMillis = 500,
+                    easing = LinearOutSlowInEasing
+                )
+            ) { fullSize ->
+                IntOffset(0, fullSize.height)
+            },
+            exit = slideOut(
+                tween(
+                    durationMillis = 500,
+                    easing = LinearOutSlowInEasing
+                )
+            ) { fullSize ->
+                IntOffset(0, fullSize.height)
+            },
+            label = "splash text animation"
+        ) {
+            Box {
+                ServiceCard(infoText = message)
+            }
+        }
     }
     SideEffect {
-        targetValue = 1f
+        targetValue.value = 1f
     }
 }
 
 @Composable
 @Preview(
-    uiMode = UI_MODE_NIGHT_NO,
-    apiLevel = 27,
-    name = "SplashLightMode"
+    uiMode = UI_MODE_NIGHT_NO, apiLevel = 27, name = "SplashLightMode"
 )
 private fun SplashScreenLightModePreview() {
     FreeRadioTheme {
@@ -78,12 +114,21 @@ private fun SplashScreenLightModeLandscapePreview() {
 
 @Composable
 @Preview(
-    uiMode = UI_MODE_NIGHT_YES,
-    apiLevel = 27,
-    name = "SplashDarkMode"
+    uiMode = UI_MODE_NIGHT_YES, apiLevel = 27, name = "SplashDarkMode"
 )
 private fun SplashScreenDarkModePreview() {
     FreeRadioTheme {
         SplashScreen()
+    }
+}
+
+@Composable
+@Preview(
+    uiMode = UI_MODE_NIGHT_NO, apiLevel = 27, name = "SplashLightModeInit"
+)
+private fun SplashScreenInitPreview() {
+    FreeRadioTheme {
+        val message = remember { mutableStateOf("Loading...") }
+        SplashScreen(message = message.value)
     }
 }

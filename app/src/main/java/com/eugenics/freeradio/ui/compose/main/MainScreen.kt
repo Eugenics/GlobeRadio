@@ -20,28 +20,34 @@ import com.eugenics.core.model.NowPlayingStation
 import com.eugenics.core.model.Station
 import com.eugenics.core.model.Tag
 import com.eugenics.freeradio.R
+import com.eugenics.freeradio.core.data.SystemMessage
+import com.eugenics.freeradio.core.enums.DataState
+import com.eugenics.freeradio.core.enums.MessageType
+import com.eugenics.freeradio.core.enums.UIState
 import com.eugenics.freeradio.navigation.Screen
 import com.eugenics.freeradio.ui.compose.load.LoadContent
 import com.eugenics.freeradio.ui.compose.main.components.MainTopAppBar
 import com.eugenics.freeradio.ui.compose.main.components.MainBottomAppBar
 import com.eugenics.freeradio.ui.compose.main.components.MainNavigationDrawer
 import com.eugenics.freeradio.ui.compose.splash.SplashScreen
+import com.eugenics.freeradio.ui.compose.warning.WarningDialog
 import com.eugenics.freeradio.ui.theme.FreeRadioTheme
 import com.eugenics.freeradio.ui.util.PlayBackState
-import com.eugenics.freeradio.ui.viewmodels.MainViewModel
 import kotlinx.coroutines.launch
 
 @RequiresApi(Build.VERSION_CODES.S)
 @Composable
 fun MainScreen(
     navController: NavHostController = rememberNavController(),
-    uiState: State<Int> = mutableStateOf(MainViewModel.UI_STATE_UPDATE_DATA),
+    uiState: State<UIState> = mutableStateOf(UIState.UI_STATE_SPLASH),
+    dataState: State<DataState> = mutableStateOf(DataState.LOADING),
     playbackState: State<PlayBackState> = mutableStateOf(PlayBackState.Pause),
     stationsList: State<List<Station>> = mutableStateOf(listOf()),
     nowPlayingStation: State<NowPlayingStation> = mutableStateOf(NowPlayingStation.emptyInstance()),
     sendCommand: (command: String, parameters: Bundle?) -> Unit = { _, _ -> },
     tagsList: State<List<Tag>>,
     visibleIndex: Int = 0,
+    message: State<SystemMessage> = mutableStateOf(SystemMessage.emptyInstance()),
     onPlayClick: () -> Unit = {},
     onPauseClick: () -> Unit = {},
     onItemClick: (mediaId: String) -> Unit = {},
@@ -60,8 +66,28 @@ fun MainScreen(
             end = padding.calculateEndPadding(LayoutDirection.Ltr) + 5.dp
         )
 
+    val showWarningDialog = rememberSaveable { mutableStateOf(false) }
+
+    LaunchedEffect(key1 = message.value) {
+        if (message.value.type == MessageType.WARNING) {
+            showWarningDialog.value = true
+        }
+    }
+
+    if (showWarningDialog.value) {
+        WarningDialog(
+            onClose = { showWarningDialog.value = false },
+            warningText = message.value.message
+        )
+    }
+
     when (uiState.value) {
-        MainViewModel.UI_STATE_SPLASH -> SplashScreen()
+        UIState.UI_STATE_SPLASH -> SplashScreen(
+            message =
+            if (message.value.type == MessageType.INFO) message.value.message
+            else ""
+        )
+
         else -> {
             MainNavigationDrawer(
                 drawerState = drawerState,
@@ -102,8 +128,16 @@ fun MainScreen(
                         )
                     }
                 ) { paddingValues ->
-                    when (uiState.value) {
-                        MainViewModel.UI_STATE_MAIN -> {
+                    when (dataState.value) {
+                        DataState.LOADING -> {
+                            Box(
+                                modifier = Modifier.fillMaxSize()
+                            ) {
+                                LoadContent(text = stringResource(R.string.loading_string))
+                            }
+                        }
+
+                        else -> {
                             MainContent(
                                 paddingValues = paddingValues,
                                 stations = stationsList,
@@ -116,14 +150,6 @@ fun MainScreen(
                                 onVisibleIndexChange = onVisibleIndexChange,
                                 nowPlayingStation = nowPlayingStation
                             )
-                        }
-
-                        MainViewModel.UI_STATE_UPDATE_DATA -> {
-                            Box(
-                                modifier = Modifier.fillMaxSize()
-                            ) {
-                                LoadContent(text = stringResource(R.string.loading_string))
-                            }
                         }
                     }
                 }

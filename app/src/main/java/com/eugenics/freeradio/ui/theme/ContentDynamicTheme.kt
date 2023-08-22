@@ -100,7 +100,7 @@ fun ContentDynamicTheme(
     MaterialTheme(
         colorScheme = colorScheme,
         content = content,
-        typography = AppTypography,
+        typography = AppTypographyBlenderPro,
         shapes = AppBarShape
     )
 }

@@ -63,7 +63,7 @@ class FreeRadioMediaService : MediaBrowserServiceCompat() {
         .setDefaultRequestProperties(mapOf("1" to "Icy-MetaData"))
 
     private val player: ExoPlayer by lazy {
-        ExoPlayer.Builder(baseContext)
+        ExoPlayer.Builder(this)
             .setMediaSourceFactory(
                 ProgressiveMediaSource.Factory(defaultHttpDataSourceFactory)
             )
@@ -73,6 +73,7 @@ class FreeRadioMediaService : MediaBrowserServiceCompat() {
                 setAudioAttributes(playerAudioAttributes, true)
                 setHandleAudioBecomingNoisy(true)
                 addListener(playerListener)
+
             }
     }
 
@@ -143,11 +144,7 @@ class FreeRadioMediaService : MediaBrowserServiceCompat() {
         clientUid: Int,
         rootHints: Bundle?
     ): BrowserRoot {
-        return if (allowBrowsing(clientPackageName, clientUid)) {
-            BrowserRoot(STATIONS_ROOT, null)
-        } else {
-            BrowserRoot(EMPTY_ROOT, null)
-        }
+        return BrowserRoot(STATIONS_ROOT, null)
     }
 
     override fun onLoadChildren(
@@ -189,8 +186,6 @@ class FreeRadioMediaService : MediaBrowserServiceCompat() {
             }
         }
     }
-
-    private fun allowBrowsing(clientPackageName: String = "", clientUid: Int = 0): Boolean = true
 
     private inner class PlayerNotificationListener :
         PlayerNotificationManager.NotificationListener {
