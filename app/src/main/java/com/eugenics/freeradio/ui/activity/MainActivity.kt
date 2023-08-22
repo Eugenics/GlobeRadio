@@ -4,6 +4,9 @@ import android.Manifest
 import android.app.Activity
 import android.content.Intent
 import android.content.res.Configuration
+import android.net.ConnectivityManager
+import android.net.NetworkCapabilities
+import android.net.NetworkRequest
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
@@ -24,9 +27,12 @@ import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import com.eugenics.freeradio.BuildConfig
 import com.eugenics.freeradio.R
+import com.eugenics.freeradio.core.enums.MessageType
+import com.eugenics.freeradio.core.enums.UIState
 import com.eugenics.freeradio.ui.application.Application
 import com.eugenics.freeradio.ui.util.UICommands
 import com.eugenics.freeradio.ui.viewmodels.MainViewModel
+import com.eugenics.freeradio.util.createInternetConnectivityListener
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -91,6 +97,7 @@ class MainActivity : ComponentActivity() {
 
         checkPostNotificationPermission()
         checkIntentData()
+        collectUIState()
         collectUICommands()
         collectViewModelMessages()
 
@@ -100,6 +107,11 @@ class MainActivity : ComponentActivity() {
         setContent {
             Application(viewModel = mainViewModel)
         }
+    }
+
+    override fun onStart() {
+        super.onStart()
+        collectNetworkState()
     }
 
     private fun collectUICommands() {
@@ -120,7 +132,10 @@ class MainActivity : ComponentActivity() {
     private suspend fun backUpFavorites() {
         val jsonData = mainViewModel.backUpData.value
         if (jsonData.isNotBlank()) {
-            val jsonFile = File("${applicationContext.cacheDir}/share.json")
+            if (!File("${applicationContext.cacheDir}/share_files").exists()) {
+                File("${applicationContext.cacheDir}/share_files").mkdirs()
+            }
+            val jsonFile = File("${applicationContext.cacheDir}/share_files/share.json")
             try {
                 jsonFile.writeBytes(jsonData.toByteArray(Charsets.UTF_8))
             } catch (e: IOException) {
@@ -162,12 +177,17 @@ class MainActivity : ComponentActivity() {
     private fun collectViewModelMessages() {
         lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
-                mainViewModel.message.collect { message ->
-                    if (message.isNotBlank()) {
+                mainViewModel.message.collect { systemMessage ->
+                    if (systemMessage.message.isNotBlank()) {
                         withContext(Dispatchers.Main) {
-                            Toast.makeText(applicationContext, message, Toast.LENGTH_LONG)
-                                .show()
-                            mainViewModel.clearMessage()
+                            if (systemMessage.type == MessageType.ERROR) {
+                                Toast.makeText(
+                                    applicationContext,
+                                    systemMessage.message,
+                                    Toast.LENGTH_LONG
+                                )
+                                    .show()
+                            }
                         }
                     }
                 }
@@ -224,6 +244,49 @@ class MainActivity : ComponentActivity() {
             permissionsRequestLauncher.launch(
                 arrayOf(Manifest.permission.POST_NOTIFICATIONS)
             )
+        }
+    }
+
+    private fun collectNetworkState() {
+        val connectivityManager =
+            getSystemService(CONNECTIVITY_SERVICE) as ConnectivityManager
+        val internetListener = connectivityManager.createInternetConnectivityListener()
+        val networkRequest = NetworkRequest.Builder()
+            .addCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
+            .addTransportType(NetworkCapabilities.TRANSPORT_WIFI)
+            .addTransportType(NetworkCapabilities.TRANSPORT_CELLULAR)
+            .build()
+        connectivityManager.registerNetworkCallback(
+            networkRequest,
+            internetListener.networkCallback
+        )
+        lifecycleScope.launch {
+            internetListener.isActive.collect {
+                if (!it) {
+                    mainViewModel.sendMessage(
+                        type = MessageType.WARNING,
+                        message = getString(R.string.no_internet_connection)
+                    )
+                }
+            }
+        }
+    }
+
+    private fun collectUIState() {
+        lifecycleScope.launch {
+            repeatOnLifecycle(state = Lifecycle.State.STARTED) {
+                mainViewModel.uiState.collect { uiState ->
+                    when (uiState) {
+                        UIState.UI_STATE_SPLASH ->
+                            mainViewModel.sendMessage(
+                                type = MessageType.INFO,
+                                message = getString(R.string.init_load_text)
+                            )
+
+                        else -> {}
+                    }
+                }
+            }
         }
     }
 

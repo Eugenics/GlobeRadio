@@ -27,14 +27,16 @@ fun NavGraph(
 ) {
     AnimatedNavHost(
         navController = navController,
-        startDestination = Screen.SplashScreen.rout
+        startDestination = Screen.MainScreen.rout
     ) {
         composable(route = Screen.MainScreen.rout) {
             val playbackState = mainViewModel.playBackState.collectAsState()
             val uiState = mainViewModel.uiState.collectAsState()
+            val dataState = mainViewModel.dataState.collectAsState()
             val stationsList = mainViewModel.stations.collectAsState()
             val nowPlayingStation = mainViewModel.nowPlaying.collectAsState()
             val tagsList = mainViewModel.tagList.collectAsState()
+            val message = mainViewModel.message.collectAsState()
             val visibleIndex = remember { mainViewModel.getSettings().visibleIndex }
             val onPlayClick = remember { mainViewModel::play }
             val onPauseClick = remember { mainViewModel::pause }
@@ -47,8 +49,10 @@ fun NavGraph(
             MainScreen(
                 navController = navController,
                 uiState = uiState,
+                dataState = dataState,
                 playbackState = playbackState,
                 stationsList = stationsList,
+                message = message,
                 onPlayClick = onPlayClick,
                 onPauseClick = onPauseClick,
                 onItemClick = onItemClick,
@@ -87,11 +91,7 @@ fun NavGraph(
             )
         }
         composable(route = Screen.SplashScreen.rout) {
-            SplashScreen(
-                isAnimated = true,
-                navHostController = navController,
-                uiState = mainViewModel.uiState.collectAsState()
-            )
+            SplashScreen()
         }
     }
 }

@@ -98,8 +98,14 @@ internal class FreeRadioNotificationManager(
                     ContextCompat.getDrawable(context, R.drawable.pradio_wave)?.toBitmap()
 
                 iconUri != currentIconUri && iconUri != null -> {
+                    val coroutineExceptionHandler = CoroutineExceptionHandler { _, throwable ->
+                        Log.e(
+                            TAG,
+                            "Exception in getCurrentLargeIcon: ${throwable.message.toString()}"
+                        )
+                    }
                     currentIconUri = iconUri
-                    val result = serviceScope.launch {
+                    val result = serviceScope.launch(coroutineExceptionHandler) {
                         currentBitmap = resolveUriAsBitmap(iconUri)
                         currentBitmap?.let { callback.onBitmap(it) }
                         currentBitmap

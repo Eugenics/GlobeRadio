@@ -17,30 +17,20 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
-import androidx.navigation.NavHostController
-import androidx.navigation.compose.rememberNavController
 import com.eugenics.freeradio.R
-import com.eugenics.freeradio.navigation.Screen
 import com.eugenics.freeradio.ui.compose.service.components.ServiceCard
 import com.eugenics.freeradio.ui.theme.FreeRadioTheme
-import com.eugenics.freeradio.ui.viewmodels.MainViewModel
 
 @Composable
 fun SplashScreen(
     modifier: Modifier = Modifier,
-    navHostController: NavHostController = rememberNavController(),
-    uiState: State<Int> = mutableStateOf(MainViewModel.UI_STATE_SPLASH),
-    isAnimated: Boolean = false
+    message: String = ""
 ) {
     val targetValue = rememberSaveable { mutableStateOf(0f) }
-    val splashText = rememberSaveable { mutableStateOf("") }
-
-    val context = LocalContext.current
 
     val alpha: Float by animateFloatAsState(
         targetValue = targetValue.value,
@@ -51,25 +41,7 @@ fun SplashScreen(
 
     val systemPadding = WindowInsets.systemBars.asPaddingValues()
 
-    val animationVisibility = remember { mutableStateOf(false) }
-
-    LaunchedEffect(key1 = uiState.value) {
-        when (uiState.value) {
-            MainViewModel.UI_STATE_SPLASH_FIRST_INIT -> {
-                splashText.value = context.getString(R.string.init_load_text)
-                animationVisibility.value = true
-            }
-
-            MainViewModel.UI_STATE_MAIN -> {
-                animationVisibility.value = false
-                navHostController.navigate(Screen.MainScreen.rout) {
-                    popUpTo(Screen.SplashScreen.rout) {
-                        inclusive = true
-                    }
-                }
-            }
-        }
-    }
+    val animationVisibility = remember { mutableStateOf(true) }
 
     Box(
         modifier = modifier.fillMaxSize()
@@ -82,7 +54,7 @@ fun SplashScreen(
                 .size(125.dp)
                 .clip(shape = CircleShape)
                 .align(alignment = Alignment.Center),
-            alpha = if (isAnimated) alpha else 1f
+            alpha = alpha
         )
         AnimatedVisibility(
             modifier = Modifier
@@ -108,7 +80,7 @@ fun SplashScreen(
             label = "splash text animation"
         ) {
             Box {
-                ServiceCard(infoText = splashText.value)
+                ServiceCard(infoText = message)
             }
         }
     }
@@ -156,7 +128,7 @@ private fun SplashScreenDarkModePreview() {
 )
 private fun SplashScreenInitPreview() {
     FreeRadioTheme {
-        val state = remember { mutableStateOf(MainViewModel.UI_STATE_SPLASH_FIRST_INIT) }
-        SplashScreen(uiState = state)
+        val message = remember { mutableStateOf("Loading...") }
+        SplashScreen(message = message.value)
     }
 }
