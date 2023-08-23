@@ -203,11 +203,17 @@ class FreeRadioMediaService : MediaBrowserServiceCompat() {
 
                 startForeground(notificationId, notification)
                 isForegroundService = true
+
+                Log.d(tag, "Notification started...")
             }
         }
 
         override fun onNotificationCancelled(notificationId: Int, dismissedByUser: Boolean) {
+            notificationManager.hideNotification()
+            Log.d(tag, "Notification canceled...")
         }
+
+        private val tag = "Player notification listener"
     }
 
     private val playbackPrepare = object : MediaSessionConnector.PlaybackPreparer {
@@ -391,6 +397,12 @@ class FreeRadioMediaService : MediaBrowserServiceCompat() {
                     player.prepare()
 
                     notifyChildrenChanged(STATIONS_ROOT)
+
+                    if (notificationManager.notificationState ==
+                        FreeRadioNotificationManager.NOTIFICATION_IS_HIDE
+                    ) {
+                        notificationManager.showNotificationForPlayer(player)
+                    }
                 }
                 sendMediaSourceState(state = state)
             }
