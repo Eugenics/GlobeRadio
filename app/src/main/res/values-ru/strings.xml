@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Free Radio</string>
+    <string name="app_name">Globe Radio</string>
     <string name="unexpected_error">An unexpected error occurred :(\nPlease try again</string>
     <string name="loading_string">Загрузка…</string>
     <string name="search_hint_text">Поиск…</string>

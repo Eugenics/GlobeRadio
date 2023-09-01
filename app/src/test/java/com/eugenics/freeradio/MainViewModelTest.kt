@@ -4,9 +4,9 @@ import android.content.ComponentName
 import android.content.Context
 import androidx.datastore.core.DataStoreFactory
 import com.eugenics.data.testing.FakeStationsRepositoryFactory
+import com.eugenics.freeradio.core.enums.UIState
 import com.eugenics.freeradio.ui.viewmodels.MainViewModel
 import com.eugenics.freeradio.util.SettingsSerializer
-import com.eugenics.media_service.media.EMPTY_PLAYBACK_STATE
 import com.eugenics.media_service.media.FreeRadioMediaService
 import com.eugenics.media_service.media.FreeRadioMediaServiceConnection
 import io.mockk.mockk
@@ -49,7 +49,7 @@ class MainViewModelTest {
 
     @Test
     fun testUIState() {
-        assertEquals(MainViewModel.UI_STATE_SPLASH, mainViewModel.uiState.value)
+        assertEquals(UIState.UI_STATE_SPLASH, mainViewModel.uiState.value)
     }
 
     @Test
@@ -60,10 +60,5 @@ class MainViewModelTest {
     @Test
     fun testStationsList() {
 
-    }
-
-    @Test
-    fun testPlayBackState() {
-        assertEquals(EMPTY_PLAYBACK_STATE, mainViewModel.playBackState.value)
     }
 }

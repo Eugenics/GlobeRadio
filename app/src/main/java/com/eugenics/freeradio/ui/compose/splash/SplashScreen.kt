@@ -9,6 +9,7 @@ import androidx.compose.animation.core.tween
 import androidx.compose.animation.slideIn
 import androidx.compose.animation.slideOut
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.runtime.*
@@ -16,7 +17,9 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.IntOffset
@@ -45,13 +48,14 @@ fun SplashScreen(
 
     Box(
         modifier = modifier.fillMaxSize()
+            .background(color = colorResource(R.color.main_brand))
     ) {
         Image(
-            painter = painterResource(R.drawable.free_radio_logo),
+            painter = painterResource(R.drawable.globe_logo),
             contentDescription = null,
             contentScale = ContentScale.Crop,
             modifier = Modifier
-                .size(125.dp)
+                .size(250.dp)
                 .clip(shape = CircleShape)
                 .align(alignment = Alignment.Center),
             alpha = alpha
@@ -80,7 +84,7 @@ fun SplashScreen(
             label = "splash text animation"
         ) {
             Box {
-                ServiceCard(infoText = message)
+                ServiceCard(infoText = message, textColor = Color.White)
             }
         }
     }
