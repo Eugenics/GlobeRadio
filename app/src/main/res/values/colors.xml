@@ -10,4 +10,6 @@
 
     <color name="windowBackgroundDarkMode">#FF1F1F1F</color>
     <color name="windowBackgroundLightMode">#FFFFFFFF</color>
+
+    <color name="main_brand">#FF006C32</color>
 </resources>
