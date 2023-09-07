@@ -53,5 +53,5 @@ fun StationRespondObject.asModel(): Station =
         languagecodes = languagecodes,
         changeuuid = changeuuid,
         isFavorite = 0,
-        votes = 0
+        votes = votes
     )
