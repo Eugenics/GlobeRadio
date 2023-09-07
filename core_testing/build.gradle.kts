@@ -1,8 +1,6 @@
 plugins {
     androidLibrary
     kotlin
-    kapt
-    dagger
 }
 
 android {
@@ -17,13 +15,6 @@ android {
     }
 
     buildTypes {
-//        release {
-//            isMinifyEnabled = false
-//            proguardFiles(
-//                getDefaultProguardFile("proguard-android-optimize.txt"),
-//                "proguard-rules.pro"
-//            )
-//        }
     }
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
@@ -48,13 +39,10 @@ dependencies {
     androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
 
     // Dagger
-    val daggerVersion = "2.46.1"
+    val daggerVersion = "2.47"
     implementation("com.google.dagger:dagger:$daggerVersion")
-    kapt("com.google.dagger:dagger-compiler:$daggerVersion")
 
     // Hilt
-    val hiltVersion = "2.46.1"
-    implementation("com.google.dagger:hilt-android:$hiltVersion")
-    implementation("com.google.dagger:hilt-android-testing:$hiltVersion")
-    kapt("com.google.dagger:hilt-android-compiler:$hiltVersion")
+    implementation("com.google.dagger:hilt-android:$daggerVersion")
+    implementation("com.google.dagger:hilt-android-testing:$daggerVersion")
 }

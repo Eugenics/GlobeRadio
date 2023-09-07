@@ -4,7 +4,7 @@ compileSdk = "33"
 minSdk = "27"
 targetSdk = "33"
 applicationId = "com.eugenics.freeradio"
-versionCode = "2"
+versionCode = "3"
 versionName = "1.1"
 kotlinCompilerExtensionVersion = "1.4.8"
 
@@ -36,12 +36,14 @@ material3 = "1.1.1"
 datastore = "1.0.0"
 room = "2.5.2"
 dagger = "2.47"
+firebase = "32.2.3"
 
 androidGradlePlugin = "8.1.0"
 androidLibraryPlugin = "8.1.0"
 kotlinAndroidPlugin = "1.8.22"
 kotlinJvmPlugin = "1.8.22"
 gradleToolChainPlugin = "0.4.0"
+googleServicesPlugin = "4.3.15"
 
 [libraries]
 hilt-plugin = { group = "com.google.dagger", name = "hilt-android-gradle-plugin", version.ref = "hiltPlugin" }
@@ -89,8 +91,9 @@ room-compiler = { group = "androidx.room", name = "room-compiler", version.ref =
 room-ktx = { group = "androidx.room", name = "room-ktx", version.ref = "room" }
 room-testing = { group = "androidx.room", name = "room-testing", version.ref = "room" }
 room-paging = { group = "androidx.room", name = "room-paging", version.ref = "room" }
-dagger = {group="com.google.dagger",name="dagger",version.ref="dagger"}
-dagger-compiler = {group="com.google.dagger",name="dagger-compiler",version.ref="dagger"}
+dagger = { group = "com.google.dagger", name = "dagger", version.ref = "dagger" }
+dagger-compiler = { group = "com.google.dagger", name = "dagger-compiler", version.ref = "dagger" }
+google-firebase = { group = "com.google.firebase", name = "firebase-bom", version.ref = "firebase" }
 
 [bundles]
 compose = ["compose-ui", "compose-tooling", "compose-preview", "compose-animation-graphics"]
@@ -109,4 +112,5 @@ android-library = { id = "com.android.library", version.ref = "androidLibraryPlu
 kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlinAndroidPlugin" }
 kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlinJvmPlugin" }
 gradle-toolchain = { id = "org.gradle.toolchains.foojay-resolver-convention", version.ref = "gradleToolChainPlugin" }
+google-services = { id = "com.google.gms.google-services", version.ref = "googleServicesPlugin" }
 

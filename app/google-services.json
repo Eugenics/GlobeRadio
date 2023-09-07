@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "206375240702",
+    "project_id": "freeradio-29afc",
+    "storage_bucket": "freeradio-29afc.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:206375240702:android:be0f70e0eaa4f692b136af",
+        "android_client_info": {
+          "package_name": "com.eugenics.freeradio"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "206375240702-796kecjo01877q5abep43hnh4vcoui1a.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.eugenics.freeradio",
+            "certificate_hash": "a227a25b5ae3038f31b5632c8173b3e4cff49a21"
+          }
+        },
+        {
+          "client_id": "206375240702-9mmagf90c2lcadppoi4o16so74gruk6h.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBkuo0dSCLMC6ZgI9owRcIQxmjNGisS65M"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "206375240702-9mmagf90c2lcadppoi4o16so74gruk6h.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
