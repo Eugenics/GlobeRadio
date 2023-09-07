@@ -8,6 +8,7 @@ plugins {
     parcelize
     serialization
     dagger
+    libs.plugins.google.services
 }
 
 android {
@@ -160,4 +161,7 @@ dependencies {
     androidTestImplementation(Deps.Compose.uiTesting)
     androidTestImplementation(Deps.Compose.jUnitTesting)
     debugImplementation(Deps.Compose.uiTestManifest)
+
+    // Firebase
+    implementation(libs.google.firebase)
 }
