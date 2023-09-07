@@ -3,6 +3,7 @@ package com.eugenics.core_database.di
 import android.content.Context
 import androidx.room.Room
 import com.eugenics.core_database.database.DataBase
+import com.eugenics.core_database.database.MIGRATION_1_2
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -33,5 +34,6 @@ class DataModule {
             "local_db.db"
         )
             .createFromAsset("preLoadDb.db")
+            .addMigrations(MIGRATION_1_2)
             .build()
 }
