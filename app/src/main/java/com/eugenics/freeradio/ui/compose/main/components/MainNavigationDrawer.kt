@@ -98,7 +98,7 @@ fun MainNavigationDrawer(
                 ) {
                     Spacer(Modifier.width(10.dp))
                     Image(
-                        painter = painterResource(R.drawable.free_radio_logo),
+                        painter = painterResource(R.drawable.globe_logo),
                         contentDescription = null,
                         contentScale = ContentScale.Crop,
                         modifier = Modifier
@@ -107,7 +107,7 @@ fun MainNavigationDrawer(
                     )
                     Spacer(Modifier.width(20.dp))
                     Text(
-                        text = stringResource(R.string.free_radio_text),
+                        text = stringResource(R.string.app_name),
                         style = MaterialTheme.typography.headlineSmall
                     )
                 }
