@@ -24,7 +24,8 @@ fun Station.asDao(): StationDaoObject =
         language = this.language,
         languagecodes = this.languagecodes,
         changeuuid = this.changeuuid,
-        isFavorite = this.isFavorite
+        isFavorite = this.isFavorite,
+        votes = this.votes
     )
 
 fun Station.asMediaItem(): PlayerMediaItem =
