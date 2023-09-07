@@ -16,7 +16,7 @@ import com.eugenics.core_database.database.enteties.Tags
         FavoritesTmpDaoObject::class,
         PrefsDaoObject::class
     ],
-    version = 1,
+    version = 2,
     exportSchema = true
 )
 abstract class DataBase : RoomDatabase() {
