@@ -19,28 +19,10 @@ data class Station(
     val language: String,
     val languagecodes: String,
     val changeuuid: String,
-    val isFavorite: Int
+    val isFavorite: Int,
+    val votes: Int
 ) : Parcelable {
     companion object {
-        fun emptyInstance(): Station =
-            Station(
-                stationuuid = "",
-                name = "",
-                tags = "",
-                homepage = "",
-                url = "",
-                urlResolved = "",
-                favicon = "",
-                bitrate = 0,
-                codec = "",
-                country = "",
-                countrycode = "",
-                language = "",
-                languagecodes = "",
-                changeuuid = "",
-                isFavorite = 0
-            )
-
         fun newInstance(
             stationuuid: String = "",
             name: String = "",
@@ -73,7 +55,8 @@ data class Station(
                 language = language,
                 languagecodes = languagecodes,
                 changeuuid = changeuuid,
-                isFavorite = isFavorite
+                isFavorite = isFavorite,
+                votes = 0
             )
     }
 }
