@@ -37,7 +37,9 @@ data class StationDaoObject(
     @ColumnInfo(name = "changeuuid")
     val changeuuid: String,
     @ColumnInfo(name = "is_favorite")
-    val isFavorite: Int
+    val isFavorite: Int,
+    @ColumnInfo(name = "votes")
+    val votes: Int
 )
 
 fun StationDaoObject.asModel(): Station =
@@ -56,5 +58,6 @@ fun StationDaoObject.asModel(): Station =
         language = language,
         languagecodes = languagecodes,
         changeuuid = changeuuid,
-        isFavorite = isFavorite
+        isFavorite = isFavorite,
+        votes = 0
     )
