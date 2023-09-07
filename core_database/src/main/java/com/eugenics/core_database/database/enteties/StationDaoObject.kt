@@ -38,7 +38,7 @@ data class StationDaoObject(
     val changeuuid: String,
     @ColumnInfo(name = "is_favorite")
     val isFavorite: Int,
-    @ColumnInfo(name = "votes")
+    @ColumnInfo(name = "votes", defaultValue = "0")
     val votes: Int
 )
 
