@@ -59,5 +59,5 @@ fun StationDaoObject.asModel(): Station =
         languagecodes = languagecodes,
         changeuuid = changeuuid,
         isFavorite = isFavorite,
-        votes = 0
+        votes = votes
     )

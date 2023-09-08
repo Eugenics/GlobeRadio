@@ -39,7 +39,8 @@ fun Station.asMediaItem(): PlayerMediaItem =
         favicon = this.favicon,
         bitrate = this.bitrate,
         codec = this.codec,
-        isFavorite = this.isFavorite
+        isFavorite = this.isFavorite,
+        votes = this.votes
     )
 
 fun FavoriteStation.asDao(): FavoritesTmpDaoObject =
