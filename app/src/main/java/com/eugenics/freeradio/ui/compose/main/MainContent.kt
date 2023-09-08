@@ -24,7 +24,7 @@ import kotlinx.coroutines.flow.debounce
 fun MainContent(
     paddingValues: PaddingValues,
     stations: State<List<Station>>,
-    visibleIndex: Int = 0,
+    visibleIndex: State<Int> = mutableStateOf(0),
     nowPlayingStation: State<NowPlayingStation> = mutableStateOf(NowPlayingStation.emptyInstance()),
     onFavoriteClick: (command: String, bundle: Bundle?) -> Unit = { _, _ -> },
     onCardClick: (mediaId: String) -> Unit,
@@ -32,7 +32,7 @@ fun MainContent(
     onVisibleIndexChange: (index: Int) -> Unit = {}
 ) {
     val columnState = rememberLazyListState(
-        initialFirstVisibleItemIndex = visibleIndex
+        initialFirstVisibleItemIndex = visibleIndex.value
     )
     val columnVisibleIndex = rememberSaveable { mutableStateOf(columnState.firstVisibleItemIndex) }
     val firstVisibleIndex = rememberSaveable { mutableStateOf(0) }
@@ -51,7 +51,7 @@ fun MainContent(
         snapshotFlow {
             columnState.firstVisibleItemIndex
         }
-            .debounce(500L)
+            .debounce(250L)
             .collectLatest { index ->
                 onVisibleIndexChange(index)
             }

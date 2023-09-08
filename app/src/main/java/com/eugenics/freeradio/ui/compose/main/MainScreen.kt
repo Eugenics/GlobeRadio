@@ -52,7 +52,7 @@ fun MainScreen(
     nowPlayingStation: State<NowPlayingStation> = mutableStateOf(NowPlayingStation.emptyInstance()),
     sendCommand: (command: String, parameters: Bundle?) -> Unit = { _, _ -> },
     tagsList: State<List<Tag>>,
-    visibleIndex: Int = 0,
+    visibleIndex: State<Int> = mutableStateOf(0),
     message: State<SystemMessage> = mutableStateOf(SystemMessage.emptyInstance()),
     onPlayClick: () -> Unit = {},
     onPauseClick: () -> Unit = {},
