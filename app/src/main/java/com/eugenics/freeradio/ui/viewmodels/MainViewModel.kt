@@ -66,9 +66,9 @@ class MainViewModel @Inject constructor(
         MutableStateFlow(PlayBackState.Pause)
     val playBackState: StateFlow<PlayBackState> = _playBackState
 
-    private val _settings: MutableStateFlow<CurrentState> =
+    private val _currentStateObject: MutableStateFlow<CurrentState> =
         MutableStateFlow(CurrentState.getDefaultValueInstance())
-    val settings: StateFlow<CurrentState> = _settings
+    val currentStateObject: StateFlow<CurrentState> = _currentStateObject
 
     private val nowPlayingMetaData = mediaServiceConnection.nowPlayingItem
     val nowPlaying = MutableStateFlow(NowPlayingStation.emptyInstance())
@@ -94,6 +94,9 @@ class MainViewModel @Inject constructor(
 
     private val _primaryDynamicColor: MutableStateFlow<Int> = MutableStateFlow(0)
     val primaryDynamicColor: StateFlow<Int> = _primaryDynamicColor
+
+    private val _visibleIndex: MutableStateFlow<Int> = MutableStateFlow(0)
+    val visibleIndex: StateFlow<Int> = _visibleIndex
 
     private val subscriptionCallback = object : MediaBrowserCompat.SubscriptionCallback() {
         override fun onChildrenLoaded(
@@ -161,7 +164,7 @@ class MainViewModel @Inject constructor(
         collectStates()
         collectMediaSourceState()
         collectNowPlaying()
-        collectSettings()
+        collectCurrentState()
         collectServiceConnection()
         collectServicePlaybackState()
     }
@@ -264,10 +267,11 @@ class MainViewModel @Inject constructor(
         }
     }
 
-    private fun collectSettings() {
+    private fun collectCurrentState() {
         viewModelScope.launch(ioDispatcher) {
             dataStore.data.collect {
-                _settings.value = it
+                _currentStateObject.value = it
+                _visibleIndex.value = it.visibleIndex
             }
         }
     }
@@ -314,11 +318,11 @@ class MainViewModel @Inject constructor(
     }
 
     fun setSettings(
-        tag: String = settings.value.tag,
-        stationUuid: String = settings.value.stationUuid,
-        theme: Theme = settings.value.theme,
-        command: String = settings.value.command,
-        visibleIndex: Int = settings.value.visibleIndex
+        tag: String = currentStateObject.value.tag,
+        stationUuid: String = currentStateObject.value.stationUuid,
+        theme: Theme = currentStateObject.value.theme,
+        command: String = currentStateObject.value.command,
+        visibleIndex: Int = currentStateObject.value.visibleIndex
     ) {
         viewModelScope.launch(ioDispatcher) {
             val currentState = CurrentState(
@@ -329,6 +333,7 @@ class MainViewModel @Inject constructor(
                 visibleIndex = visibleIndex
             )
             setSettings(settings = currentState)
+            _visibleIndex.value = visibleIndex
             Log.d(TAG, "setSettings:$currentState")
         }
     }
@@ -341,7 +346,7 @@ class MainViewModel @Inject constructor(
         }
     }
 
-    fun getSettings(): CurrentState = settings.value
+    fun getSettings(): CurrentState = currentStateObject.value
 
     fun setUICommand(command: UICommands) {
         _uiCommand.value = command

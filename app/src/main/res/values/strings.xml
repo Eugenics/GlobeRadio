@@ -31,6 +31,7 @@
     <string name="init_load_text">Stations list loading.\n Please wait…</string>
     <string name="no_internet_connection">No internet connection…</string>
     <string name="warning">Warning…</string>
+    <string name="has_denied">has denied…</string>
 
     <string name="authority">"com.eugenics.fileprovider"</string>
 </resources>
