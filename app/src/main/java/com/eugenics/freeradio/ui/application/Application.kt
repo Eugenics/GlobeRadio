@@ -30,7 +30,7 @@ private const val THEME_ANIMATION_LABEL = "theme_dynamic_color"
 fun Application(
     viewModel: MainViewModel = hiltViewModel()
 ) {
-    val theme = viewModel.settings.collectAsState().value.theme
+    val theme = viewModel.currentStateObject.collectAsState().value.theme
     val isDarkTheme = when (theme) {
         Theme.DARK -> true
         Theme.CONTENT_DARK -> true

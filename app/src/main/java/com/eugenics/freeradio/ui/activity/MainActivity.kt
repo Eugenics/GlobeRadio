@@ -7,11 +7,9 @@ import android.content.res.Configuration
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
 import android.net.NetworkRequest
-import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.os.Environment
-import android.provider.Settings
 import android.util.Log
 import android.widget.Toast
 import androidx.activity.ComponentActivity
@@ -25,7 +23,6 @@ import androidx.core.view.WindowCompat
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
-import com.eugenics.freeradio.BuildConfig
 import com.eugenics.freeradio.R
 import com.eugenics.freeradio.core.enums.MessageType
 import com.eugenics.freeradio.core.enums.UIState
@@ -49,7 +46,7 @@ class MainActivity : ComponentActivity() {
         registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { permissions ->
             for (permission in permissions) {
                 if (!permission.value) {
-                    Log.d(TAG, "${permission.key} has denied...")
+                    Log.d(TAG, "${permission.key} ${getString(R.string.has_denied)}")
                 }
             }
         }
@@ -205,14 +202,6 @@ class MainActivity : ComponentActivity() {
     private fun callExtStoragePermissions() {
         when {
             Build.VERSION.SDK_INT >= Build.VERSION_CODES.R -> {
-                val appUri = Uri.parse("package:${BuildConfig.APPLICATION_ID}")
-
-                startActivity(
-                    Intent(
-                        Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION,
-                        appUri
-                    )
-                )
             }
 
             else -> {
@@ -292,6 +281,6 @@ class MainActivity : ComponentActivity() {
 
     companion object {
         private const val TAG = "MAIN_ACTIVITY"
-        private const val INTENT_FILE_TYPE = "file/json"
+        private const val INTENT_FILE_TYPE = "application/json"
     }
 }
