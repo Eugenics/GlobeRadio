@@ -24,7 +24,7 @@ import kotlinx.coroutines.withContext
 const val NOW_PLAYING_CHANNEL_ID = "com.eugenics.media_service.media.free_radio"
 const val NOW_PLAYING_NOTIFICATION_ID = 0xb500
 
-private const val NOTIFICATION_LARGE_ICON_SIZE = 144 // px
+private const val NOTIFICATION_LARGE_ICON_SIZE = 250 // px
 private const val NO_TITLE = "No title"
 private const val BITMAP_LOADING = "Bitmap loading..."
 
