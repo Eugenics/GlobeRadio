@@ -129,7 +129,8 @@ class MainViewModel @Inject constructor(
                             language = "",
                             languagecodes = "",
                             changeuuid = "",
-                            isFavorite = extras.isFavorite
+                            isFavorite = extras.isFavorite,
+                            votes = extras.votes
                         )
                     )
                 }

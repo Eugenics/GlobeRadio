@@ -70,7 +70,8 @@ class FakeStationsLocalDataSource : IStationsLocalDataSource {
                             language = "hindi",
                             languagecodes = "hi",
                             changeuuid = UUID.randomUUID().toString(),
-                            isFavorite = 1
+                            isFavorite = 1,
+                            votes = 0
                         )
                     )
                 }

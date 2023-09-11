@@ -6,13 +6,13 @@ import com.eugenics.core_database.database.enteties.StationDaoObject
 
 @Dao
 interface StationDao {
-    @Query("SELECT * FROM stations ORDER BY name")
+    @Query("SELECT * FROM stations")
     fun fetchAllStationData(): List<StationDaoObject>
 
-    @Query("SELECT * FROM stations WHERE name LIKE :name OR tags LIKE :name ORDER BY name")
+    @Query("SELECT * FROM stations WHERE name LIKE :name OR tags LIKE :name")
     fun fetchStationByName(name: String): List<StationDaoObject>
 
-    @Query("SELECT * FROM stations WHERE tags LIKE :tag ORDER BY name")
+    @Query("SELECT * FROM stations WHERE tags LIKE :tag")
     fun fetchStationByTag(tag: String): List<StationDaoObject>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)

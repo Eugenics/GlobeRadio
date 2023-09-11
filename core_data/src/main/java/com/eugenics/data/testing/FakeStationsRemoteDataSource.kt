@@ -45,6 +45,7 @@ class FakeStationsRemoteDataSource : IStationsRemoteDataSource {
                             language = "hindi",
                             languagecodes = "hi",
                             changeuuid = "92c2fbdc-14ec-4861-af65-49dd7de7826f",
+                            votes = 0
                         )
                     )
                 }

@@ -32,6 +32,8 @@ data class StationRespondObject(
     val languagecodes: String,
     @SerializedName("changeuuid")
     val changeuuid: String,
+    @SerializedName("votes")
+    val votes: Int
 )
 
 fun StationRespondObject.asModel(): Station =
@@ -50,5 +52,6 @@ fun StationRespondObject.asModel(): Station =
         language = language,
         languagecodes = languagecodes,
         changeuuid = changeuuid,
-        isFavorite = 0
+        isFavorite = 0,
+        votes = votes
     )

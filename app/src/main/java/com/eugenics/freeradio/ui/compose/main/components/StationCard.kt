@@ -237,7 +237,8 @@ private val fakeStation = Station(
     language = "hindi",
     languagecodes = "hi",
     changeuuid = "92c2fbdc-14ec-4861-af65-49dd7de7826f",
-    isFavorite = 0
+    isFavorite = 0,
+    votes = 0
 )
 
 private val nowPlayingStation = NowPlayingStation(

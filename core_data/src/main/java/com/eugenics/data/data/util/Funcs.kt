@@ -24,7 +24,8 @@ fun Station.asDao(): StationDaoObject =
         language = this.language,
         languagecodes = this.languagecodes,
         changeuuid = this.changeuuid,
-        isFavorite = this.isFavorite
+        isFavorite = this.isFavorite,
+        votes = this.votes
     )
 
 fun Station.asMediaItem(): PlayerMediaItem =
@@ -38,7 +39,8 @@ fun Station.asMediaItem(): PlayerMediaItem =
         favicon = this.favicon,
         bitrate = this.bitrate,
         codec = this.codec,
-        isFavorite = this.isFavorite
+        isFavorite = this.isFavorite,
+        votes = this.votes
     )
 
 fun FavoriteStation.asDao(): FavoritesTmpDaoObject =

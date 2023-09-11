@@ -15,7 +15,8 @@ data class PlayerMediaItem(
     val favicon: String = "",
     val bitrate: Int = 0,
     val codec: String = "",
-    val isFavorite: Int = 0
+    val isFavorite: Int = 0,
+    val votes: Int = 0
 ) : Parcelable {
     companion object {
         fun newInstance(): PlayerMediaItem = PlayerMediaItem()

@@ -145,7 +145,7 @@ class MediaSource(
                 station.asMediaItem()
             }
         )
-        playerMediaItems.sortBy { playerMediaItem -> playerMediaItem.name }
+        playerMediaItems.sortByDescending { playerMediaItem -> playerMediaItem.votes }
         _mediaItems.value = playerMediaItems
     }
 
