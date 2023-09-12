@@ -37,12 +37,12 @@ android {
         setProperty("archivesBaseName", versionFileName)
     }
 
-    val sensitiveFile = rootProject.file("sensitive.properties")
-    val sensitiveProperties = Properties()
-    sensitiveProperties.load(FileInputStream(sensitiveFile))
-
     signingConfigs {
         create("release") {
+            val sensitiveFile = rootProject.file("sensitive.properties")
+            val sensitiveProperties = Properties()
+            sensitiveProperties.load(FileInputStream(sensitiveFile))
+
             storeFile = File("${rootDir.path}//keystore.jks")
             storePassword = sensitiveProperties.getProperty("release_password")
             keyAlias = sensitiveProperties.getProperty("key_alias")
