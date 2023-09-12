@@ -1,4 +1,5 @@
 import java.io.FileInputStream
+import java.io.FileOutputStream
 import java.util.Properties
 
 plugins {
@@ -15,22 +16,33 @@ android {
     namespace = "com.eugenics.freeradio"
     compileSdk = libs.versions.compileSdk.get().toInt()
 
+    val versionFile = rootProject.file("versions.properties")
+    val versionProperties = Properties()
+    versionProperties.load(FileInputStream(versionFile))
+    val buildCode = versionProperties.getProperty("build_version").toInt() + 1
+
+    versionProperties["build_version"] = buildCode.toString()
+    versionProperties.store(FileOutputStream(versionFile), "new build version")
+
+    val versionBuildName = "${libs.versions.versionName.get()}.${buildCode}"
+    val versionFileName = "globe-radio_${versionBuildName}"
+
     defaultConfig {
         applicationId = libs.versions.applicationId.get()
         minSdk = libs.versions.minSdk.get().toInt()
         targetSdk = libs.versions.targetSdk.get().toInt()
         versionCode = libs.versions.versionCode.get().toInt()
-        versionName = libs.versions.versionName.get()
-
+        versionName = versionBuildName
         testInstrumentationRunner = "com.eugenics.core_testing.HiltTestRunner"
+        setProperty("archivesBaseName", versionFileName)
     }
-
-    val sensitiveFile = rootProject.file("sensitive.properties")
-    val sensitiveProperties: Properties = Properties()
-    sensitiveProperties.load(FileInputStream(sensitiveFile))
 
     signingConfigs {
         create("release") {
+            val sensitiveFile = rootProject.file("sensitive.properties")
+            val sensitiveProperties = Properties()
+            sensitiveProperties.load(FileInputStream(sensitiveFile))
+
             storeFile = File("${rootDir.path}//keystore.jks")
             storePassword = sensitiveProperties.getProperty("release_password")
             keyAlias = sensitiveProperties.getProperty("key_alias")
@@ -59,7 +71,7 @@ android {
     composeOptions {
         kotlinCompilerExtensionVersion = libs.versions.kotlinCompilerExtensionVersion.get()
     }
-    packagingOptions {
+    packaging {
         resources {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
         }
