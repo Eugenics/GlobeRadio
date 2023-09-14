@@ -24,6 +24,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import com.eugenics.freeradio.R
+import com.eugenics.freeradio.core.enums.InfoMessages
 import com.eugenics.freeradio.core.enums.MessageType
 import com.eugenics.freeradio.core.enums.UIState
 import com.eugenics.freeradio.ui.application.Application
@@ -36,6 +37,10 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.File
 import java.io.IOException
+
+private const val SHARE_JSON_FILE_NAME = "favorites.json"
+private const val SHARE_PLAYLIST_FILE_NAME = "favorites_playlist.m3u8"
+private const val SHARE_FILES_DIR_NAME = "share_files"
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
@@ -116,8 +121,21 @@ class MainActivity : ComponentActivity() {
             repeatOnLifecycle(state = Lifecycle.State.STARTED) {
                 mainViewModel.uiCommands.collect { command ->
                     when (command) {
-                        UICommands.UI_COMMAND_BACKUP_FAVORITES -> backUpFavorites()
-                        UICommands.UI_COMMAND_RESTORE_FAVORITES -> filePickLauncher.launch("*/*")
+                        UICommands.UI_COMMAND_BACKUP_FAVORITES ->
+                            shareDataToFile(
+                                mainViewModel.savedData.value,
+                                SHARE_JSON_FILE_NAME
+                            )
+
+                        UICommands.UI_COMMAND_RESTORE_FAVORITES ->
+                            filePickLauncher.launch("*/*")
+
+                        UICommands.UI_EXPORT_FAVORITES_PLAYLIST ->
+                            shareDataToFile(
+                                mainViewModel.savedData.value,
+                                SHARE_PLAYLIST_FILE_NAME
+                            )
+
                         else -> {}
                     }
                     mainViewModel.setUICommand(UICommands.UI_COMMAND_IDL)
@@ -126,25 +144,25 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-    private suspend fun backUpFavorites() {
-        val jsonData = mainViewModel.backUpData.value
-        if (jsonData.isNotBlank()) {
-            if (!File("${applicationContext.cacheDir}/share_files").exists()) {
-                File("${applicationContext.cacheDir}/share_files").mkdirs()
+    private suspend fun shareDataToFile(shareData: String, fileName: String) {
+        if (shareData.isNotBlank()) {
+            if (!File("${applicationContext.cacheDir}/$SHARE_FILES_DIR_NAME").exists()) {
+                File("${applicationContext.cacheDir}/$SHARE_FILES_DIR_NAME").mkdirs()
             }
-            val jsonFile = File("${applicationContext.cacheDir}/share_files/share.json")
+            val shareFile =
+                File("${applicationContext.cacheDir}/$SHARE_FILES_DIR_NAME/$fileName")
             try {
-                jsonFile.writeBytes(jsonData.toByteArray(Charsets.UTF_8))
+                shareFile.writeBytes(shareData.toByteArray(Charsets.UTF_8))
             } catch (e: IOException) {
                 Log.e(TAG, e.toString())
             }
-            if (jsonFile.exists()) {
+            if (shareFile.exists()) {
                 val sendIntent = Intent(Intent.ACTION_SEND).apply {
                     flags = Intent.FLAG_GRANT_READ_URI_PERMISSION
                     val jsonFileUri = FileProvider.getUriForFile(
                         applicationContext,
                         getString(R.string.authority),
-                        jsonFile
+                        shareFile
                     )
                     putExtra(
                         Intent.EXTRA_STREAM,
@@ -177,13 +195,26 @@ class MainActivity : ComponentActivity() {
                 mainViewModel.message.collect { systemMessage ->
                     if (systemMessage.message.isNotBlank()) {
                         withContext(Dispatchers.Main) {
-                            if (systemMessage.type == MessageType.ERROR) {
-                                Toast.makeText(
+                            when (systemMessage.type) {
+                                MessageType.ERROR -> Toast.makeText(
                                     applicationContext,
                                     systemMessage.message,
                                     Toast.LENGTH_LONG
-                                )
-                                    .show()
+                                ).show()
+
+                                MessageType.INFO -> {
+                                    Toast.makeText(
+                                        applicationContext,
+                                        when (systemMessage.type.name) {
+                                            InfoMessages.NO_DATA_TO_SAVE.name -> getString(R.string.no_data)
+                                            InfoMessages.NO_DATA_TO_LOAD.name -> getString(R.string.no_restore_data)
+                                            else -> "No message..."
+                                        },
+                                        Toast.LENGTH_LONG
+                                    ).show()
+                                }
+
+                                else -> {}
                             }
                         }
                     }
@@ -268,7 +299,7 @@ class MainActivity : ComponentActivity() {
                     when (uiState) {
                         UIState.UI_STATE_SPLASH ->
                             mainViewModel.sendMessage(
-                                type = MessageType.INFO,
+                                type = MessageType.UI,
                                 message = getString(R.string.init_load_text)
                             )
 

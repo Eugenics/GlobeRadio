@@ -14,6 +14,7 @@ import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import com.eugenics.core.model.NowPlayingStation
 import com.eugenics.core.model.Station
+import com.eugenics.core.model.StationsUiState
 import com.eugenics.freeradio.ui.compose.main.components.StationCard
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.collectLatest
@@ -24,7 +25,7 @@ import kotlinx.coroutines.flow.debounce
 fun MainContent(
     paddingValues: PaddingValues,
     stations: State<List<Station>>,
-    visibleIndex: State<Int> = mutableStateOf(0),
+    stationsUiState: State<StationsUiState> = mutableStateOf(StationsUiState.emptyInstance()),
     nowPlayingStation: State<NowPlayingStation> = mutableStateOf(NowPlayingStation.emptyInstance()),
     onFavoriteClick: (command: String, bundle: Bundle?) -> Unit = { _, _ -> },
     onCardClick: (mediaId: String) -> Unit,
@@ -32,7 +33,7 @@ fun MainContent(
     onVisibleIndexChange: (index: Int) -> Unit = {}
 ) {
     val columnState = rememberLazyListState(
-        initialFirstVisibleItemIndex = visibleIndex.value
+        initialFirstVisibleItemIndex = stationsUiState.value.visibleIndex
     )
     val columnVisibleIndex = rememberSaveable { mutableStateOf(columnState.firstVisibleItemIndex) }
     val firstVisibleIndex = rememberSaveable { mutableStateOf(0) }

@@ -13,9 +13,7 @@ data class Favorites(
     val stationList: List<FavoriteStation>
 ) {
     companion object {
-        fun emptyInstance(): Favorites =
-            Favorites(
-                stationList = listOf()
-            )
+        fun newInstance(favoriteStations: List<FavoriteStation>): Favorites =
+            Favorites(favoriteStations)
     }
 }

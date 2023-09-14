@@ -93,6 +93,18 @@ fun SettingsScreen(
                 nameText = stringResource(R.string.restore_favorites),
                 valueText = ""
             )
+
+            SettingsTextRow(
+                onRowClick = {
+                    sendCommand(
+                        UICommands.UI_EXPORT_FAVORITES_PLAYLIST.name,
+                        null
+                    )
+                    onBackPressed()
+                },
+                nameText = stringResource(R.string.export_favorites_playlist),
+                valueText = ""
+            )
         }
     }
 }

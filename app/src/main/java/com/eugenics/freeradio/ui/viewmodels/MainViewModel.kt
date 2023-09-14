@@ -9,7 +9,6 @@ import android.support.v4.media.MediaMetadataCompat
 import android.support.v4.media.session.PlaybackStateCompat
 import android.util.Log
 import androidx.datastore.core.DataStore
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.palette.graphics.Palette
 import com.eugenics.core.enums.MediaSourceState
@@ -17,86 +16,43 @@ import com.eugenics.core.enums.Commands
 import com.eugenics.core.model.NowPlayingStation
 import com.eugenics.core.model.PlayerMediaItem
 import com.eugenics.core.model.Station
-import com.eugenics.core.model.Tag
 import com.eugenics.core.model.CurrentState
 import com.eugenics.core.enums.Theme
 import com.eugenics.core.model.FavoriteStation
 import com.eugenics.core.model.Favorites
+import com.eugenics.core.model.StationsUiState
 import com.eugenics.data.interfaces.IStationsRepository
-import com.eugenics.freeradio.core.data.SystemMessage
 import com.eugenics.freeradio.core.enums.DataState
+import com.eugenics.freeradio.core.enums.InfoMessages
 import com.eugenics.freeradio.core.enums.MessageType
 import com.eugenics.freeradio.core.enums.UIState
+import com.eugenics.freeradio.ui.util.ServiceViewModel
 import com.eugenics.freeradio.ui.util.PlayBackState
 import com.eugenics.freeradio.util.ImageHelper
 import com.eugenics.freeradio.ui.util.UICommands
 import com.eugenics.freeradio.util.FilesHelper
+import com.eugenics.freeradio.util.PlaylistHelper
 import com.eugenics.media_service.media.FreeRadioMediaServiceConnection
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import kotlinx.serialization.SerializationException
 import java.util.UUID
 import javax.inject.Inject
 import kotlinx.serialization.json.Json
-import okhttp3.Call
-import okhttp3.Callback
-import okhttp3.Response
-import java.io.IOException
 
 @HiltViewModel
 class MainViewModel @Inject constructor(
     private val mediaServiceConnection: FreeRadioMediaServiceConnection,
     private val stationsRepository: IStationsRepository,
     private val dataStore: DataStore<CurrentState>
-) : ViewModel() {
-
-    private val _uiState: MutableStateFlow<UIState> = MutableStateFlow(UIState.UI_STATE_SPLASH)
-    val uiState: StateFlow<UIState> = _uiState
-
-    private val _dataState: MutableStateFlow<DataState> = MutableStateFlow(DataState.LOADING)
-    val dataState: StateFlow<DataState> = _dataState
-
-    private val _stations: MutableStateFlow<List<Station>> = MutableStateFlow(mutableListOf())
-    val stations: StateFlow<List<Station>> = _stations
-
-    private val _playBackState: MutableStateFlow<PlayBackState> =
-        MutableStateFlow(PlayBackState.Pause)
-    val playBackState: StateFlow<PlayBackState> = _playBackState
-
-    private val _currentStateObject: MutableStateFlow<CurrentState> =
-        MutableStateFlow(CurrentState.getDefaultValueInstance())
-    val currentStateObject: StateFlow<CurrentState> = _currentStateObject
+) : ServiceViewModel() {
 
     private val nowPlayingMetaData = mediaServiceConnection.nowPlayingItem
-    val nowPlaying = MutableStateFlow(NowPlayingStation.emptyInstance())
-
-    private val ioDispatcher = Dispatchers.IO
 
     private var currentMediaId: String = ""
     private val rootId = "/"
-
-    private var _tagList: MutableStateFlow<List<Tag>> = MutableStateFlow(listOf())
-    val tagList: StateFlow<List<Tag>> = _tagList
-
-    private val _backUpData: MutableStateFlow<String> = MutableStateFlow("")
-    val backUpData: StateFlow<String> = _backUpData
-
-    private val _message: MutableStateFlow<SystemMessage> =
-        MutableStateFlow(SystemMessage.emptyInstance())
-    val message: StateFlow<SystemMessage> = _message
-
-    private val _uiCommand: MutableStateFlow<UICommands> =
-        MutableStateFlow(UICommands.UI_COMMAND_IDL)
-    val uiCommands: StateFlow<UICommands> = _uiCommand
-
-    private val _primaryDynamicColor: MutableStateFlow<Int> = MutableStateFlow(0)
-    val primaryDynamicColor: StateFlow<Int> = _primaryDynamicColor
-
-    private val _visibleIndex: MutableStateFlow<Int> = MutableStateFlow(0)
-    val visibleIndex: StateFlow<Int> = _visibleIndex
 
     private val subscriptionCallback = object : MediaBrowserCompat.SubscriptionCallback() {
         override fun onChildrenLoaded(
@@ -139,27 +95,6 @@ class MainViewModel @Inject constructor(
         }
     }
 
-    private val favIcoDownloadCallback = object : Callback {
-        override fun onFailure(call: Call, e: IOException) {
-            Log.e(TAG, e.toString())
-        }
-
-        override fun onResponse(call: Call, response: Response) {
-            if (response.isSuccessful) {
-                response.body?.let { responseBody ->
-                    val bitmap = BitmapFactory.decodeStream(responseBody.byteStream())
-                    try {
-                        Palette.from(bitmap).generate().dominantSwatch?.let {
-                            _primaryDynamicColor.value = it.rgb
-                        }
-                    } catch (e: Exception) {
-                        Log.e(TAG, e.toString())
-                    }
-                }
-            }
-        }
-    }
-
     fun start() {
         collectStates()
         collectMediaSourceState()
@@ -173,44 +108,30 @@ class MainViewModel @Inject constructor(
         mediaServiceConnection.unsubscribe(rootId)
     }
 
-    private fun collectServiceConnection() {
-        viewModelScope.launch {
-            mediaServiceConnection.isConnected.collect {
-                if (it) {
-                    mediaServiceConnection.subscribe(rootId, subscriptionCallback)
-                    return@collect
-                }
+    override fun onCleared() {
+        unsubscribe()
+    }
+
+    /**
+     * MediaService commands
+     */
+    fun onPlayClick(mediaId: String? = currentMediaId) {
+        when (mediaId ?: currentMediaId) {
+            currentMediaId -> if (playBackState.value == PlayBackState.Playing) {
+                mediaServiceConnection.transportControls.pause()
+            } else {
+                mediaServiceConnection.transportControls.play()
+            }
+
+            else -> {
+                Log.d(TAG, "PLAY_FROM_MEDIA_ID_CLICKED:$mediaId")
+                mediaServiceConnection.transportControls.playFromMediaId(mediaId, null)
+                setSettings(stationUuid = mediaId ?: currentMediaId)
             }
         }
     }
 
-    fun onItemClick(mediaId: String) {
-        if (mediaId == currentMediaId) {
-            when (playBackState.value) {
-                PlayBackState.Playing -> pause()
-                else -> play()
-            }
-        } else {
-            Log.d(TAG, "PLAY_FROM_MEDIA_ID_CLICKED:$mediaId")
-            mediaServiceConnection.transportControls.playFromMediaId(mediaId, null)
-            setSettings(stationUuid = mediaId)
-        }
-    }
-
-    fun onVisibleIndexChanged(index: Int) {
-        Log.d(TAG, "onVisibleIndexChanged:$index")
-        setSettings(visibleIndex = index)
-    }
-
-    fun play() {
-        mediaServiceConnection.transportControls.play()
-    }
-
-    fun pause() {
-        mediaServiceConnection.transportControls.pause()
-    }
-
-    fun search(query: String) {
+    fun onSearch(query: String) {
         setSettings(visibleIndex = 0)
         _stations.value = listOf()
         mediaServiceConnection.transportControls.playFromSearch(query, null)
@@ -222,6 +143,8 @@ class MainViewModel @Inject constructor(
             UICommands.UI_COMMAND_RESTORE_FAVORITES.name -> _uiCommand.value =
                 UICommands.UI_COMMAND_RESTORE_FAVORITES
 
+            UICommands.UI_EXPORT_FAVORITES_PLAYLIST.name -> exportFavoritesAsPlayList()
+
             in enumValues<Commands>().map { it.name }.toList() -> {
                 setSettings(
                     command = command, tag = extras?.getString("TAG") ?: ""
@@ -230,7 +153,8 @@ class MainViewModel @Inject constructor(
                     _stations.value = listOf()
                     setSettings(visibleIndex = 0)
                 }
-                mediaServiceConnection.sendCommand(command = command,
+                mediaServiceConnection.sendCommand(
+                    command = command,
                     parameters = extras,
                     resultCallback = { result, bundle ->
                         if (result == 1) {
@@ -247,10 +171,33 @@ class MainViewModel @Inject constructor(
         }
     }
 
+    /**
+     * UI State watchers
+     */
+
+    fun onVisibleIndexChanged(index: Int) {
+        Log.d(TAG, "onVisibleIndexChanged:$index")
+        setSettings(visibleIndex = index)
+    }
+
+    /**
+     * Collectors
+     */
+    private fun collectServiceConnection() {
+        viewModelScope.launch {
+            mediaServiceConnection.isConnected.collect {
+                if (it) {
+                    mediaServiceConnection.subscribe(rootId, subscriptionCallback)
+                    return@collect
+                }
+            }
+        }
+    }
+
     private fun collectNowPlaying() {
         viewModelScope.launch(ioDispatcher) {
             nowPlayingMetaData.collect { metaData ->
-                nowPlaying.value = NowPlayingStation.newInstance(
+                _nowPlaying.value = NowPlayingStation.newInstance(
                     name = metaData.getString(MediaMetadataCompat.METADATA_KEY_TITLE) ?: "",
                     favicon = metaData.description.iconUri.toString(),
                     nowPlayingTitle = metaData.getString(MediaMetadataCompat.METADATA_KEY_DISPLAY_TITLE)
@@ -262,7 +209,7 @@ class MainViewModel @Inject constructor(
                 )
                 currentMediaId = nowPlaying.value.stationUUID
 
-                downloadFavIco(url = nowPlaying.value.favicon)
+                getDynamicColor(url = nowPlaying.value.favicon)
             }
         }
     }
@@ -271,7 +218,7 @@ class MainViewModel @Inject constructor(
         viewModelScope.launch(ioDispatcher) {
             dataStore.data.collect {
                 _currentStateObject.value = it
-                _visibleIndex.value = it.visibleIndex
+                setStationUiState(it.stationUuid, it.stationsVisibleIndex)
             }
         }
     }
@@ -322,7 +269,7 @@ class MainViewModel @Inject constructor(
         stationUuid: String = currentStateObject.value.stationUuid,
         theme: Theme = currentStateObject.value.theme,
         command: String = currentStateObject.value.command,
-        visibleIndex: Int = currentStateObject.value.visibleIndex
+        visibleIndex: Int = currentStateObject.value.stationsVisibleIndex
     ) {
         viewModelScope.launch(ioDispatcher) {
             val currentState = CurrentState(
@@ -330,11 +277,19 @@ class MainViewModel @Inject constructor(
                 stationUuid = stationUuid,
                 theme = theme,
                 command = command,
-                visibleIndex = visibleIndex
+                stationsVisibleIndex = visibleIndex
             )
             setSettings(settings = currentState)
-            _visibleIndex.value = visibleIndex
             Log.d(TAG, "setSettings:$currentState")
+
+            setStationUiState(stationUuid, visibleIndex)
+        }
+    }
+
+    private fun setStationUiState(stationUuid: String, visibleIndex: Int) {
+        val newStationUiState = StationsUiState(stationUuid, visibleIndex)
+        if (stationsUiState.value != newStationUiState) {
+            _stationsUiState.value = newStationUiState
         }
     }
 
@@ -346,39 +301,52 @@ class MainViewModel @Inject constructor(
         }
     }
 
-    fun getSettings(): CurrentState = currentStateObject.value
-
     fun setUICommand(command: UICommands) {
         _uiCommand.value = command
     }
 
-    private fun backUpFavorites() {
-        viewModelScope.launch(Dispatchers.IO) {
-            val favorites =
-                Favorites(stationList = stationsRepository.fetchStationsByFavorites().map {
-                    FavoriteStation(
-                        uuid = UUID.randomUUID().toString(), stationuuid = it.stationuuid
-                    )
-                })
-            if (favorites.stationList.isNotEmpty()) {
-                try {
-                    val jsonString = Json.encodeToString(
-                        serializer = Favorites.serializer(), value = favorites
-                    )
-                    _backUpData.value = jsonString
-                    setUICommand(UICommands.UI_COMMAND_BACKUP_FAVORITES)
-                } catch (e: Exception) {
-                    sendMessage(MessageType.ERROR, e.message.toString())
-                    Log.e(TAG, e.toString())
+    private fun exportFavoritesAsPlayList() {
+        viewModelScope.launch(ioDispatcher) {
+            stationsRepository.fetchStationsByFavorites().apply {
+                if (this.isNotEmpty()) {
+                    _savedData.value = PlaylistHelper.convertStationsToPlaylist(this)
+                    setUICommand(UICommands.UI_EXPORT_FAVORITES_PLAYLIST)
+                } else {
+                    sendMessage(MessageType.INFO, InfoMessages.NO_DATA_TO_LOAD.name)
                 }
-            } else {
-                sendMessage(MessageType.ERROR, NO_DATA_TO_BACKUP)
             }
         }
     }
 
+    private fun backUpFavorites() {
+        viewModelScope.launch(ioDispatcher) {
+            stationsRepository.fetchStationsByFavorites()
+                .map { station ->
+                    FavoriteStation(
+                        uuid = UUID.randomUUID().toString(), stationuuid = station.stationuuid
+                    )
+                }
+                .also { favStations ->
+                    if (favStations.isNotEmpty()) {
+                        try {
+                            _savedData.value = Json.encodeToString(
+                                serializer = Favorites.serializer(),
+                                value = Favorites.newInstance(favStations)
+                            )
+                            setUICommand(UICommands.UI_COMMAND_BACKUP_FAVORITES)
+                        } catch (e: SerializationException) {
+                            sendMessage(MessageType.ERROR, e.message.toString())
+                            Log.e(TAG, e.toString())
+                        }
+                    } else {
+                        sendMessage(MessageType.INFO, InfoMessages.NO_DATA_TO_LOAD.name)
+                    }
+                }
+        }
+    }
+
     fun restoreFavorites(favoritesJsonString: String) {
-        viewModelScope.launch(Dispatchers.IO) {
+        viewModelScope.launch(ioDispatcher) {
             try {
                 if (favoritesJsonString.isNotBlank()) {
                     val favorites = Json.decodeFromString(
@@ -391,7 +359,7 @@ class MainViewModel @Inject constructor(
                         sendCommand(command = Commands.FAVORITES_COMMAND.name, null)
                     }
                 } else {
-                    sendMessage(MessageType.ERROR, NO_DATA_TO_RESTORE)
+                    sendMessage(MessageType.ERROR, InfoMessages.NO_DATA_TO_SAVE.name)
                 }
             } catch (e: Exception) {
                 sendMessage(MessageType.ERROR, e.message.toString())
@@ -400,20 +368,27 @@ class MainViewModel @Inject constructor(
         }
     }
 
-    private fun downloadFavIco(url: String) {
+    private fun getDynamicColor(url: String) {
         if (url != "null" && url.isNotBlank()) {
             try {
-                ImageHelper.downloadAsync(imageUrl = url, callback = favIcoDownloadCallback)
+                ImageHelper.downloadAsync(imageUrl = url) { response ->
+                    response.body?.let { responseBody ->
+                        val bitmap = BitmapFactory.decodeStream(responseBody.byteStream())
+                        try {
+                            Palette.from(bitmap).generate().dominantSwatch?.let {
+                                setPrimaryDynamicColor(it.rgb)
+                            }
+                        } catch (e: Exception) {
+                            Log.e(TAG, e.toString())
+                        }
+                    }
+                }
             } catch (e: Exception) {
                 Log.e(TAG, e.toString())
             }
         } else {
-            _primaryDynamicColor.value = 0
+            setPrimaryDynamicColor(0)
         }
-    }
-
-    fun setPrimaryDynamicColor(rgb: Int) {
-        _primaryDynamicColor.value = rgb
     }
 
     private suspend fun setSettings(settings: CurrentState) {
@@ -422,37 +397,7 @@ class MainViewModel @Inject constructor(
         }
     }
 
-    override fun onCleared() {
-        unsubscribe()
-    }
-
-    fun sendMessage(type: MessageType, message: String) {
-        _message.value = SystemMessage.newInstance(
-            id = UUID.randomUUID().toString(),
-            type = type,
-            message = message
-        )
-        Log.d(TAG, message)
-    }
-
-    private fun collectStates() {
-        viewModelScope.launch {
-            uiState.collect {
-                Log.d(TAG, it.name)
-            }
-        }
-        viewModelScope.launch {
-            dataState.collect {
-                Log.d(TAG, it.name)
-            }
-        }
-    }
-
     companion object {
         const val TAG = "MAIN_VIEW_MODEL"
-
-        private const val NO_DATA_TO_RESTORE = "No data to restore..."
-        private const val NO_DATA_TO_BACKUP = "No data to backup..."
-
     }
 }

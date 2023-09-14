@@ -24,6 +24,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import com.eugenics.core.model.NowPlayingStation
 import com.eugenics.core.model.Station
+import com.eugenics.core.model.StationsUiState
 import com.eugenics.core.model.Tag
 import com.eugenics.freeradio.R
 import com.eugenics.freeradio.core.data.SystemMessage
@@ -52,11 +53,9 @@ fun MainScreen(
     nowPlayingStation: State<NowPlayingStation> = mutableStateOf(NowPlayingStation.emptyInstance()),
     sendCommand: (command: String, parameters: Bundle?) -> Unit = { _, _ -> },
     tagsList: State<List<Tag>>,
-    visibleIndex: State<Int> = mutableStateOf(0),
+    stationsUiState: State<StationsUiState> = mutableStateOf(StationsUiState.emptyInstance()),
     message: State<SystemMessage> = mutableStateOf(SystemMessage.emptyInstance()),
-    onPlayClick: () -> Unit = {},
-    onPauseClick: () -> Unit = {},
-    onItemClick: (mediaId: String) -> Unit = {},
+    onPlayClick: (mediaId: String?) -> Unit = {},
     onSearchClick: (query: String) -> Unit = {},
     onFavoriteClick: (command: String, bundle: Bundle?) -> Unit = { _, _ -> },
     onVisibleIndexChange: (index: Int) -> Unit = {}
@@ -99,7 +98,7 @@ fun MainScreen(
     when (uiState.value) {
         UIState.UI_STATE_SPLASH -> SplashScreen(
             message =
-            if (message.value.type == MessageType.INFO) message.value.message
+            if (message.value.type == MessageType.UI) message.value.message
             else ""
         )
 
@@ -173,8 +172,7 @@ fun MainScreen(
                                     .padding(bottom = padding.calculateBottomPadding() + 5.dp),
                                 nowPlayingStation = nowPlayingStation,
                                 playbackState = playbackState,
-                                onPlayClick = onPlayClick,
-                                onPauseClick = onPauseClick
+                                onPlayClick = onPlayClick
                             )
                         }
                     }
@@ -192,12 +190,12 @@ fun MainScreen(
                             MainContent(
                                 paddingValues = paddingValues,
                                 stations = stationsList,
-                                onCardClick = onItemClick,
+                                onCardClick = onPlayClick,
                                 onFavoriteClick = onFavoriteClick,
                                 onScrolled = {
                                     isScrolledUp.value = it
                                 },
-                                visibleIndex = visibleIndex,
+                                stationsUiState = stationsUiState,
                                 onVisibleIndexChange = onVisibleIndexChange,
                                 nowPlayingStation = nowPlayingStation
                             )
