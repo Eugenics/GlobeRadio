@@ -37,11 +37,9 @@ fun NavGraph(
             val nowPlayingStation = mainViewModel.nowPlaying.collectAsState()
             val tagsList = mainViewModel.tagList.collectAsState()
             val message = mainViewModel.message.collectAsState()
-            val visibleIndex = mainViewModel.visibleIndex.collectAsState()
-            val onPlayClick = remember { mainViewModel::play }
-            val onPauseClick = remember { mainViewModel::pause }
-            val onItemClick = remember { mainViewModel::onItemClick }
-            val onSearchClick = remember { mainViewModel::search }
+            val stationsUiState = mainViewModel.stationsUiState.collectAsState()
+            val onPlayClick = remember { mainViewModel::onPlayClick }
+            val onSearchClick = remember { mainViewModel::onSearch }
             val onSendCommand = remember { mainViewModel::sendCommand }
             val onFavoriteClick = remember { mainViewModel::sendCommand }
             val onVisibleIndexChanged = remember { mainViewModel::onVisibleIndexChanged }
@@ -54,15 +52,13 @@ fun NavGraph(
                 stationsList = stationsList,
                 message = message,
                 onPlayClick = onPlayClick,
-                onPauseClick = onPauseClick,
-                onItemClick = onItemClick,
                 onSearchClick = onSearchClick,
                 sendCommand = onSendCommand,
                 onFavoriteClick = onFavoriteClick,
                 nowPlayingStation = nowPlayingStation,
                 tagsList = tagsList,
                 onVisibleIndexChange = onVisibleIndexChanged,
-                visibleIndex = visibleIndex
+                stationsUiState = stationsUiState
             )
         }
         composable(

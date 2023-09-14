@@ -35,19 +35,8 @@ fun MainBottomAppBar(
     nowPlayingStation: State<NowPlayingStation> =
         mutableStateOf(NowPlayingStation.newInstance(name = "Sample name...")),
     playbackState: State<PlayBackState>,
-    onPlayClick: () -> Unit = {},
-    onPauseClick: () -> Unit = {}
+    onPlayClick: (String?) -> Unit = {}
 ) {
-
-    val onClick = remember(playbackState.value) {
-        derivedStateOf {
-            if (playbackState.value == PlayBackState.Playing) {
-                onPauseClick
-            } else {
-                onPlayClick
-            }
-        }
-    }
 
     val clickIcon = remember {
         derivedStateOf {
@@ -106,7 +95,7 @@ fun MainBottomAppBar(
             )
         }
         IconButton(
-            onClick = onClick.value,
+            onClick = { onPlayClick(null) },
             modifier = Modifier.padding(end = 10.dp)
         ) {
             Icon(

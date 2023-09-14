@@ -33,4 +33,7 @@
     <string name="no_internet_connection">Нет подключения к интернет…</string>
     <string name="warning">Внимение…</string>
     <string name="has_denied">запрещено…</string>
+    <string name="no_data">Нет данных для сохранения…</string>
+    <string name="no_restore_data">Нет данных для загрузки…</string>
+    <string name="export_favorites_playlist">Сохранить избранное как плэйлист</string>
 </resources>
