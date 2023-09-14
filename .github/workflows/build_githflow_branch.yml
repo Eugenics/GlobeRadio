@@ -31,6 +31,9 @@ jobs:
       - name: Make gradlew executable
         run: chmod +x ./gradlew
 
+      - name: Create file
+        run: file /home/runner/work/free_Radio/free_Radio/sensitive.properties
+
       - name: Restore Cache
         uses: actions/cache@v2
         with:
