@@ -16,3 +16,5 @@ buildSrc/build/
 /sensitive.properties
 /keystore.jks
 /versions.properties
+/media_service/src/main/assets/preLoadDb.db-shm
+/media_service/src/main/assets/preLoadDb.db-wal
