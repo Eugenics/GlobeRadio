@@ -1,6 +1,5 @@
 <resources>
-    <string name="app_name">Globe Radio</string>
-    <string name="unexpected_error">An unexpected error occurred :(\nPlease try again</string>
+    <string name="unexpected_error">Неизвестная ошибка :(\nПожалуйста попробуйте снова</string>
     <string name="loading_string">Загрузка…</string>
     <string name="search_hint_text">Поиск…</string>
     <string name="stations_text">Станции</string>
@@ -28,7 +27,6 @@
     <string name="not_saved_text">Не сохранено…</string>
     <string name="backup_favorites">Сохраить избранное</string>
     <string name="restore_favorites">Восстановить избранное</string>
-    <string name="authority">"com.eugenics.fileprovider"</string>
     <string name="init_load_text">Загрузка списка радиостанций.\n Пожалуйста подождите…</string>
     <string name="no_internet_connection">Нет подключения к интернет…</string>
     <string name="warning">Внимение…</string>
@@ -36,4 +34,7 @@
     <string name="no_data">Нет данных для сохранения…</string>
     <string name="no_restore_data">Нет данных для загрузки…</string>
     <string name="export_favorites_playlist">Сохранить избранное как плэйлист</string>
+    <string name="workmanager_title">Обновление списка радиостанций…</string>
+    <string name="start_update">Обновление начато</string>
+    <string name="updated">Обновлено</string>
 </resources>

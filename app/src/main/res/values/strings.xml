@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Globe Radio</string>
+    <string name="app_name" translatable="false">Globe Radio</string>
     <string name="unexpected_error">An unexpected error occurred :(\nPlease try again</string>
     <string name="loading_string">Loading…</string>
     <string name="search_hint_text">Search here…</string>
@@ -35,6 +35,10 @@
     <string name="no_data">No data to save…</string>
     <string name="no_restore_data">No data to load…</string>
     <string name="export_favorites_playlist">Save favorites as playlist</string>
+    <string name="workmanager_title">Updating station list…</string>
+    <string name="start_update">Start updating</string>
+    <string name="updated">Updated</string>
 
-    <string name="authority">"com.eugenics.fileprovider"</string>
+    <string name="authority" translatable="false">"com.eugenics.fileprovider"</string>
+    <string name="notification_channel_id" translatable="false">WORK_MANAGER_NOTIFICATION</string>
 </resources>

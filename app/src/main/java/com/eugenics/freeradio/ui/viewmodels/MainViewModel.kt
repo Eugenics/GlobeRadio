@@ -91,7 +91,7 @@ class MainViewModel @Inject constructor(
                     )
                 }
             }
-            _stations.value = stationServiceContent
+            _stations.value = stationServiceContent.sortedByDescending { it.votes }
         }
     }
 

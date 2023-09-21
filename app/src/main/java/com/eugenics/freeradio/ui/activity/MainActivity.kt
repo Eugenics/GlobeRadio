@@ -23,6 +23,9 @@ import androidx.core.view.WindowCompat
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
+import androidx.work.ExistingWorkPolicy
+import androidx.work.OneTimeWorkRequestBuilder
+import androidx.work.WorkManager
 import com.eugenics.freeradio.R
 import com.eugenics.freeradio.core.enums.InfoMessages
 import com.eugenics.freeradio.core.enums.MessageType
@@ -30,6 +33,7 @@ import com.eugenics.freeradio.core.enums.UIState
 import com.eugenics.freeradio.ui.application.Application
 import com.eugenics.freeradio.ui.util.UICommands
 import com.eugenics.freeradio.ui.viewmodels.MainViewModel
+import com.eugenics.freeradio.util.StationsWorker
 import com.eugenics.freeradio.util.createInternetConnectivityListener
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
@@ -41,6 +45,7 @@ import java.io.IOException
 private const val SHARE_JSON_FILE_NAME = "favorites.json"
 private const val SHARE_PLAYLIST_FILE_NAME = "favorites_playlist.m3u8"
 private const val SHARE_FILES_DIR_NAME = "share_files"
+private const val UPDATE_STATIONS_WORK_NAME = "UPDATE_STATIONS_LIST"
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
@@ -92,6 +97,16 @@ class MainActivity : ComponentActivity() {
     @RequiresApi(Build.VERSION_CODES.S)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        val workerRequest = OneTimeWorkRequestBuilder<StationsWorker>()
+            .build()
+
+        val workManager = WorkManager.getInstance(applicationContext)
+        workManager.beginUniqueWork(
+            UPDATE_STATIONS_WORK_NAME,
+            ExistingWorkPolicy.KEEP,
+            workerRequest
+        ).enqueue()
 
         val isFits = this.resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
         Log.d(TAG, "Landscape orientation=$isFits")
