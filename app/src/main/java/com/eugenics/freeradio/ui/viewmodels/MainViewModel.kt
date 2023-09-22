@@ -96,10 +96,9 @@ class MainViewModel @Inject constructor(
     }
 
     fun start() {
-        collectStates()
+        collectCurrentState()
         collectMediaSourceState()
         collectNowPlaying()
-        collectCurrentState()
         collectServiceConnection()
         collectServicePlaybackState()
     }
@@ -269,7 +268,8 @@ class MainViewModel @Inject constructor(
         stationUuid: String = currentStateObject.value.stationUuid,
         theme: Theme = currentStateObject.value.theme,
         command: String = currentStateObject.value.command,
-        visibleIndex: Int = currentStateObject.value.stationsVisibleIndex
+        visibleIndex: Int = currentStateObject.value.stationsVisibleIndex,
+        lastStationsListUpdate: Long = currentStateObject.value.lastStationsListUpdate
     ) {
         viewModelScope.launch(ioDispatcher) {
             val currentState = CurrentState(
@@ -277,7 +277,8 @@ class MainViewModel @Inject constructor(
                 stationUuid = stationUuid,
                 theme = theme,
                 command = command,
-                stationsVisibleIndex = visibleIndex
+                stationsVisibleIndex = visibleIndex,
+                lastStationsListUpdate = lastStationsListUpdate
             )
             setSettings(settings = currentState)
             Log.d(TAG, "setSettings:$currentState")

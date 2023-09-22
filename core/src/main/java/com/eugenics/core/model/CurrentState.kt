@@ -13,7 +13,8 @@ data class CurrentState(
     val stationUuid: String,
     val theme: Theme,
     val command: String,
-    val stationsVisibleIndex: Int
+    val stationsVisibleIndex: Int,
+    val lastStationsListUpdate: Long
 ) : Parcelable {
     companion object {
         fun getDefaultValueInstance(): CurrentState =
@@ -22,7 +23,8 @@ data class CurrentState(
                 stationUuid = "",
                 theme = Theme.SYSTEM,
                 command = Commands.STATIONS_COMMAND.name,
-                stationsVisibleIndex = 0
+                stationsVisibleIndex = 0,
+                lastStationsListUpdate = 0L
             )
     }
 }

@@ -15,6 +15,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.IntOffset
@@ -64,6 +65,7 @@ fun MainScreen(
     val scope = rememberCoroutineScope()
     val padding = WindowInsets.systemBars.asPaddingValues()
     val isScrolledUp = rememberSaveable { mutableStateOf(false) }
+    val context = LocalContext.current
 
     val commonModifier = Modifier
         .padding(
@@ -72,12 +74,30 @@ fun MainScreen(
         )
 
     val showWarningDialog = rememberSaveable { mutableStateOf(false) }
+    val snackBarHostState = remember { SnackbarHostState() }
+    val lastMessageId = rememberSaveable { mutableStateOf("") }
 
     val showPlayerBar = rememberSaveable { mutableStateOf(false) }
 
-    LaunchedEffect(key1 = message.value) {
-        if (message.value.type == MessageType.WARNING) {
-            showWarningDialog.value = true
+    LaunchedEffect(key1 = message.value.id) {
+        if (message.value.message.isNotBlank() &&
+            message.value.id != lastMessageId.value
+        ) {
+            when (message.value.type) {
+                MessageType.WARNING -> showWarningDialog.value = true
+                MessageType.INFO -> snackBarHostState.showSnackbar(
+                    message = message.value.message,
+                    duration = SnackbarDuration.Short
+                )
+
+                MessageType.ERROR -> snackBarHostState.showSnackbar(
+                    message = message.value.message,
+                    duration = SnackbarDuration.Short
+                )
+
+                else -> {}
+            }
+            lastMessageId.value = message.value.id
         }
     }
 
@@ -96,11 +116,8 @@ fun MainScreen(
     }
 
     when (uiState.value) {
-        UIState.UI_STATE_SPLASH -> SplashScreen(
-            message =
-            if (message.value.type == MessageType.UI) message.value.message
-            else ""
-        )
+        UIState.UI_STATE_SPLASH ->
+            SplashScreen(message = context.getString(R.string.init_load_text))
 
         else -> {
             MainNavigationDrawer(
@@ -175,6 +192,9 @@ fun MainScreen(
                                 onPlayClick = onPlayClick
                             )
                         }
+                    },
+                    snackbarHost = {
+                        SnackbarHost(hostState = snackBarHostState)
                     }
                 ) { paddingValues ->
                     when (dataState.value) {
