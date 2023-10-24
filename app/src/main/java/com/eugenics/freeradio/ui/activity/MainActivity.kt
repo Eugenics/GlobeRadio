@@ -11,7 +11,6 @@ import android.os.Build
 import android.os.Bundle
 import android.os.Environment
 import android.util.Log
-import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
@@ -23,13 +22,16 @@ import androidx.core.view.WindowCompat
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
+import androidx.work.ExistingWorkPolicy
+import androidx.work.OneTimeWorkRequestBuilder
+import androidx.work.WorkInfo
+import androidx.work.WorkManager
 import com.eugenics.freeradio.R
-import com.eugenics.freeradio.core.enums.InfoMessages
 import com.eugenics.freeradio.core.enums.MessageType
-import com.eugenics.freeradio.core.enums.UIState
 import com.eugenics.freeradio.ui.application.Application
 import com.eugenics.freeradio.ui.util.UICommands
 import com.eugenics.freeradio.ui.viewmodels.MainViewModel
+import com.eugenics.freeradio.util.StationsWorker
 import com.eugenics.freeradio.util.createInternetConnectivityListener
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
@@ -37,10 +39,12 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.File
 import java.io.IOException
+import java.util.Calendar
 
 private const val SHARE_JSON_FILE_NAME = "favorites.json"
 private const val SHARE_PLAYLIST_FILE_NAME = "favorites_playlist.m3u8"
 private const val SHARE_FILES_DIR_NAME = "share_files"
+private const val UPDATE_STATIONS_WORK_NAME = "UPDATE_STATIONS_LIST"
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
@@ -74,17 +78,15 @@ class MainActivity : ComponentActivity() {
         registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
             if (result.data != null) {
                 when (result.resultCode) {
-                    Activity.RESULT_OK -> Toast.makeText(
-                        applicationContext,
-                        getString(R.string.saved_text),
-                        Toast.LENGTH_LONG
-                    ).show()
+                    Activity.RESULT_OK -> mainViewModel.sendMessage(
+                        MessageType.INFO,
+                        getString(R.string.saved_text)
+                    )
 
-                    else -> Toast.makeText(
-                        applicationContext,
-                        getString(R.string.not_saved_text),
-                        Toast.LENGTH_LONG
-                    ).show()
+                    else -> mainViewModel.sendMessage(
+                        MessageType.INFO,
+                        getString(R.string.not_saved_text)
+                    )
                 }
             }
         }
@@ -99,12 +101,11 @@ class MainActivity : ComponentActivity() {
 
         checkPostNotificationPermission()
         checkIntentData()
-        collectUIState()
-        collectUICommands()
-        collectViewModelMessages()
 
         mainViewModel.start()
         mainViewModel.getTagsList(context = applicationContext)
+
+        collectUICommands()
 
         setContent {
             Application(viewModel = mainViewModel)
@@ -114,6 +115,7 @@ class MainActivity : ComponentActivity() {
     override fun onStart() {
         super.onStart()
         collectNetworkState()
+        checkStationListUpdate()
     }
 
     private fun collectUICommands() {
@@ -179,45 +181,10 @@ class MainActivity : ComponentActivity() {
                 startShare.launch(shareIntent)
             } else {
                 withContext(Dispatchers.Main) {
-                    Toast.makeText(
-                        this@MainActivity,
-                        getString(R.string.no_data_to_share),
-                        Toast.LENGTH_SHORT
-                    ).show()
-                }
-            }
-        }
-    }
-
-    private fun collectViewModelMessages() {
-        lifecycleScope.launch {
-            repeatOnLifecycle(Lifecycle.State.STARTED) {
-                mainViewModel.message.collect { systemMessage ->
-                    if (systemMessage.message.isNotBlank()) {
-                        withContext(Dispatchers.Main) {
-                            when (systemMessage.type) {
-                                MessageType.ERROR -> Toast.makeText(
-                                    applicationContext,
-                                    systemMessage.message,
-                                    Toast.LENGTH_LONG
-                                ).show()
-
-                                MessageType.INFO -> {
-                                    Toast.makeText(
-                                        applicationContext,
-                                        when (systemMessage.type.name) {
-                                            InfoMessages.NO_DATA_TO_SAVE.name -> getString(R.string.no_data)
-                                            InfoMessages.NO_DATA_TO_LOAD.name -> getString(R.string.no_restore_data)
-                                            else -> "No message..."
-                                        },
-                                        Toast.LENGTH_LONG
-                                    ).show()
-                                }
-
-                                else -> {}
-                            }
-                        }
-                    }
+                    mainViewModel.sendMessage(
+                        MessageType.INFO,
+                        getString(R.string.no_data_to_share)
+                    )
                 }
             }
         }
@@ -292,19 +259,34 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-    private fun collectUIState() {
-        lifecycleScope.launch {
-            repeatOnLifecycle(state = Lifecycle.State.STARTED) {
-                mainViewModel.uiState.collect { uiState ->
-                    when (uiState) {
-                        UIState.UI_STATE_SPLASH ->
-                            mainViewModel.sendMessage(
-                                type = MessageType.UI,
-                                message = getString(R.string.init_load_text)
-                            )
+    private fun checkStationListUpdate() {
+        val lastUpdate = mainViewModel.currentStateObject.value.lastStationsListUpdate
+        val currentTime = Calendar.getInstance().timeInMillis
 
-                        else -> {}
+        if ((lastUpdate + WEEK_MILL_TIME) < currentTime) {
+            val workerRequest = OneTimeWorkRequestBuilder<StationsWorker>()
+                .build()
+            val workManager = WorkManager.getInstance(applicationContext)
+            workManager.beginUniqueWork(
+                UPDATE_STATIONS_WORK_NAME,
+                ExistingWorkPolicy.KEEP,
+                workerRequest
+            ).enqueue()
+
+            val workInfoResult = WorkManager.getInstance(applicationContext)
+                .getWorkInfoByIdLiveData(workerRequest.id)
+
+            workInfoResult.observe(this) { workInfo ->
+                when (workInfo.state) {
+                    WorkInfo.State.SUCCEEDED -> {
+                        mainViewModel.setSettings(lastStationsListUpdate = currentTime)
                     }
+
+                    WorkInfo.State.CANCELLED -> {
+                        mainViewModel.sendMessage(MessageType.INFO, "Job canceled...")
+                    }
+
+                    else -> {}
                 }
             }
         }
@@ -313,5 +295,6 @@ class MainActivity : ComponentActivity() {
     companion object {
         private const val TAG = "MAIN_ACTIVITY"
         private const val INTENT_FILE_TYPE = "application/json"
+        private const val WEEK_MILL_TIME = 604800000L
     }
 }

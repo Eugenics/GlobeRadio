@@ -31,7 +31,7 @@ android {
         applicationId = libs.versions.applicationId.get()
         minSdk = libs.versions.minSdk.get().toInt()
         targetSdk = libs.versions.targetSdk.get().toInt()
-        versionCode = libs.versions.versionCode.get().toInt()
+        versionCode = buildCode
         versionName = versionBuildName
         testInstrumentationRunner = "com.eugenics.core_testing.HiltTestRunner"
         setProperty("archivesBaseName", versionFileName)
@@ -176,4 +176,7 @@ dependencies {
 
     // Firebase
     implementation(libs.google.firebase)
+
+    // Workmanager
+    implementation(libs.androidx.workmanager)
 }

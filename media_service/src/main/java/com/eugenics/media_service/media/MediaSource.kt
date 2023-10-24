@@ -19,7 +19,7 @@ import kotlinx.coroutines.flow.StateFlow
 
 class MediaSource(
     private val stationsRepository: IStationsRepository,
-    private val prefsRepository: IPrefsRepository
+    prefsRepository: IPrefsRepository
 ) {
 
     private val prefsHelper = PrefsHelper(prefsRepository = prefsRepository)
@@ -145,7 +145,7 @@ class MediaSource(
                 station.asMediaItem()
             }
         )
-        playerMediaItems.sortByDescending { playerMediaItem -> playerMediaItem.votes }
+        //playerMediaItems.sortByDescending { playerMediaItem -> playerMediaItem.votes }
         _mediaItems.value = playerMediaItems
     }
 
@@ -227,6 +227,8 @@ class MediaSource(
                     _state.value = MediaSourceState.STATE_INITIALIZED.value
                     return@collect
                 }
+
+                else -> {}
             }
         }
     }

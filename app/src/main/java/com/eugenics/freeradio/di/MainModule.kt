@@ -5,6 +5,8 @@ import android.content.Context
 import androidx.datastore.core.DataStore
 import androidx.datastore.core.DataStoreFactory
 import com.eugenics.core.model.CurrentState
+import com.eugenics.data.interfaces.IStationsRepository
+import com.eugenics.freeradio.util.CustomWorkerFactory
 import com.eugenics.freeradio.util.SettingsSerializer
 import com.eugenics.media_service.media.FreeRadioMediaService
 import com.eugenics.media_service.media.FreeRadioMediaServiceConnection
@@ -42,4 +44,9 @@ class MainModule {
                 )
             }
         )
+
+    @Provides
+    @Singleton
+    fun provideWorkmanagerFactory(repository: IStationsRepository): CustomWorkerFactory =
+        CustomWorkerFactory(repository = repository)
 }
