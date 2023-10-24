@@ -14,12 +14,17 @@ import com.eugenics.data.data.util.Response
 import com.eugenics.data.interfaces.IStationsRepository
 import com.eugenics.freeradio.R
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
 
 private const val TAG = "StationsWorker"
 private const val NOTIFICATION_GROUP_KEY = "com.eugenics.freeradio.notification"
 private const val NOTIFICATION_ID = 15785
+private const val DELAY_TIME = 10_000L
+private const val LOADING_MESSAGE = "Loading..."
+private const val SUCCESS_MESSAGE = "Success..."
+private const val NOTIFICATION_CHANNEL_NAME = "WORK_MANAGER_NOTIFICATION"
 
 class StationsWorker(
     context: Context,
@@ -33,7 +38,7 @@ class StationsWorker(
 
     override suspend fun doWork(): Result {
         Log.d(TAG, "Work start...")
-        delay(10_000)
+        delay(DELAY_TIME)
         Log.d(TAG, "Delay end...")
 
         setForeground(
@@ -43,38 +48,40 @@ class StationsWorker(
             )
         )
 
-        withContext(Dispatchers.IO) {
-            updateStations()
-        }
+
+        updateStations()
         Log.d(TAG, "Work end...")
+
         setForeground(
             createForegroundInfo(
                 applicationContext.getString(R.string.updated),
                 false
             )
         )
-        delay(10_000)
+        delay(DELAY_TIME)
         return Result.success()
     }
 
     private suspend fun updateStations() {
-        stationsRepository.getRemoteStations().collect { response ->
-            when (response) {
-                is Response.Loading -> Log.d(TAG, "Loading...")
+        withContext(Dispatchers.IO) {
+            stationsRepository.getRemoteStations().collect { response ->
+                when (response) {
+                    is Response.Loading -> Log.d(TAG, LOADING_MESSAGE)
 
-                is Response.Error -> {
-                    Log.e(TAG, response.message)
-                    return@collect
-                }
-
-                is Response.Success -> {
-                    Log.d(TAG, "Success...")
-                    response.data?.let { stations ->
-                        Log.d(TAG, "Save to data base...")
-                        stationsRepository.reloadStations(stations = stations)
-                        Log.d(TAG, "Saved to data base...")
+                    is Response.Error -> {
+                        Log.e(TAG, response.message)
+                        this.cancel(response.message)
                     }
-                    return@collect
+
+                    is Response.Success -> {
+                        Log.d(TAG, SUCCESS_MESSAGE)
+                        response.data?.let { stations ->
+                            Log.d(TAG, "Save to data base...")
+                            stationsRepository.reloadStations(stations = stations)
+                            Log.d(TAG, "Saved to data base...")
+                        }
+                        this.cancel(SUCCESS_MESSAGE)
+                    }
                 }
             }
         }
@@ -114,7 +121,7 @@ class StationsWorker(
 
     private fun createNotificationChannel() {
         val channelId = applicationContext.getString(R.string.notification_channel_id)
-        val channelName = "WORK_MANAGER_NOTIFICATION"
+        val channelName = NOTIFICATION_CHANNEL_NAME
         val notificationChannel = NotificationChannel(
             channelId,
             channelName,
