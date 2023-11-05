@@ -2,7 +2,6 @@ package com.eugenics.media_service.media
 
 import android.content.ComponentName
 import android.content.Context
-import android.content.res.Resources
 import android.os.Bundle
 import android.os.Handler
 import android.os.ResultReceiver
@@ -14,7 +13,6 @@ import android.support.v4.media.session.PlaybackStateCompat
 import android.util.Log
 import com.eugenics.core.enums.Commands
 import com.eugenics.core.enums.MediaSourceState
-import com.eugenics.media_service.R
 import com.google.android.exoplayer2.MediaMetadata
 import com.google.android.exoplayer2.PlaybackException
 import com.google.android.exoplayer2.Player

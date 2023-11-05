@@ -35,6 +35,9 @@ import com.eugenics.freeradio.util.PlaylistHelper
 import com.eugenics.media_service.media.FreeRadioMediaServiceConnection
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.channels.BufferOverflow
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.channels.consumeEach
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.SerializationException
@@ -49,6 +52,9 @@ class MainViewModel @Inject constructor(
     private val dataStore: DataStore<CurrentState>
 ) : ServiceViewModel() {
 
+    private val settingsChannel: Channel<CurrentState> =
+        Channel(capacity = 10, onBufferOverflow = BufferOverflow.SUSPEND)
+
     private val nowPlayingMetaData = mediaServiceConnection.nowPlayingItem
 
     private var currentMediaId: String = ""
@@ -62,6 +68,7 @@ class MainViewModel @Inject constructor(
 
             for (child in children) {
                 val extras = if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
+                    @Suppress("DEPRECATION")
                     child.description.extras?.getParcelable("STATION")
                 } else {
                     child.description.extras?.getParcelable(
@@ -91,12 +98,16 @@ class MainViewModel @Inject constructor(
                     )
                 }
             }
-            _stations.value = stationServiceContent.sortedByDescending { it.votes }
+            _stations.value = stationServiceContent
         }
     }
 
-    fun start() {
+    init {
+        collectSettingsForWrite()
         collectCurrentState()
+    }
+
+    fun start() {
         collectMediaSourceState()
         collectNowPlaying()
         collectServiceConnection()
@@ -108,7 +119,10 @@ class MainViewModel @Inject constructor(
     }
 
     override fun onCleared() {
+        Log.d(TAG, "unsubscribe")
         unsubscribe()
+        settingsChannel.close()
+        Log.d(TAG, "close settings channel")
     }
 
     /**
@@ -123,15 +137,14 @@ class MainViewModel @Inject constructor(
             }
 
             else -> {
-                Log.d(TAG, "PLAY_FROM_MEDIA_ID_CLICKED:$mediaId")
                 mediaServiceConnection.transportControls.playFromMediaId(mediaId, null)
-                setSettings(stationUuid = mediaId ?: currentMediaId)
+//                setSettings(stationUuid = mediaId ?: currentMediaId, setName = "onPlayClick")
             }
         }
     }
 
     fun onSearch(query: String) {
-        setSettings(visibleIndex = 0)
+        setSettings(visibleIndex = 0, setName = "onVisibleIndexChanged")
         _stations.value = listOf()
         mediaServiceConnection.transportControls.playFromSearch(query, null)
     }
@@ -146,11 +159,13 @@ class MainViewModel @Inject constructor(
 
             in enumValues<Commands>().map { it.name }.toList() -> {
                 setSettings(
-                    command = command, tag = extras?.getString("TAG") ?: ""
+                    command = command,
+                    tag = extras?.getString("TAG") ?: "",
+                    setName = "sendCommandTag"
                 )
                 if (command != Commands.SET_FAVORITES_COMMAND.name) {
                     _stations.value = listOf()
-                    setSettings(visibleIndex = 0)
+                    setSettings(visibleIndex = 0, setName = "onVisibleIndexChanged")
                 }
                 mediaServiceConnection.sendCommand(
                     command = command,
@@ -168,15 +183,6 @@ class MainViewModel @Inject constructor(
                     })
             }
         }
-    }
-
-    /**
-     * UI State watchers
-     */
-
-    fun onVisibleIndexChanged(index: Int) {
-        Log.d(TAG, "onVisibleIndexChanged:$index")
-        setSettings(visibleIndex = index)
     }
 
     /**
@@ -207,7 +213,7 @@ class MainViewModel @Inject constructor(
                         ?: ""
                 )
                 currentMediaId = nowPlaying.value.stationUUID
-
+                setSettings(stationUuid = currentMediaId, setName = "collectNowPlaying")
                 getDynamicColor(url = nowPlaying.value.favicon)
             }
         }
@@ -263,13 +269,28 @@ class MainViewModel @Inject constructor(
         }
     }
 
+    private fun collectSettingsForWrite() {
+        viewModelScope.launch(Dispatchers.Default) {
+            settingsChannel.consumeEach { currentState ->
+                Log.d(TAG, "WRITE_SETTINGS: $currentState")
+                dataStore.updateData { currentState }
+                setStationUiState(currentState.stationUuid, currentState.stationsVisibleIndex)
+            }
+        }
+    }
+
+    /**
+     * Functions
+     */
+
     fun setSettings(
         tag: String = currentStateObject.value.tag,
         stationUuid: String = currentStateObject.value.stationUuid,
         theme: Theme = currentStateObject.value.theme,
         command: String = currentStateObject.value.command,
         visibleIndex: Int = currentStateObject.value.stationsVisibleIndex,
-        lastStationsListUpdate: Long = currentStateObject.value.lastStationsListUpdate
+        lastStationsListUpdate: Long = currentStateObject.value.lastStationsListUpdate,
+        setName: String = "default"
     ) {
         viewModelScope.launch(ioDispatcher) {
             val currentState = CurrentState(
@@ -280,10 +301,10 @@ class MainViewModel @Inject constructor(
                 stationsVisibleIndex = visibleIndex,
                 lastStationsListUpdate = lastStationsListUpdate
             )
-            setSettings(settings = currentState)
-            Log.d(TAG, "setSettings:$currentState")
-
-            setStationUiState(stationUuid, visibleIndex)
+            if (currentState != currentStateObject.value) {
+                settingsChannel.send(currentState)
+                Log.d(TAG, "send settings with settings name: $setName")
+            }
         }
     }
 
@@ -389,12 +410,6 @@ class MainViewModel @Inject constructor(
             }
         } else {
             setPrimaryDynamicColor(0)
-        }
-    }
-
-    private suspend fun setSettings(settings: CurrentState) {
-        dataStore.updateData {
-            settings
         }
     }
 

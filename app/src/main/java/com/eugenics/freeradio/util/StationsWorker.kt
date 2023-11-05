@@ -22,8 +22,6 @@ private const val TAG = "StationsWorker"
 private const val NOTIFICATION_GROUP_KEY = "com.eugenics.freeradio.notification"
 private const val NOTIFICATION_ID = 15785
 private const val DELAY_TIME = 10_000L
-private const val LOADING_MESSAGE = "Loading..."
-private const val SUCCESS_MESSAGE = "Success..."
 private const val NOTIFICATION_CHANNEL_NAME = "WORK_MANAGER_NOTIFICATION"
 
 class StationsWorker(
@@ -66,7 +64,7 @@ class StationsWorker(
         withContext(Dispatchers.IO) {
             stationsRepository.getRemoteStations().collect { response ->
                 when (response) {
-                    is Response.Loading -> Log.d(TAG, LOADING_MESSAGE)
+                    is Response.Loading -> Log.d(TAG, "Loading...")
 
                     is Response.Error -> {
                         Log.e(TAG, response.message)
@@ -74,13 +72,12 @@ class StationsWorker(
                     }
 
                     is Response.Success -> {
-                        Log.d(TAG, SUCCESS_MESSAGE)
+                        Log.d(TAG, "Success...")
                         response.data?.let { stations ->
                             Log.d(TAG, "Save to data base...")
                             stationsRepository.reloadStations(stations = stations)
                             Log.d(TAG, "Saved to data base...")
                         }
-                        this.cancel(SUCCESS_MESSAGE)
                     }
                 }
             }

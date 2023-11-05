@@ -18,8 +18,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 
 class MediaSource(
-    private val stationsRepository: IStationsRepository,
-    prefsRepository: IPrefsRepository
+    private val stationsRepository: IStationsRepository, prefsRepository: IPrefsRepository
 ) {
 
     private val prefsHelper = PrefsHelper(prefsRepository = prefsRepository)
@@ -65,41 +64,38 @@ class MediaSource(
     }
 
     fun collectMediaSource(
-        tag: String,
-        stationUuid: String,
-        command: Commands,
-        query: String = ""
+        tag: String, stationUuid: String, command: Commands, query: String = ""
     ) {
         scope.launch {
             Log.d(TAG, "COLLECT MEDIA_SOURCE:$tag,$command")
             _state.value = MediaSourceState.STATE_INITIALIZING.value
             try {
                 when (command) {
-                    Commands.STATIONS_COMMAND ->
-                        feelMediaItems(stationsRepository.getLocalStationByTag(tag = "%$tag%"))
+                    Commands.STATIONS_COMMAND -> feelMediaItems(
+                        stationsRepository.getLocalStationByTag(
+                            tag = "%$tag%"
+                        )
+                    )
 
-                    Commands.FAVORITES_COMMAND ->
-                        feelMediaItems(stationsRepository.fetchStationsByFavorites())
+                    Commands.FAVORITES_COMMAND -> feelMediaItems(stationsRepository.fetchStationsByFavorites())
 
-                    Commands.RELOAD_ALL_STATIONS_COMMAND ->
-                        loadStationsFromRemote()
+                    Commands.RELOAD_ALL_STATIONS_COMMAND -> loadStationsFromRemote()
 
-                    Commands.SEARCH_COMMAND ->
-                        feelMediaItems(stationsRepository.getLocalStationByName(name = "%$query%"))
+                    Commands.SEARCH_COMMAND -> feelMediaItems(
+                        stationsRepository.getLocalStationByName(
+                            name = "%$query%"
+                        )
+                    )
 
                     else -> feelMediaItems(stationsRepository.getLocalStations())
                 }
 
                 if (command != Commands.RELOAD_ALL_STATIONS_COMMAND) {
                     setPrefs(
-                        tag = tag,
-                        command = command.name,
-                        query = query,
-                        stationUuid = stationUuid
+                        tag = tag, command = command.name, query = query, stationUuid = stationUuid
                     )
                     onMediaItemClick(
-                        mediaItemId = stationUuid,
-                        playWhenReady = false
+                        mediaItemId = stationUuid, playWhenReady = false
                     )
                 }
 
@@ -114,9 +110,7 @@ class MediaSource(
     }
 
     fun setFavorites(
-        stationUuid: String,
-        isFavorite: Int,
-        cb: ResultReceiver?
+        stationUuid: String, isFavorite: Int, cb: ResultReceiver?
     ) {
         scope.launch {
             val resultBundle = Bundle()
@@ -139,13 +133,9 @@ class MediaSource(
 
     private fun feelMediaItems(stations: List<Station>) {
         val playerMediaItems = mutableListOf<PlayerMediaItem>()
-        playerMediaItems.addAll(stations
-            .distinct()
-            .map { station ->
-                station.asMediaItem()
-            }
-        )
-        //playerMediaItems.sortByDescending { playerMediaItem -> playerMediaItem.votes }
+        playerMediaItems.addAll(stations.distinct().map { station ->
+            station.asMediaItem()
+        }.sortedByDescending { it.votes })
         _mediaItems.value = playerMediaItems
     }
 
@@ -158,40 +148,37 @@ class MediaSource(
     fun getPlayOnReady(): Boolean = playOnReady
 
     fun onMediaItemClick(
-        mediaItemId: String,
-        playWhenReady: Boolean = true
+        mediaItemId: String, playWhenReady: Boolean = true
     ) {
         val startMediaItem = mediaItems.value.find {
             it.uuid == mediaItemId
         }
-        startPosition =
-            if (startMediaItem == null) {
-                0
-            } else {
-                setPrefs(stationUuid = mediaItemId)
-                mediaItems.value.indexOf(startMediaItem)
-            }
+        startPosition = if (startMediaItem == null) {
+            0
+        } else {
+            setPrefs(stationUuid = mediaItemId)
+            mediaItems.value.indexOf(startMediaItem)
+        }
 
         setPlayOnReady(value = playWhenReady)
     }
 
-    private fun setPrefs(
+    fun setPrefs(
         tag: String = prefs.value.tag,
         stationUuid: String = prefs.value.stationUuid,
         command: String = prefs.value.command,
         query: String = prefs.value.query
     ) {
-        prefs.value = CurrentPrefs(
+        val newPrefs = CurrentPrefs(
             tag = tag,
             stationUuid = stationUuid,
             command = command,
             query = query,
-            uuid = prefs.value.uuid
+            uuid = CurrentPrefs.GUID
         )
-        scope.launch {
-            prefsHelper.setPrefs(
-                tag = tag, stationUuid = stationUuid, command = command, query = query
-            )
+        if (newPrefs != prefs.value) {
+            prefs.value = newPrefs
+            prefsHelper.setPrefs(newPrefs)
         }
     }
 
