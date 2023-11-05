@@ -210,6 +210,9 @@ class FreeRadioMediaService : MediaBrowserServiceCompat() {
 
         override fun onNotificationCancelled(notificationId: Int, dismissedByUser: Boolean) {
             notificationManager.hideNotification()
+            player.stop()
+            this@FreeRadioMediaService.stopForeground(STOP_FOREGROUND_REMOVE)
+            this@FreeRadioMediaService.stopSelf()
             Log.d(tag, "Notification canceled...")
         }
 

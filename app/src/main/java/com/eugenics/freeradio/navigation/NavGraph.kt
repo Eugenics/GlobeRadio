@@ -42,7 +42,6 @@ fun NavGraph(
             val onSearchClick = remember { mainViewModel::onSearch }
             val onSendCommand = remember { mainViewModel::sendCommand }
             val onFavoriteClick = remember { mainViewModel::sendCommand }
-            val onVisibleIndexChanged = remember { mainViewModel::onVisibleIndexChanged }
 
             MainScreen(
                 navController = navController,
@@ -57,7 +56,7 @@ fun NavGraph(
                 onFavoriteClick = onFavoriteClick,
                 nowPlayingStation = nowPlayingStation,
                 tagsList = tagsList,
-                onVisibleIndexChange = onVisibleIndexChanged,
+                onVisibleIndexChange = { mainViewModel.setSettings(visibleIndex = it) },
                 stationsUiState = stationsUiState
             )
         }

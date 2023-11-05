@@ -60,32 +60,29 @@ class MainActivity : ComponentActivity() {
             }
         }
 
-    private val filePickLauncher =
-        registerForActivityResult(ActivityResultContracts.GetContent()) {
-            it?.let { uri ->
-                Log.d(TAG, uri.toString())
-                val file = contentResolver.openInputStream(uri)
-                file?.let { inputStream ->
-                    val json = String(inputStream.readBytes())
-                    mainViewModel.restoreFavorites(favoritesJsonString = json)
-                    Log.d(TAG, json)
-                    file.close()
-                }
+    private val filePickLauncher = registerForActivityResult(ActivityResultContracts.GetContent()) {
+        it?.let { uri ->
+            Log.d(TAG, uri.toString())
+            val file = contentResolver.openInputStream(uri)
+            file?.let { inputStream ->
+                val json = String(inputStream.readBytes())
+                mainViewModel.restoreFavorites(favoritesJsonString = json)
+                Log.d(TAG, json)
+                file.close()
             }
         }
+    }
 
     private val startShare =
         registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
             if (result.data != null) {
                 when (result.resultCode) {
                     Activity.RESULT_OK -> mainViewModel.sendMessage(
-                        MessageType.INFO,
-                        getString(R.string.saved_text)
+                        MessageType.INFO, getString(R.string.saved_text)
                     )
 
                     else -> mainViewModel.sendMessage(
-                        MessageType.INFO,
-                        getString(R.string.not_saved_text)
+                        MessageType.INFO, getString(R.string.not_saved_text)
                     )
                 }
             }
@@ -123,20 +120,15 @@ class MainActivity : ComponentActivity() {
             repeatOnLifecycle(state = Lifecycle.State.STARTED) {
                 mainViewModel.uiCommands.collect { command ->
                     when (command) {
-                        UICommands.UI_COMMAND_BACKUP_FAVORITES ->
-                            shareDataToFile(
-                                mainViewModel.savedData.value,
-                                SHARE_JSON_FILE_NAME
-                            )
+                        UICommands.UI_COMMAND_BACKUP_FAVORITES -> shareDataToFile(
+                            mainViewModel.savedData.value, SHARE_JSON_FILE_NAME
+                        )
 
-                        UICommands.UI_COMMAND_RESTORE_FAVORITES ->
-                            filePickLauncher.launch("*/*")
+                        UICommands.UI_COMMAND_RESTORE_FAVORITES -> filePickLauncher.launch("*/*")
 
-                        UICommands.UI_EXPORT_FAVORITES_PLAYLIST ->
-                            shareDataToFile(
-                                mainViewModel.savedData.value,
-                                SHARE_PLAYLIST_FILE_NAME
-                            )
+                        UICommands.UI_EXPORT_FAVORITES_PLAYLIST -> shareDataToFile(
+                            mainViewModel.savedData.value, SHARE_PLAYLIST_FILE_NAME
+                        )
 
                         else -> {}
                     }
@@ -151,8 +143,7 @@ class MainActivity : ComponentActivity() {
             if (!File("${applicationContext.cacheDir}/$SHARE_FILES_DIR_NAME").exists()) {
                 File("${applicationContext.cacheDir}/$SHARE_FILES_DIR_NAME").mkdirs()
             }
-            val shareFile =
-                File("${applicationContext.cacheDir}/$SHARE_FILES_DIR_NAME/$fileName")
+            val shareFile = File("${applicationContext.cacheDir}/$SHARE_FILES_DIR_NAME/$fileName")
             try {
                 shareFile.writeBytes(shareData.toByteArray(Charsets.UTF_8))
             } catch (e: IOException) {
@@ -162,28 +153,22 @@ class MainActivity : ComponentActivity() {
                 val sendIntent = Intent(Intent.ACTION_SEND).apply {
                     flags = Intent.FLAG_GRANT_READ_URI_PERMISSION
                     val jsonFileUri = FileProvider.getUriForFile(
-                        applicationContext,
-                        getString(R.string.authority),
-                        shareFile
+                        applicationContext, getString(R.string.authority), shareFile
                     )
                     putExtra(
-                        Intent.EXTRA_STREAM,
-                        jsonFileUri
+                        Intent.EXTRA_STREAM, jsonFileUri
                     )
                     type = INTENT_FILE_TYPE
                 }
 
-                val shareIntent =
-                    Intent.createChooser(
-                        sendIntent,
-                        getString(R.string.share_dialog_title)
-                    )
+                val shareIntent = Intent.createChooser(
+                    sendIntent, getString(R.string.share_dialog_title)
+                )
                 startShare.launch(shareIntent)
             } else {
                 withContext(Dispatchers.Main) {
                     mainViewModel.sendMessage(
-                        MessageType.INFO,
-                        getString(R.string.no_data_to_share)
+                        MessageType.INFO, getString(R.string.no_data_to_share)
                     )
                 }
             }
@@ -235,17 +220,14 @@ class MainActivity : ComponentActivity() {
     }
 
     private fun collectNetworkState() {
-        val connectivityManager =
-            getSystemService(CONNECTIVITY_SERVICE) as ConnectivityManager
+        val connectivityManager = getSystemService(CONNECTIVITY_SERVICE) as ConnectivityManager
         val internetListener = connectivityManager.createInternetConnectivityListener()
-        val networkRequest = NetworkRequest.Builder()
-            .addCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
-            .addTransportType(NetworkCapabilities.TRANSPORT_WIFI)
-            .addTransportType(NetworkCapabilities.TRANSPORT_CELLULAR)
-            .build()
+        val networkRequest =
+            NetworkRequest.Builder().addCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
+                .addTransportType(NetworkCapabilities.TRANSPORT_WIFI)
+                .addTransportType(NetworkCapabilities.TRANSPORT_CELLULAR).build()
         connectivityManager.registerNetworkCallback(
-            networkRequest,
-            internetListener.networkCallback
+            networkRequest, internetListener.networkCallback
         )
         lifecycleScope.launch {
             internetListener.isActive.collect {
@@ -260,17 +242,19 @@ class MainActivity : ComponentActivity() {
     }
 
     private fun checkStationListUpdate() {
-        val lastUpdate = mainViewModel.currentStateObject.value.lastStationsListUpdate
         val currentTime = Calendar.getInstance().timeInMillis
+        val lastUpdate = if (mainViewModel.currentStateObject.value.lastStationsListUpdate == 0L) {
+            mainViewModel.setSettings(lastStationsListUpdate = currentTime)
+            currentTime
+        } else {
+            mainViewModel.currentStateObject.value.lastStationsListUpdate
+        }
 
         if ((lastUpdate + WEEK_MILL_TIME) < currentTime) {
-            val workerRequest = OneTimeWorkRequestBuilder<StationsWorker>()
-                .build()
+            val workerRequest = OneTimeWorkRequestBuilder<StationsWorker>().build()
             val workManager = WorkManager.getInstance(applicationContext)
             workManager.beginUniqueWork(
-                UPDATE_STATIONS_WORK_NAME,
-                ExistingWorkPolicy.KEEP,
-                workerRequest
+                UPDATE_STATIONS_WORK_NAME, ExistingWorkPolicy.KEEP, workerRequest
             ).enqueue()
 
             val workInfoResult = WorkManager.getInstance(applicationContext)
