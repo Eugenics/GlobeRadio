@@ -131,6 +131,16 @@ object Deps {
             "com.google.android.exoplayer:extension-mediasession:$exoplayerVersion"
     }
 
+    object Media3 {
+        private const val media3Version = "1.1.1"
+        const val media3Exo = "androidx.media3:media3-exoplayer:$media3Version"
+        const val media3Dash = "androidx.media3:media3-exoplayer-dash:$media3Version"
+        const val media3Hls = "androidx.media3:media3-exoplayer-hls:$media3Version"
+        const val media3Okhttp = "androidx.media3:media3-datasource-okhttp:$media3Version"
+        const val media3UI = "androidx.media3:media3-ui:$media3Version"
+        const val media3MediaSession = "androidx.media3:media3-session:$media3Version"
+    }
+
     object Images {
         const val glide = "com.github.bumptech.glide:glide:4.12.0"
         const val coil = "io.coil-kt:coil-compose:2.2.0"
