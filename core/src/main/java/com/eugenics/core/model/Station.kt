@@ -2,8 +2,10 @@ package com.eugenics.core.model
 
 import android.os.Parcelable
 import kotlinx.parcelize.Parcelize
+import kotlinx.serialization.Serializable
 
 @Parcelize
+@Serializable
 data class Station(
     val stationuuid: String,
     val name: String,
@@ -23,6 +25,7 @@ data class Station(
     val votes: Int
 ) : Parcelable {
     companion object {
+        const val KEY = "STATION"
         fun newInstance(
             stationuuid: String = "",
             name: String = "",
