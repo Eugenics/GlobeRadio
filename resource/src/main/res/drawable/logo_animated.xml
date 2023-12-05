@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<animated-vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:drawable="@drawable/logo">
+    <target
+        android:name="rec_left_6"
+        android:animation="@animator/alpha_1000" />
+    <target
+        android:name="rec_right_6"
+        android:animation="@animator/alpha_1000" />
+    <target
+        android:name="rec_left_5"
+        android:animation="@animator/alpha_2000" />
+    <target
+        android:name="rec_right_5"
+        android:animation="@animator/alpha_2000" />
+    <target
+        android:name="rec_left_4"
+        android:animation="@animator/alpha_3000" />
+    <target
+        android:name="rec_right_4"
+        android:animation="@animator/alpha_3000" />
+    <target
+        android:name="rec_left_3"
+        android:animation="@animator/alpha_4000" />
+    <target
+        android:name="rec_right_3"
+        android:animation="@animator/alpha_4000" />
+    <target
+        android:name="rec_left_2"
+        android:animation="@animator/alpha_3000" />
+    <target
+        android:name="rec_right_2"
+        android:animation="@animator/alpha_3000" />
+
+</animated-vector>
