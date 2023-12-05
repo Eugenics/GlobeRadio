@@ -1,6 +1,6 @@
-package com.eugenics.freeradio.core.data
+package com.eugenics.ui_core.data
 
-import com.eugenics.freeradio.core.enums.MessageType
+import com.eugenics.ui_core.enums.MessageType
 import java.util.UUID
 
 data class SystemMessage(

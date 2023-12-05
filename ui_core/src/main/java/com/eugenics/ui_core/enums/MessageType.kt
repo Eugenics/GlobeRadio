@@ -1,4 +1,4 @@
-package com.eugenics.freeradio.core.enums
+package com.eugenics.ui_core.enums
 
 enum class MessageType(private val code: Int) {
     WARNING(10),
