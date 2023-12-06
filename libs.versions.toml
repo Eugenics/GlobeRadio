@@ -39,6 +39,7 @@ room = "2.5.2"
 dagger = "2.47"
 firebase = "32.3.1"
 workmanager = "2.8.1"
+splash = "1.0.1"
 
 androidGradlePlugin = "8.1.0"
 androidLibraryPlugin = "8.1.0"
@@ -99,6 +100,8 @@ google-firebase = { group = "com.google.firebase", name = "firebase-bom", versio
 androidx-paging-ktx = { group = "androidx.paging", name = "paging-runtime-ktx", version.ref = "paging" }
 androidx-paging = { group = "androidx.paging", name = "paging-runtime", version.ref = "paging" }
 androidx-workmanager = { group = "androidx.work", name = "work-runtime-ktx", version.ref = "workmanager" }
+androidx-core-splash = { group = "androidx.core", name = "core-splashscreen", version.ref = "splash" }
+
 
 [bundles]
 compose = ["compose-ui", "compose-tooling", "compose-preview", "compose-animation-graphics"]

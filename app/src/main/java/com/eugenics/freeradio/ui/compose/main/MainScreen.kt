@@ -30,6 +30,7 @@ import com.eugenics.core.model.Tag
 import com.eugenics.freeradio.R
 import com.eugenics.freeradio.core.data.SystemMessage
 import com.eugenics.freeradio.core.enums.DataState
+import com.eugenics.freeradio.core.enums.InfoMessages
 import com.eugenics.freeradio.core.enums.MessageType
 import com.eugenics.freeradio.core.enums.UIState
 import com.eugenics.freeradio.navigation.Screen
@@ -37,7 +38,6 @@ import com.eugenics.freeradio.ui.compose.load.LoadContent
 import com.eugenics.freeradio.ui.compose.main.components.MainTopAppBar
 import com.eugenics.freeradio.ui.compose.main.components.MainBottomAppBar
 import com.eugenics.freeradio.ui.compose.main.components.MainNavigationDrawer
-import com.eugenics.freeradio.ui.compose.splash.SplashScreen
 import com.eugenics.freeradio.ui.compose.warning.WarningDialog
 import com.eugenics.freeradio.ui.theme.FreeRadioTheme
 import com.eugenics.freeradio.ui.util.PlayBackState
@@ -115,112 +115,111 @@ fun MainScreen(
         )
     }
 
-    when (uiState.value) {
-        UIState.UI_STATE_SPLASH ->
-            SplashScreen(message = context.getString(R.string.init_load_text))
-
-        else -> {
-            MainNavigationDrawer(
-                drawerState = drawerState,
-                onSettingsClick = {
-                    navController.navigate(Screen.SettingsScreen.rout)
-                    scope.launch {
-                        drawerState.close()
-                    }
-                },
-                sendCommand = sendCommand,
-                tagsList = tagsList
-            ) {
-                Scaffold(
-                    topBar = {
-                        AnimatedVisibility(
-                            visible = showPlayerBar.value,
-                            label = "media bar animation",
-                            enter = slideIn(
-                                animationSpec = tween(durationMillis = 1000)
-                            ) { fullSize ->
-                                IntOffset(0, -fullSize.height)
-                            },
-                            exit = slideOut(
-                                animationSpec = tween(durationMillis = 1000)
-                            ) { fullSize ->
-                                IntOffset(0, -fullSize.width)
-                            }
-                        ) {
-                            MainTopAppBar(
-                                modifier = commonModifier
-                                    .padding(top = padding.calculateTopPadding() + 5.dp),
-                                onMenuClick = {
-                                    scope.launch {
-                                        if (drawerState.isOpen) {
-                                            drawerState.close()
-                                        } else {
-                                            drawerState.open()
-                                        }
-                                    }
-                                },
-                                onSearchClick = onSearchClick
-                            )
-                        }
+    MainNavigationDrawer(
+        drawerState = drawerState,
+        onSettingsClick = {
+            navController.navigate(Screen.SettingsScreen.rout)
+            scope.launch {
+                drawerState.close()
+            }
+        },
+        sendCommand = sendCommand,
+        tagsList = tagsList
+    ) {
+        Scaffold(
+            topBar = {
+                AnimatedVisibility(
+                    visible = showPlayerBar.value,
+                    label = "media bar animation",
+                    enter = slideIn(
+                        animationSpec = tween(durationMillis = 1000)
+                    ) { fullSize ->
+                        IntOffset(0, -fullSize.height)
                     },
-                    bottomBar = {
-                        AnimatedVisibility(
-                            visible = showPlayerBar.value,
-                            label = "media bar animation",
-                            enter = slideIn(
-                                animationSpec = tween(
-                                    durationMillis = 1000,
-                                    easing = LinearOutSlowInEasing
-                                )
-                            ) { fullSize ->
-                                IntOffset(0, fullSize.height)
-                            },
-                            exit = slideOut(
-                                animationSpec = tween(
-                                    durationMillis = 1000,
-                                    easing = LinearOutSlowInEasing
-                                )
-                            ) { fullSize ->
-                                IntOffset(0, fullSize.width)
+                    exit = slideOut(
+                        animationSpec = tween(durationMillis = 1000)
+                    ) { fullSize ->
+                        IntOffset(0, -fullSize.width)
+                    }
+                ) {
+                    MainTopAppBar(
+                        modifier = commonModifier
+                            .padding(top = padding.calculateTopPadding() + 5.dp),
+                        onMenuClick = {
+                            scope.launch {
+                                if (drawerState.isOpen) {
+                                    drawerState.close()
+                                } else {
+                                    drawerState.open()
+                                }
                             }
-                        ) {
-                            MainBottomAppBar(
-                                modifier = commonModifier
-                                    .padding(bottom = padding.calculateBottomPadding() + 5.dp),
-                                nowPlayingStation = nowPlayingStation,
-                                playbackState = playbackState,
-                                onPlayClick = onPlayClick
-                            )
-                        }
+                        },
+                        onSearchClick = onSearchClick
+                    )
+                }
+            },
+            bottomBar = {
+                AnimatedVisibility(
+                    visible = showPlayerBar.value,
+                    label = "media bar animation",
+                    enter = slideIn(
+                        animationSpec = tween(
+                            durationMillis = 1000,
+                            easing = LinearOutSlowInEasing
+                        )
+                    ) { fullSize ->
+                        IntOffset(0, fullSize.height)
                     },
-                    snackbarHost = {
-                        SnackbarHost(hostState = snackBarHostState)
+                    exit = slideOut(
+                        animationSpec = tween(
+                            durationMillis = 1000,
+                            easing = LinearOutSlowInEasing
+                        )
+                    ) { fullSize ->
+                        IntOffset(0, fullSize.width)
                     }
-                ) { paddingValues ->
-                    when (dataState.value) {
-                        DataState.LOADING -> {
-                            Box(
-                                modifier = Modifier.fillMaxSize()
-                            ) {
-                                LoadContent(text = stringResource(R.string.loading_string))
+                ) {
+                    MainBottomAppBar(
+                        modifier = commonModifier
+                            .padding(bottom = padding.calculateBottomPadding() + 5.dp),
+                        nowPlayingStation = nowPlayingStation,
+                        playbackState = playbackState,
+                        onPlayClick = onPlayClick
+                    )
+                }
+            },
+            snackbarHost = {
+                SnackbarHost(hostState = snackBarHostState)
+            }
+        ) { paddingValues ->
+            when (dataState.value) {
+                DataState.LOADING -> {
+                    Box(
+                        modifier = Modifier.fillMaxSize()
+                    ) {
+                        LoadContent(
+                            text = if (message.value.message == InfoMessages.FIRST_INIT.name) {
+                                stringResource(R.string.init_load_text)
+                            } else {
+                                stringResource(R.string.loading_string)
                             }
-                        }
-
-                        else -> {
-                            MainContent(
-                                paddingValues = paddingValues,
-                                stations = stationsList,
-                                onCardClick = onPlayClick,
-                                onFavoriteClick = onFavoriteClick,
-                                onScrolled = {
-                                    isScrolledUp.value = it
-                                },
-                                stationsUiState = stationsUiState,
-                                onVisibleIndexChange = onVisibleIndexChange,
-                                nowPlayingStation = nowPlayingStation
-                            )
-                        }
+                        )
                     }
+                }
+
+                else -> {
+                    MainContent(
+                        paddingValues = paddingValues,
+                        stations = stationsList,
+                        onCardClick = onPlayClick,
+                        onFavoriteClick = onFavoriteClick,
+                        onScrolled = {
+                            isScrolledUp.value = it
+                        },
+                        stationsUiState = stationsUiState,
+                        onVisibleIndexChange = onVisibleIndexChange,
+                        nowPlayingStation = nowPlayingStation
+                    )
                 }
             }
         }

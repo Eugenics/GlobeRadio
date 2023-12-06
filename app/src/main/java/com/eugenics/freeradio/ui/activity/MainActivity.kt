@@ -1,6 +1,7 @@
 package com.eugenics.freeradio.ui.activity
 
 import android.Manifest
+import android.animation.ObjectAnimator
 import android.app.Activity
 import android.content.Intent
 import android.content.res.Configuration
@@ -11,13 +12,16 @@ import android.os.Build
 import android.os.Bundle
 import android.os.Environment
 import android.util.Log
+import android.view.View
+import android.view.animation.AnticipateInterpolator
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.annotation.RequiresApi
-import androidx.compose.runtime.*
+import androidx.core.animation.doOnEnd
 import androidx.core.content.FileProvider
+import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.core.view.WindowCompat
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
@@ -28,6 +32,7 @@ import androidx.work.WorkInfo
 import androidx.work.WorkManager
 import com.eugenics.freeradio.R
 import com.eugenics.freeradio.core.enums.MessageType
+import com.eugenics.freeradio.core.enums.UIState
 import com.eugenics.freeradio.ui.application.Application
 import com.eugenics.freeradio.ui.util.UICommands
 import com.eugenics.freeradio.ui.viewmodels.MainViewModel
@@ -91,6 +96,12 @@ class MainActivity : ComponentActivity() {
     @RequiresApi(Build.VERSION_CODES.S)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        installSplashScreen()
+//            .apply {
+//                setKeepOnScreenCondition {
+//                    mainViewModel.uiState.value == UIState.UI_STATE_SPLASH
+//                }
+//            }
 
         val isFits = this.resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
         Log.d(TAG, "Landscape orientation=$isFits")

@@ -9,5 +9,7 @@ enum class MessageType(private val code: Int) {
 
 enum class InfoMessages {
     NO_DATA_TO_SAVE,
-    NO_DATA_TO_LOAD
+    NO_DATA_TO_LOAD,
+    FIRST_INIT,
+    LOADING
 }

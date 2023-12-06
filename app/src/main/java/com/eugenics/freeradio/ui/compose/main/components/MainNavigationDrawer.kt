@@ -98,7 +98,7 @@ fun MainNavigationDrawer(
                 ) {
                     Spacer(Modifier.width(10.dp))
                     Image(
-                        painter = painterResource(R.drawable.globe_logo),
+                        painter = painterResource(R.drawable.new_logo_foreground),
                         contentDescription = null,
                         contentScale = ContentScale.Crop,
                         modifier = Modifier
