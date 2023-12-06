@@ -8,6 +8,7 @@ import android.support.v4.media.MediaBrowserCompat
 import android.support.v4.media.MediaMetadataCompat
 import android.support.v4.media.session.PlaybackStateCompat
 import android.util.Log
+import androidx.compose.ui.res.stringResource
 import androidx.datastore.core.DataStore
 import androidx.lifecycle.viewModelScope
 import androidx.palette.graphics.Palette
@@ -234,6 +235,10 @@ class MainViewModel @Inject constructor(
                 when (state) {
                     MediaSourceState.STATE_FIRST_INIT.value -> {
                         _uiState.value = UIState.UI_STATE_SPLASH
+                        sendMessage(
+                            MessageType.UI,
+                            message = InfoMessages.FIRST_INIT.name
+                        )
                     }
 
                     MediaSourceState.STATE_CREATED.value -> _uiState.value = UIState.UI_STATE_SPLASH
@@ -245,6 +250,10 @@ class MainViewModel @Inject constructor(
                     MediaSourceState.STATE_INITIALIZING.value -> {
                         _uiState.value = UIState.UI_STATE_MAIN
                         _dataState.value = DataState.LOADING
+                        sendMessage(
+                            MessageType.UI,
+                            message = InfoMessages.LOADING.name
+                        )
                     }
 
                     MediaSourceState.STATE_INITIALIZED.value -> {

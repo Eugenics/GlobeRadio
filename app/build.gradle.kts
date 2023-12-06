@@ -179,4 +179,7 @@ dependencies {
 
     // Workmanager
     implementation(libs.androidx.workmanager)
+
+    // Splash Screen
+    implementation(libs.androidx.core.splash)
 }
