@@ -8,7 +8,6 @@ import android.support.v4.media.MediaBrowserCompat
 import android.support.v4.media.MediaMetadataCompat
 import android.support.v4.media.session.PlaybackStateCompat
 import android.util.Log
-import androidx.compose.ui.res.stringResource
 import androidx.datastore.core.DataStore
 import androidx.lifecycle.viewModelScope
 import androidx.palette.graphics.Palette
@@ -424,5 +423,6 @@ class MainViewModel @Inject constructor(
 
     companion object {
         const val TAG = "MAIN_VIEW_MODEL"
+        private const val SPLASH_DELAY_TIME = 3000L
     }
 }
