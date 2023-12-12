@@ -12,7 +12,7 @@ import androidx.work.WorkManager
 import androidx.work.WorkerParameters
 import com.eugenics.data.data.util.Response
 import com.eugenics.data.interfaces.IStationsRepository
-import com.eugenics.freeradio.R
+import com.eugenics.resource.R
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay

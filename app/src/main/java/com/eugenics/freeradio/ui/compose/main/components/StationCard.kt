@@ -35,7 +35,7 @@ import coil.compose.SubcomposeAsyncImageContent
 import com.eugenics.core.enums.Commands
 import com.eugenics.core.model.NowPlayingStation
 import com.eugenics.core.model.Station
-import com.eugenics.freeradio.R
+import com.eugenics.resource.R
 import com.eugenics.freeradio.ui.compose.main.MainContent
 import com.eugenics.freeradio.ui.theme.FreeRadioTheme
 import com.eugenics.media_service.media.FreeRadioMediaServiceConnection

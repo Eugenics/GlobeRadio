@@ -37,4 +37,7 @@ dependencies {
     implementation(libs.androidx.ktx)
     implementation(libs.androidx.appcompat)
     implementation(libs.google.material)
+
+    //Modules
+    implementation(project(":resource"))
 }

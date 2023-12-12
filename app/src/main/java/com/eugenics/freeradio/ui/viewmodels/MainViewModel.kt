@@ -22,17 +22,15 @@ import com.eugenics.core.model.FavoriteStation
 import com.eugenics.core.model.Favorites
 import com.eugenics.core.model.StationsUiState
 import com.eugenics.data.interfaces.IStationsRepository
-import com.eugenics.freeradio.core.enums.DataState
-import com.eugenics.freeradio.core.enums.InfoMessages
-import com.eugenics.freeradio.core.enums.MessageType
-import com.eugenics.freeradio.core.enums.UIState
-import com.eugenics.freeradio.ui.util.ServiceViewModel
+import com.eugenics.ui_core.data.enums.UIDataState
+import com.eugenics.ui_core.data.enums.UIState
 import com.eugenics.freeradio.ui.util.PlayBackState
 import com.eugenics.freeradio.util.ImageHelper
-import com.eugenics.freeradio.ui.util.UICommands
+import com.eugenics.ui_core.data.enums.UICommands
 import com.eugenics.freeradio.util.FilesHelper
 import com.eugenics.freeradio.util.PlaylistHelper
 import com.eugenics.media_service.media.FreeRadioMediaServiceConnection
+import com.eugenics.ui_core.data.model.UIMessage
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.BufferOverflow
@@ -235,29 +233,29 @@ class MainViewModel @Inject constructor(
                     MediaSourceState.STATE_FIRST_INIT.value -> {
                         _uiState.value = UIState.UI_STATE_SPLASH
                         sendMessage(
-                            MessageType.UI,
-                            message = InfoMessages.FIRST_INIT.name
+                            UIMessage.TYPE_UI,
+                            messageInfoType = UIMessage.INFO_FIRST_INIT
                         )
                     }
 
                     MediaSourceState.STATE_CREATED.value -> _uiState.value = UIState.UI_STATE_SPLASH
                     MediaSourceState.STATE_ERROR.value -> {
                         _uiState.value = UIState.UI_STATE_MAIN
-                        _dataState.value = DataState.ERROR
+                        _Ui_dataState.value = UIDataState.ERROR
                     }
 
                     MediaSourceState.STATE_INITIALIZING.value -> {
                         _uiState.value = UIState.UI_STATE_MAIN
-                        _dataState.value = DataState.LOADING
+                        _Ui_dataState.value = UIDataState.LOADING
                         sendMessage(
-                            MessageType.UI,
-                            message = InfoMessages.LOADING.name
+                            UIMessage.TYPE_UI,
+                            messageInfoType = UIMessage.INFO_LOADING
                         )
                     }
 
                     MediaSourceState.STATE_INITIALIZED.value -> {
                         _uiState.value = UIState.UI_STATE_MAIN
-                        _dataState.value = DataState.PREPARED
+                        _Ui_dataState.value = UIDataState.PREPARED
                     }
                 }
             }
@@ -342,7 +340,7 @@ class MainViewModel @Inject constructor(
                     _savedData.value = PlaylistHelper.convertStationsToPlaylist(this)
                     setUICommand(UICommands.UI_EXPORT_FAVORITES_PLAYLIST)
                 } else {
-                    sendMessage(MessageType.INFO, InfoMessages.NO_DATA_TO_LOAD.name)
+                    sendMessage(UIMessage.TYPE_INFO, UIMessage.INFO_NO_DATA_TO_LOAD)
                 }
             }
         }
@@ -365,11 +363,15 @@ class MainViewModel @Inject constructor(
                             )
                             setUICommand(UICommands.UI_COMMAND_BACKUP_FAVORITES)
                         } catch (e: SerializationException) {
-                            sendMessage(MessageType.ERROR, e.message.toString())
+                            sendMessage(
+                                UIMessage.TYPE_ERROR,
+                                UIMessage.INFO_ERROR,
+                                e.message.toString()
+                            )
                             Log.e(TAG, e.toString())
                         }
                     } else {
-                        sendMessage(MessageType.INFO, InfoMessages.NO_DATA_TO_LOAD.name)
+                        sendMessage(UIMessage.TYPE_INFO, UIMessage.INFO_NO_DATA_TO_LOAD)
                     }
                 }
         }
@@ -389,10 +391,10 @@ class MainViewModel @Inject constructor(
                         sendCommand(command = Commands.FAVORITES_COMMAND.name, null)
                     }
                 } else {
-                    sendMessage(MessageType.ERROR, InfoMessages.NO_DATA_TO_SAVE.name)
+                    sendMessage(UIMessage.TYPE_ERROR, UIMessage.INFO_NO_DATA_TO_SAVE)
                 }
             } catch (e: Exception) {
-                sendMessage(MessageType.ERROR, e.message.toString())
+                sendMessage(UIMessage.TYPE_ERROR, UIMessage.INFO_ERROR, e.message.toString())
                 Log.e(TAG, e.toString())
             }
         }

@@ -37,4 +37,10 @@ dependencies {
     implementation(libs.androidx.ktx)
     implementation(libs.androidx.appcompat)
     implementation(libs.google.material)
+
+    // Material 3
+    implementation(Deps.Material3.material)
+
+    // Splash Screen
+    implementation(libs.androidx.core.splash)
 }

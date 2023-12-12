@@ -25,6 +25,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import com.eugenics.freeradio.R
+import com.eugenics.resource.R as RR
 import com.eugenics.freeradio.ui.compose.service.components.ServiceCard
 import com.eugenics.freeradio.ui.theme.FreeRadioTheme
 
@@ -51,7 +52,7 @@ fun SplashScreen(
             .background(color = colorResource(R.color.main_brand))
     ) {
         Image(
-            painter = painterResource(R.drawable.globe_logo),
+            painter = painterResource(RR.drawable.globe_logo),
             contentDescription = null,
             contentScale = ContentScale.Crop,
             modifier = Modifier

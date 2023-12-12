@@ -6,7 +6,7 @@ import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
-import com.eugenics.freeradio.R
+import com.eugenics.resource.R
 
 val Roboto = FontFamily.Default
 val BlenderPro = FontFamily(

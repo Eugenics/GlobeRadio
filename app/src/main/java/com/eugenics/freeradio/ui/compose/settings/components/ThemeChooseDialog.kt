@@ -20,7 +20,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.eugenics.core.enums.Theme
-import com.eugenics.freeradio.R
+import com.eugenics.resource.R
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

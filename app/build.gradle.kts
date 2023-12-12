@@ -1,3 +1,4 @@
+import org.jetbrains.kotlin.kapt.cli.main
 import java.io.FileInputStream
 import java.io.FileOutputStream
 import java.util.Properties
@@ -91,6 +92,8 @@ android {
         unitTests.isIncludeAndroidResources = true
         unitTests.isReturnDefaultValues = true
     }
+
+    //sourceSets["main"].resources.srcDirs("../resource/src/main/res")
 }
 
 dependencies {
@@ -100,6 +103,9 @@ dependencies {
     implementation(project(":core_data"))
     implementation(project(":media_service"))
     androidTestImplementation(project(":core_testing"))
+    implementation(project(":resource"))
+    implementation(project(":ui_core"))
+    implementation(project(":ui"))
 
     //Libs
     implementation(files("libs/material-colors-util.jar"))

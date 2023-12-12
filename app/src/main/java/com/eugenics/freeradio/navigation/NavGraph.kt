@@ -31,8 +31,7 @@ fun NavGraph(
     ) {
         composable(route = Screen.MainScreen.rout) {
             val playbackState = mainViewModel.playBackState.collectAsState()
-            val uiState = mainViewModel.uiState.collectAsState()
-            val dataState = mainViewModel.dataState.collectAsState()
+            val dataState = mainViewModel.uiDataState.collectAsState()
             val stationsList = mainViewModel.stations.collectAsState()
             val nowPlayingStation = mainViewModel.nowPlaying.collectAsState()
             val tagsList = mainViewModel.tagList.collectAsState()
@@ -45,8 +44,7 @@ fun NavGraph(
 
             MainScreen(
                 navController = navController,
-                uiState = uiState,
-                dataState = dataState,
+                uiDataState = dataState,
                 playbackState = playbackState,
                 stationsList = stationsList,
                 message = message,

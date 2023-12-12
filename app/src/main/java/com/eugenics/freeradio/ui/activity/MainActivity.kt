@@ -26,13 +26,13 @@ import androidx.work.ExistingWorkPolicy
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkInfo
 import androidx.work.WorkManager
-import com.eugenics.freeradio.R
-import com.eugenics.freeradio.core.enums.MessageType
+import com.eugenics.resource.R
 import com.eugenics.freeradio.ui.application.Application
-import com.eugenics.freeradio.ui.util.UICommands
+import com.eugenics.ui_core.data.enums.UICommands
 import com.eugenics.freeradio.ui.viewmodels.MainViewModel
 import com.eugenics.freeradio.util.StationsWorker
 import com.eugenics.freeradio.util.createInternetConnectivityListener
+import com.eugenics.ui_core.data.model.UIMessage
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -78,11 +78,15 @@ class MainActivity : ComponentActivity() {
             if (result.data != null) {
                 when (result.resultCode) {
                     Activity.RESULT_OK -> mainViewModel.sendMessage(
-                        MessageType.INFO, getString(R.string.saved_text)
+                        UIMessage.TYPE_INFO,
+                        UIMessage.INFO_INFO,
+                        getString(R.string.saved_text)
                     )
 
                     else -> mainViewModel.sendMessage(
-                        MessageType.INFO, getString(R.string.not_saved_text)
+                        UIMessage.TYPE_INFO,
+                        UIMessage.INFO_INFO,
+                        getString(R.string.not_saved_text)
                     )
                 }
             }
@@ -170,7 +174,9 @@ class MainActivity : ComponentActivity() {
             } else {
                 withContext(Dispatchers.Main) {
                     mainViewModel.sendMessage(
-                        MessageType.INFO, getString(R.string.no_data_to_share)
+                        UIMessage.TYPE_INFO,
+                        UIMessage.INFO_NO_DATA_TO_SAVE,
+                        getString(R.string.no_data_to_share)
                     )
                 }
             }
@@ -235,8 +241,9 @@ class MainActivity : ComponentActivity() {
             internetListener.isActive.collect {
                 if (!it) {
                     mainViewModel.sendMessage(
-                        type = MessageType.WARNING,
-                        message = getString(R.string.no_internet_connection)
+                        UIMessage.TYPE_WARNING,
+                        UIMessage.INFO_INFO,
+                        getString(R.string.no_internet_connection)
                     )
                 }
             }
@@ -269,7 +276,11 @@ class MainActivity : ComponentActivity() {
                     }
 
                     WorkInfo.State.CANCELLED -> {
-                        mainViewModel.sendMessage(MessageType.INFO, "Job canceled...")
+                        mainViewModel.sendMessage(
+                            UIMessage.TYPE_INFO,
+                            UIMessage.INFO_INFO,
+                            getString(R.string.job_canceled)
+                        )
                     }
 
                     else -> {}

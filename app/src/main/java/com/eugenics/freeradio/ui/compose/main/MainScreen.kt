@@ -16,7 +16,6 @@ import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.LayoutDirection
@@ -27,12 +26,9 @@ import com.eugenics.core.model.NowPlayingStation
 import com.eugenics.core.model.Station
 import com.eugenics.core.model.StationsUiState
 import com.eugenics.core.model.Tag
-import com.eugenics.freeradio.R
-import com.eugenics.freeradio.core.data.SystemMessage
-import com.eugenics.freeradio.core.enums.DataState
-import com.eugenics.freeradio.core.enums.InfoMessages
-import com.eugenics.freeradio.core.enums.MessageType
-import com.eugenics.freeradio.core.enums.UIState
+import com.eugenics.ui_core.data.model.UIMessage
+import com.eugenics.ui_core.data.enums.UIDataState
+import com.eugenics.ui_core.data.enums.UIState
 import com.eugenics.freeradio.navigation.Screen
 import com.eugenics.freeradio.ui.compose.load.LoadContent
 import com.eugenics.freeradio.ui.compose.main.components.MainTopAppBar
@@ -47,15 +43,14 @@ import kotlinx.coroutines.launch
 @Composable
 fun MainScreen(
     navController: NavHostController = rememberNavController(),
-    uiState: State<UIState> = mutableStateOf(UIState.UI_STATE_SPLASH),
-    dataState: State<DataState> = mutableStateOf(DataState.LOADING),
+    uiDataState: State<Int> = mutableStateOf(UIDataState.LOADING),
     playbackState: State<PlayBackState> = mutableStateOf(PlayBackState.Pause),
     stationsList: State<List<Station>> = mutableStateOf(listOf()),
     nowPlayingStation: State<NowPlayingStation> = mutableStateOf(NowPlayingStation.emptyInstance()),
     sendCommand: (command: String, parameters: Bundle?) -> Unit = { _, _ -> },
     tagsList: State<List<Tag>>,
     stationsUiState: State<StationsUiState> = mutableStateOf(StationsUiState.emptyInstance()),
-    message: State<SystemMessage> = mutableStateOf(SystemMessage.emptyInstance()),
+    message: State<UIMessage> = mutableStateOf(UIMessage.emptyInstance()),
     onPlayClick: (mediaId: String?) -> Unit = {},
     onSearchClick: (query: String) -> Unit = {},
     onFavoriteClick: (command: String, bundle: Bundle?) -> Unit = { _, _ -> },
@@ -65,7 +60,6 @@ fun MainScreen(
     val scope = rememberCoroutineScope()
     val padding = WindowInsets.systemBars.asPaddingValues()
     val isScrolledUp = rememberSaveable { mutableStateOf(false) }
-    val context = LocalContext.current
 
     val commonModifier = Modifier
         .padding(
@@ -79,19 +73,19 @@ fun MainScreen(
 
     val showPlayerBar = rememberSaveable { mutableStateOf(false) }
 
+    val context = LocalContext.current
+
     LaunchedEffect(key1 = message.value.id) {
-        if (message.value.message.isNotBlank() &&
-            message.value.id != lastMessageId.value
-        ) {
-            when (message.value.type) {
-                MessageType.WARNING -> showWarningDialog.value = true
-                MessageType.INFO -> snackBarHostState.showSnackbar(
-                    message = message.value.message,
+        if (message.value.id != lastMessageId.value) {
+            when (message.value.messageType) {
+                UIMessage.TYPE_WARNING -> showWarningDialog.value = true
+                UIMessage.TYPE_INFO -> snackBarHostState.showSnackbar(
+                    message = message.value.getMessage(context),
                     duration = SnackbarDuration.Short
                 )
 
-                MessageType.ERROR -> snackBarHostState.showSnackbar(
-                    message = message.value.message,
+                UIMessage.TYPE_ERROR -> snackBarHostState.showSnackbar(
+                    message = message.value.getMessage(context),
                     duration = SnackbarDuration.Short
                 )
 
@@ -101,9 +95,9 @@ fun MainScreen(
         }
     }
 
-    LaunchedEffect(key1 = dataState.value) {
-        when (dataState.value) {
-            DataState.LOADING -> showPlayerBar.value = false
+    LaunchedEffect(key1 = uiDataState.value) {
+        when (uiDataState.value) {
+            UIDataState.LOADING -> showPlayerBar.value = false
             else -> showPlayerBar.value = true
         }
     }
@@ -111,7 +105,7 @@ fun MainScreen(
     if (showWarningDialog.value) {
         WarningDialog(
             onClose = { showWarningDialog.value = false },
-            warningText = message.value.message
+            warningText = message.value.getMessage(context)
         )
     }
 
@@ -192,18 +186,12 @@ fun MainScreen(
                 SnackbarHost(hostState = snackBarHostState)
             }
         ) { paddingValues ->
-            when (dataState.value) {
-                DataState.LOADING -> {
+            when (uiDataState.value) {
+                UIDataState.LOADING -> {
                     Box(
                         modifier = Modifier.fillMaxSize()
                     ) {
-                        LoadContent(
-                            text = if (message.value.message == InfoMessages.FIRST_INIT.name) {
-                                stringResource(R.string.init_load_text)
-                            } else {
-                                stringResource(R.string.loading_string)
-                            }
-                        )
+                        LoadContent(message.value.getMessage(context))
                     }
                 }
 
@@ -233,7 +221,7 @@ private fun MainScreenPreviewNight() {
     val tagsList = remember { mutableStateOf(listOf<Tag>()) }
     val uiState = remember { mutableStateOf(UIState.UI_STATE_MAIN) }
     FreeRadioTheme {
-        MainScreen(tagsList = tagsList, uiState = uiState)
+        MainScreen(tagsList = tagsList)
     }
 }
 
@@ -244,6 +232,6 @@ private fun MainScreenPreviewDay() {
     val tagsList = remember { mutableStateOf(listOf<Tag>()) }
     val uiState = remember { mutableStateOf(UIState.UI_STATE_MAIN) }
     FreeRadioTheme {
-        MainScreen(tagsList = tagsList, uiState = uiState)
+        MainScreen(tagsList = tagsList)
     }
 }

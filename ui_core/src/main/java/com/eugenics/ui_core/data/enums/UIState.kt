@@ -1,4 +1,4 @@
-package com.eugenics.freeradio.core.enums
+package com.eugenics.ui_core.data.enums
 
 enum class UIState(private val code: Int) {
     UI_STATE_SPLASH(10),

@@ -16,12 +16,12 @@ import androidx.compose.ui.tooling.preview.Preview
 import com.eugenics.core.model.CurrentState
 import com.eugenics.core.enums.Theme
 import com.eugenics.freeradio.ui.theme.FreeRadioTheme
-import com.eugenics.freeradio.R
+import com.eugenics.resource.R
 import com.eugenics.freeradio.ui.compose.settings.components.CategoryRow
 import com.eugenics.freeradio.ui.compose.settings.components.SettingsAppBar
 import com.eugenics.freeradio.ui.compose.settings.components.SettingsTextRow
 import com.eugenics.freeradio.ui.compose.settings.components.ThemeChooseDialog
-import com.eugenics.freeradio.ui.util.UICommands
+import com.eugenics.ui_core.data.enums.UICommands
 
 @Composable
 fun SettingsScreen(

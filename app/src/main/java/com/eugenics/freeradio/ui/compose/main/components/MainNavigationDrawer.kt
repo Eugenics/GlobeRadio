@@ -23,7 +23,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.eugenics.core.enums.Commands
 import com.eugenics.core.model.Tag
-import com.eugenics.freeradio.R
+import com.eugenics.resource.R
 import com.eugenics.freeradio.ui.theme.FreeRadioTheme
 import kotlinx.coroutines.launch
 

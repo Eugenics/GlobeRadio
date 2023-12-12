@@ -32,12 +32,14 @@
     <string name="no_internet_connection">No internet connection…</string>
     <string name="warning">Warning…</string>
     <string name="has_denied">has denied…</string>
-    <string name="no_data">No data to save…</string>
-    <string name="no_restore_data">No data to load…</string>
+    <string name="no_data_save">No data to save…</string>
+    <string name="no_data_load">No data to load…</string>
     <string name="export_favorites_playlist">Save favorites as playlist</string>
     <string name="workmanager_title">Updating station list…</string>
     <string name="start_update">Start updating</string>
     <string name="updated">Updated</string>
+    <string name="job_canceled">Job canceled</string>
+    <string name="empty_message">No data to show</string>
 
     <string name="authority" translatable="false">"com.eugenics.fileprovider"</string>
     <string name="notification_channel_id" translatable="false">WORK_MANAGER_NOTIFICATION</string>
