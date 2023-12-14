@@ -1,16 +1,15 @@
-import org.jetbrains.kotlin.kapt.cli.main
 import java.io.FileInputStream
 import java.io.FileOutputStream
 import java.util.Properties
 
 plugins {
-    androidApplication
-    kotlin
-    kapt
-    parcelize
-    serialization
-    dagger
-    libs.plugins.google.services
+    id(libs.plugins.android.application.get().pluginId)
+    id(libs.plugins.ksp.get().pluginId)
+    id(libs.plugins.kotlin.android.get().pluginId)
+    id(libs.plugins.kotlin.parcelize.get().pluginId)
+    id(libs.plugins.kotlinx.serialization.get().pluginId)
+    id(libs.plugins.dagger.hilt.get().pluginId)
+    id(libs.plugins.google.services.get().pluginId)
 }
 
 android {
@@ -107,55 +106,51 @@ dependencies {
     implementation(project(":ui_core"))
     implementation(project(":ui"))
 
-    //Libs
-    implementation(files("libs/material-colors-util.jar"))
+    implementation(libs.androidx.ktx)
+    implementation(libs.google.material)
+    implementation(libs.androidx.lifecycle.runtime)
+    implementation(libs.androidx.activity.compose)
+    implementation(libs.androidx.pallete)
 
-    implementation(Deps.AndroidX.coreKtx)
-    implementation(Deps.Google.material)
-    implementation(Deps.Compose.composeUi)
-    implementation(Deps.Compose.composeTooling)
-    implementation(Deps.Compose.composePreview)
-    implementation(Deps.AndroidX.lifecycleRuntime)
-    implementation(Deps.AndroidX.activityCompose)
-    implementation(Deps.Compose.animationGraphics)
-    implementation(Deps.AndroidX.pallete)
+    // Compose
+    implementation(libs.bundles.compose)
 
     //GSON
-    implementation(Deps.Google.gson)
+    implementation(libs.google.gson)
 
     // Hilt - dependency injection
     implementation(libs.hilt.android)
-    kapt(libs.hilt.compiler)
+    ksp(libs.hilt.compiler)
     implementation(libs.androidx.hilt.navigationcompose)
 
     // Kotlin
-    implementation(Deps.KotlinX.kotlinStdlibJdk8)
-    implementation(Deps.KotlinX.coroutinesCore)
-    implementation(Deps.KotlinX.coroutinesAndroid)
-    implementation(Deps.KotlinX.kotlinxSerialization)
+    implementation(libs.kotlin.stdlibjdk8)
+    implementation(libs.kotlinx.coroutines)
+    implementation(libs.kotlinx.coroutines.android)
+    implementation(libs.kotlinx.serialization)
 
     // Navigation
-    implementation(Deps.AndroidX.navigation)
+    implementation(libs.androidx.navigation.compose)
 
     // Compose Accompanist
-    implementation(Deps.Accomponist.inserts)
-    implementation(Deps.Accomponist.coil)
-    implementation(Deps.Accomponist.swipe)
-    implementation(Deps.Accomponist.systemUiController)
-    implementation(Deps.Accomponist.navigaionAnimation)
+    implementation(libs.accomponist.inserts)
+    implementation(libs.accomponist.coil)
+    implementation(libs.accomponist.swipe)
+    implementation(libs.accomponist.systemUiController)
+    implementation(libs.accomponist.navigaionAnimation)
 
     //Coil compose
-    implementation(Deps.Images.coil)
+    implementation(libs.coil)
 
     // Media
-    implementation(Deps.AndroidX.media)
+    implementation(libs.androidx.media)
 
     // Material 3
-    implementation(Deps.Material3.material)
-    implementation(Deps.Material3.windowSize)
+    implementation(libs.androidx.material3)
+    implementation(libs.androidx.compose.windowsize)
 
     // DataStore
-    implementation(Deps.DataStore.datastore)
+    implementation(libs.androidx.datastore)
 
     // Instrumental tests
     androidTestImplementation(Deps.JUnit.junitExt)
@@ -163,7 +158,7 @@ dependencies {
     androidTestImplementation(Deps.AndroidX.testCore)
     androidTestImplementation(Deps.AndroidX.testRunner)
     androidTestImplementation(Deps.Hilt.testing)
-    kaptAndroidTest(Deps.Hilt.compiler)
+    kspAndroidTest(libs.hilt.compiler)
 
     // Local tests
     testImplementation(Deps.JUnit.junit)

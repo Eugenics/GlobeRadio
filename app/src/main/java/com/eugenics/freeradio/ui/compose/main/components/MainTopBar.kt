@@ -18,7 +18,7 @@ import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.eugenics.freeradio.ui.theme.FreeRadioTheme
+import com.eugenics.ui.theme.GlobeRadioTheme
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -104,7 +104,7 @@ private fun SearchText(
 @Composable
 @Preview(showBackground = true)
 fun previewMainTopBar() {
-    FreeRadioTheme {
+    GlobeRadioTheme {
         Row {
             SearchText { }
         }
@@ -114,7 +114,7 @@ fun previewMainTopBar() {
 @Composable
 @Preview(showBackground = true, uiMode = UI_MODE_NIGHT_YES)
 fun previewMainTopBarDark() {
-    FreeRadioTheme {
+    GlobeRadioTheme {
         Row {
             SearchText { }
         }

@@ -1,4 +1,4 @@
-package com.eugenics.freeradio.ui.compose.load
+package com.eugenics.ui.compose.load
 
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.Image
@@ -13,7 +13,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.eugenics.resource.R
-import com.eugenics.freeradio.ui.theme.FreeRadioTheme
+import com.eugenics.ui.compose.util.PreviewBase
 
 @Composable
 fun LoadGears(modifier: Modifier = Modifier.fillMaxSize()) {
@@ -79,7 +79,7 @@ fun LoadGears(modifier: Modifier = Modifier.fillMaxSize()) {
     apiLevel = 27
 )
 private fun PreviewLoadingScreen() {
-    FreeRadioTheme {
+    PreviewBase {
         Box(modifier = Modifier.fillMaxSize()) {
             LoadGears(modifier = Modifier.align(Alignment.Center))
         }

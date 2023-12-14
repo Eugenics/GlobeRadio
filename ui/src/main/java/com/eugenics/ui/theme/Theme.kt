@@ -1,4 +1,4 @@
-package com.eugenics.freeradio.ui.theme
+package com.eugenics.ui.theme
 
 import android.os.Build
 import androidx.compose.foundation.isSystemInDarkTheme
@@ -81,7 +81,7 @@ val DarkColors = darkColorScheme(
 )
 
 @Composable
-fun FreeRadioTheme(
+fun GlobeRadioTheme(
     useDarkTheme: Boolean = isSystemInDarkTheme(),
     content: @Composable() () -> Unit
 ) {
@@ -109,7 +109,7 @@ fun FreeRadioTheme(
         systemUiController.setSystemBarsColor(
             color = Color.Transparent,
             darkIcons = useDarkIcons,
-            isNavigationBarContrastEnforced = false,
+            isNavigationBarContrastEnforced = true,
             transformColorForLightContent = { original ->
                 blackScrim.compositeOver(original)
             }

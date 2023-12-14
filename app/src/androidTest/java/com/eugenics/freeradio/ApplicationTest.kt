@@ -6,7 +6,7 @@ import androidx.compose.ui.test.junit4.createComposeRule
 import com.eugenics.core.model.Tag
 import com.eugenics.freeradio.ui.compose.main.MainScreen
 import com.eugenics.freeradio.ui.compose.settings.SettingsScreen
-import com.eugenics.freeradio.ui.theme.FreeRadioTheme
+import com.eugenics.ui.theme.GlobeRadioTheme
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import org.junit.Before
@@ -30,7 +30,7 @@ class ApplicationTest {
     @Test
     fun settingsScreenTest() {
         composeRule.setContent {
-            FreeRadioTheme {
+            GlobeRadioTheme {
                 SettingsScreen()
             }
         }
@@ -39,7 +39,7 @@ class ApplicationTest {
     @Test
     fun mainScreenTest() {
         composeRule.setContent {
-            FreeRadioTheme {
+            GlobeRadioTheme {
                 val tags = remember { mutableStateOf(listOf<Tag>()) }
                 MainScreen(tagsList = tags)
             }

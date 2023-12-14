@@ -25,7 +25,7 @@ import coil.compose.SubcomposeAsyncImage
 import coil.compose.SubcomposeAsyncImageContent
 import com.eugenics.core.model.NowPlayingStation
 import com.eugenics.resource.R
-import com.eugenics.freeradio.ui.theme.FreeRadioTheme
+import com.eugenics.ui.theme.GlobeRadioTheme
 import com.eugenics.freeradio.ui.util.PlayBackState
 
 @RequiresApi(Build.VERSION_CODES.S)
@@ -111,7 +111,7 @@ fun MainBottomAppBar(
 @Composable
 @Preview
 private fun BottomAppCardPreview() {
-    FreeRadioTheme {
+    GlobeRadioTheme {
         val playbackState = remember { mutableStateOf(PlayBackState.Playing) }
         MainBottomAppBar(playbackState = playbackState)
     }
@@ -121,7 +121,7 @@ private fun BottomAppCardPreview() {
 @Composable
 @Preview(uiMode = UI_MODE_NIGHT_YES)
 private fun BottomAppCardPreviewDark() {
-    FreeRadioTheme {
+    GlobeRadioTheme {
         val playbackState = remember { mutableStateOf(PlayBackState.Playing) }
         MainBottomAppBar(playbackState = playbackState)
     }

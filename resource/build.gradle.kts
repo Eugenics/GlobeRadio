@@ -1,6 +1,6 @@
 plugins {
-    androidLibrary
-    kotlin
+    id(libs.plugins.android.library.get().pluginId)
+    id(libs.plugins.kotlin.android.get().pluginId)
 }
 
 android {
@@ -39,7 +39,7 @@ dependencies {
     implementation(libs.google.material)
 
     // Material 3
-    implementation(Deps.Material3.material)
+    implementation(libs.androidx.material3)
 
     // Splash Screen
     implementation(libs.androidx.core.splash)

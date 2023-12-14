@@ -27,7 +27,7 @@ import androidx.compose.ui.unit.dp
 import com.eugenics.freeradio.R
 import com.eugenics.resource.R as RR
 import com.eugenics.freeradio.ui.compose.service.components.ServiceCard
-import com.eugenics.freeradio.ui.theme.FreeRadioTheme
+import com.eugenics.ui.theme.GlobeRadioTheme
 
 @Composable
 fun SplashScreen(
@@ -99,7 +99,7 @@ fun SplashScreen(
     uiMode = UI_MODE_NIGHT_NO, apiLevel = 27, name = "SplashLightMode"
 )
 private fun SplashScreenLightModePreview() {
-    FreeRadioTheme {
+    GlobeRadioTheme {
         SplashScreen()
     }
 }
@@ -112,7 +112,7 @@ private fun SplashScreenLightModePreview() {
     device = "spec:parent=pixel_5,orientation=landscape"
 )
 private fun SplashScreenLightModeLandscapePreview() {
-    FreeRadioTheme {
+    GlobeRadioTheme {
         SplashScreen()
     }
 }
@@ -122,7 +122,7 @@ private fun SplashScreenLightModeLandscapePreview() {
     uiMode = UI_MODE_NIGHT_YES, apiLevel = 27, name = "SplashDarkMode"
 )
 private fun SplashScreenDarkModePreview() {
-    FreeRadioTheme {
+    GlobeRadioTheme {
         SplashScreen()
     }
 }
@@ -132,7 +132,7 @@ private fun SplashScreenDarkModePreview() {
     uiMode = UI_MODE_NIGHT_NO, apiLevel = 27, name = "SplashLightModeInit"
 )
 private fun SplashScreenInitPreview() {
-    FreeRadioTheme {
+    GlobeRadioTheme {
         val message = remember { mutableStateOf("Loading...") }
         SplashScreen(message = message.value)
     }

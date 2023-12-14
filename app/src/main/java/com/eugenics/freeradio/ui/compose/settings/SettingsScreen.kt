@@ -15,7 +15,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import com.eugenics.core.model.CurrentState
 import com.eugenics.core.enums.Theme
-import com.eugenics.freeradio.ui.theme.FreeRadioTheme
+import com.eugenics.ui.theme.GlobeRadioTheme
 import com.eugenics.resource.R
 import com.eugenics.freeradio.ui.compose.settings.components.CategoryRow
 import com.eugenics.freeradio.ui.compose.settings.components.SettingsAppBar
@@ -112,7 +112,7 @@ fun SettingsScreen(
 @Composable
 @Preview(uiMode = UI_MODE_NIGHT_NO)
 private fun SettingsScreenPreview() {
-    FreeRadioTheme {
+    GlobeRadioTheme {
         SettingsScreen()
     }
 }

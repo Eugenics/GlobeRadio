@@ -1,4 +1,4 @@
-package com.eugenics.freeradio.ui.theme
+package com.eugenics.ui.theme
 
 import android.os.Build
 import androidx.compose.material3.ColorScheme

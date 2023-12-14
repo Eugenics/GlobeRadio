@@ -1,6 +1,6 @@
 plugins {
-    androidLibrary
-    kotlin
+    id(libs.plugins.android.library.get().pluginId)
+    id(libs.plugins.kotlin.android.get().pluginId)
 }
 
 android {
@@ -30,13 +30,37 @@ android {
     kotlinOptions {
         jvmTarget = libs.versions.jvmTarget.get()
     }
+
+    buildFeatures {
+        compose = true
+    }
+    composeOptions {
+        kotlinCompilerExtensionVersion = libs.versions.kotlinCompilerExtensionVersion.get()
+    }
 }
 
 dependencies {
 
     implementation(libs.androidx.ktx)
     implementation(libs.androidx.appcompat)
+    implementation(libs.androidx.lifecycle.runtime)
     implementation(libs.google.material)
+
+    // Compose
+    implementation(libs.bundles.compose)
+    implementation(libs.androidx.activity.compose)
+    implementation(libs.androidx.pallete)
+
+    // Compose Accompanist
+    implementation(libs.accomponist.inserts)
+    implementation(libs.accomponist.coil)
+    implementation(libs.accomponist.swipe)
+    implementation(libs.accomponist.systemUiController)
+    implementation(libs.accomponist.navigaionAnimation)
+
+    // Material 3
+    implementation(libs.androidx.material3)
+    implementation(libs.androidx.compose.windowsize)
 
     testImplementation("junit:junit:4.13.2")
     androidTestImplementation("androidx.test.ext:junit:1.1.5")
@@ -45,4 +69,7 @@ dependencies {
     // Modules
     implementation(project(":ui_core"))
     implementation(project(":resource"))
+
+    //Libs
+    implementation(files("libs/material-colors-util.jar"))
 }

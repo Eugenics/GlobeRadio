@@ -1,4 +1,4 @@
-package com.eugenics.freeradio.ui.theme
+package com.eugenics.ui.theme
 
 import androidx.compose.material3.Typography
 import androidx.compose.ui.text.TextStyle

@@ -30,12 +30,12 @@ import com.eugenics.ui_core.data.model.UIMessage
 import com.eugenics.ui_core.data.enums.UIDataState
 import com.eugenics.ui_core.data.enums.UIState
 import com.eugenics.freeradio.navigation.Screen
-import com.eugenics.freeradio.ui.compose.load.LoadContent
+import com.eugenics.ui.compose.load.LoadContent
 import com.eugenics.freeradio.ui.compose.main.components.MainTopAppBar
 import com.eugenics.freeradio.ui.compose.main.components.MainBottomAppBar
 import com.eugenics.freeradio.ui.compose.main.components.MainNavigationDrawer
 import com.eugenics.freeradio.ui.compose.warning.WarningDialog
-import com.eugenics.freeradio.ui.theme.FreeRadioTheme
+import com.eugenics.ui.theme.GlobeRadioTheme
 import com.eugenics.freeradio.ui.util.PlayBackState
 import kotlinx.coroutines.launch
 
@@ -220,7 +220,7 @@ fun MainScreen(
 private fun MainScreenPreviewNight() {
     val tagsList = remember { mutableStateOf(listOf<Tag>()) }
     val uiState = remember { mutableStateOf(UIState.UI_STATE_MAIN) }
-    FreeRadioTheme {
+    GlobeRadioTheme {
         MainScreen(tagsList = tagsList)
     }
 }
@@ -231,7 +231,7 @@ private fun MainScreenPreviewNight() {
 private fun MainScreenPreviewDay() {
     val tagsList = remember { mutableStateOf(listOf<Tag>()) }
     val uiState = remember { mutableStateOf(UIState.UI_STATE_MAIN) }
-    FreeRadioTheme {
+    GlobeRadioTheme {
         MainScreen(tagsList = tagsList)
     }
 }

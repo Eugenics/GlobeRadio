@@ -37,7 +37,7 @@ import com.eugenics.core.model.NowPlayingStation
 import com.eugenics.core.model.Station
 import com.eugenics.resource.R
 import com.eugenics.freeradio.ui.compose.main.MainContent
-import com.eugenics.freeradio.ui.theme.FreeRadioTheme
+import com.eugenics.ui.theme.GlobeRadioTheme
 import com.eugenics.media_service.media.FreeRadioMediaServiceConnection
 
 @Composable
@@ -187,7 +187,7 @@ private fun FavoriteDialog(
 @Preview(uiMode = Configuration.UI_MODE_NIGHT_NO)
 @Composable
 private fun StationCardNightPreviewDay() {
-    FreeRadioTheme {
+    GlobeRadioTheme {
         val stations = remember { mutableStateOf(listOf(fakeStation, fakeStation, fakeStation)) }
         MainContent(
             paddingValues = PaddingValues(),
@@ -201,7 +201,7 @@ private fun StationCardNightPreviewDay() {
 @Preview(uiMode = Configuration.UI_MODE_NIGHT_YES)
 @Composable
 private fun StationCardNightPreviewNight() {
-    FreeRadioTheme {
+    GlobeRadioTheme {
         val stations = remember { mutableStateOf(listOf(fakeStation, fakeStation, fakeStation)) }
         MainContent(
             paddingValues = PaddingValues(),
@@ -215,7 +215,7 @@ private fun StationCardNightPreviewNight() {
 @Preview(uiMode = Configuration.UI_MODE_NIGHT_NO)
 @Composable
 private fun CardDayPreview() {
-    FreeRadioTheme {
+    GlobeRadioTheme {
         StationCard(
             station = fakeStation
         )

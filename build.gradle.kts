@@ -1,5 +1,5 @@
 buildscript {
-    val agpVersion by extra("8.1.0")
+    val agpVersion by extra("8.2.0")
     dependencies {
         classpath(libs.hilt.plugin)
         classpath(libs.kotlin.serialization)
@@ -10,6 +10,7 @@ buildscript {
 plugins {
     alias(libs.plugins.android.application) apply false
     alias(libs.plugins.android.library) apply false
+    alias(libs.plugins.ksp) apply false
     alias(libs.plugins.kotlin.android) apply false
     alias(libs.plugins.kotlin.jvm) apply false
     alias(libs.plugins.gradle.toolchain) apply false

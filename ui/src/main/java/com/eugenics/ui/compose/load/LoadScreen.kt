@@ -1,4 +1,4 @@
-package com.eugenics.freeradio.ui.compose.load
+package com.eugenics.ui.compose.load
 
 import android.content.res.Configuration.UI_MODE_NIGHT_NO
 import android.content.res.Configuration.UI_MODE_NIGHT_YES
@@ -12,7 +12,7 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.eugenics.freeradio.ui.theme.FreeRadioTheme
+import com.eugenics.ui.theme.GlobeRadioTheme
 
 @Composable
 fun LoadContent(text: String) {
@@ -44,8 +44,8 @@ fun LoadContent(text: String) {
     apiLevel = 27,
     device = "spec:parent=pixel_5,orientation=portrait"
 )
-private fun loadScreenLightModePreview() {
-    FreeRadioTheme {
+private fun LoadScreenLightModePreview() {
+    GlobeRadioTheme {
         LoadContent(text = "Light test load...")
     }
 }
@@ -57,8 +57,8 @@ private fun loadScreenLightModePreview() {
     apiLevel = 27,
     device = "spec:parent=pixel_5,orientation=landscape"
 )
-private fun loadScreenLightLandscapeModePreview() {
-    FreeRadioTheme {
+private fun LoadScreenLightLandscapeModePreview() {
+    GlobeRadioTheme {
         LoadContent(text = "Light test load...")
     }
 }
@@ -70,8 +70,8 @@ private fun loadScreenLightLandscapeModePreview() {
     apiLevel = 27,
     device = "spec:parent=pixel_5,orientation=portrait"
 )
-private fun loadScreenDarkModePreview() {
-    FreeRadioTheme {
+private fun LoadScreenDarkModePreview() {
+    GlobeRadioTheme {
         LoadContent(text = "Dark test load...")
     }
 }
