@@ -186,6 +186,6 @@ dependencies {
     implementation(libs.androidx.core.splash)
 
     // Firebase Crashlytics
-    implementation("com.google.firebase:firebase-crashlytics:18.6.0")
-    implementation("com.google.firebase:firebase-analytics:21.5.0")
+    implementation("com.google.firebase:firebase-crashlytics:18.6.3")
+    implementation("com.google.firebase:firebase-analytics:21.6.1")
 }
