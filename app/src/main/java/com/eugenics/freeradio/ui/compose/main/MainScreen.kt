@@ -79,10 +79,11 @@ fun MainScreen(
         if (message.value.id != lastMessageId.value) {
             when (message.value.messageType) {
                 UIMessage.TYPE_WARNING -> showWarningDialog.value = true
-                UIMessage.TYPE_INFO -> snackBarHostState.showSnackbar(
-                    message = message.value.getMessage(context),
-                    duration = SnackbarDuration.Short
-                )
+                UIMessage.TYPE_INFO ->
+                        snackBarHostState.showSnackbar(
+                            message = message.value.getMessage(context),
+                            duration = SnackbarDuration.Short
+                        )
 
                 UIMessage.TYPE_ERROR -> snackBarHostState.showSnackbar(
                     message = message.value.getMessage(context),
@@ -219,7 +220,6 @@ fun MainScreen(
 @Preview(uiMode = UI_MODE_NIGHT_NO)
 private fun MainScreenPreviewNight() {
     val tagsList = remember { mutableStateOf(listOf<Tag>()) }
-    val uiState = remember { mutableStateOf(UIState.UI_STATE_MAIN) }
     GlobeRadioTheme {
         MainScreen(tagsList = tagsList)
     }
@@ -230,7 +230,6 @@ private fun MainScreenPreviewNight() {
 @Preview(uiMode = UI_MODE_NIGHT_YES)
 private fun MainScreenPreviewDay() {
     val tagsList = remember { mutableStateOf(listOf<Tag>()) }
-    val uiState = remember { mutableStateOf(UIState.UI_STATE_MAIN) }
     GlobeRadioTheme {
         MainScreen(tagsList = tagsList)
     }

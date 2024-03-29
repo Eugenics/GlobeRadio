@@ -10,6 +10,7 @@ plugins {
     id(libs.plugins.kotlinx.serialization.get().pluginId)
     id(libs.plugins.dagger.hilt.get().pluginId)
     id(libs.plugins.google.services.get().pluginId)
+    id("com.google.firebase.crashlytics")
 }
 
 android {
@@ -183,4 +184,8 @@ dependencies {
 
     // Splash Screen
     implementation(libs.androidx.core.splash)
+
+    // Firebase Crashlytics
+    implementation("com.google.firebase:firebase-crashlytics:18.6.0")
+    implementation("com.google.firebase:firebase-analytics:21.5.0")
 }

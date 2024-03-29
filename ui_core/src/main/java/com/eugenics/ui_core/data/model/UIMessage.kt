@@ -39,7 +39,7 @@ data class UIMessage(
         fun emptyInstance() =
             UIMessage(
                 id = UUID.randomUUID().toString(),
-                messageType = TYPE_INFO,
+                messageType = TYPE_UI,
                 messageInfoType = INFO_LOADING,
                 messageText = ""
             )

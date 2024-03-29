@@ -41,6 +41,6 @@
     <string name="job_canceled">Job canceled</string>
     <string name="empty_message">No data to show</string>
 
-    <string name="authority" translatable="false">"com.eugenics.fileprovider"</string>
+    <string name="authority" translatable="false">com.eugenics.freeradio.fileprovider</string>
     <string name="notification_channel_id" translatable="false">WORK_MANAGER_NOTIFICATION</string>
 </resources>

@@ -111,6 +111,8 @@ class StationsWorker(
             }
             .build()
 
+        Log.d(TAG, "Create notification $message - $notification")
+
         createNotificationChannel()
 
         return ForegroundInfo(NOTIFICATION_ID, notification)
@@ -124,6 +126,10 @@ class StationsWorker(
             channelName,
             NotificationManager.IMPORTANCE_HIGH
         )
-        notificationManager.createNotificationChannel(notificationChannel)
+        if (notificationManager.getNotificationChannel(notificationChannel.id) == null) {
+            notificationManager.createNotificationChannel(notificationChannel)
+            Log.d(TAG, "New channel...")
+        }
+        Log.d(TAG, "Create notification channel...")
     }
 }

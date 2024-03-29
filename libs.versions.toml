@@ -6,52 +6,57 @@ targetSdk = "34"
 applicationId = "com.eugenics.freeradio"
 versionCode = "3"
 versionName = "1.1"
-kotlinCompilerExtensionVersion = "1.5.6"
+kotlinCompilerExtensionVersion = "1.5.10"
 paging = "3.2.1"
 
 ktx = "1.12.0"
 hilt = "2.49"
 dagger = "2.49"
 hiltPlugin = "2.49"
-kotlin = "1.9.21"
+kotlin = "1.9.22"
 appcompat = "1.6.1"
 media = "1.7.0"
-lifecycle = "2.6.2"
-activityCompose = "1.8.1"
+lifecycle = "2.7.0"
+activityCompose = "1.8.2"
 pallete = "1.0.0"
-navigationCompose = "2.7.5"
+navigationCompose = "2.7.7"
 testRunner = "1.5.2"
 testCore = "1.5.2"
-compose = "1.5.4"
+compose = "1.6.4"
 kotlinxSerialization = "1.5.1"
 kotlinCoroutines = "1.7.1"
 gson = "2.10.1"
-material = "1.10.0"
-hiltNavigationCompose = "1.1.0"
+material = "1.11.0"
+hiltNavigationCompose = "1.2.0"
 glide = "4.12.0"
 coil = "2.3.0"
 accomponist = "0.25.1"
 accomponistCoil = "0.15.0"
 accomponistAnimation = "0.32.0"
 accomponistSystemUi = "0.28.0"
-material3 = "1.1.2"
+material3 = "1.2.1"
 datastore = "1.0.0"
 room = "2.6.1"
-firebase = "32.3.1"
-workmanager = "2.8.1"
+firebase = "32.8.0"
+workmanager = "2.9.0"
 splash = "1.0.1"
 
-androidGradlePlugin = "8.2.0"
-androidLibraryPlugin = "8.2.0"
-kotlinAndroidPlugin = "1.9.21"
-kotlinJvmPlugin = "1.9.21"
+androidGradlePlugin = "8.2.2"
+androidLibraryPlugin = "8.2.2"
+kotlinAndroidPlugin = "1.9.10"
+kotlinJvmPlugin = "1.9.22"
 gradleToolChainPlugin = "0.4.0"
-googleServicesPlugin = "4.4.0"
-kspPlugin = "1.9.21-1.0.15"
+googleServicesPlugin = "4.4.1"
+kspPlugin = "1.9.22-1.0.17"
+googleServices = "4.4.1"
+crashliticsGradle = "2.9.9"
 
 [libraries]
 hilt-plugin = { group = "com.google.dagger", name = "hilt-android-gradle-plugin", version.ref = "hiltPlugin" }
 kotlin-serialization = { group = "org.jetbrains.kotlin", name = "kotlin-serialization", version.ref = "kotlin" }
+android-tools = { group = "com.android.tools.build", name = "gradle", version.ref = "androidGradlePlugin" }
+google-services = { group = "com.google.gms", name = "google-services", version.ref = "googleServices" }
+crashlitics-gradle = { group = "com.google.firebase", name = "firebase-crashlytics-gradle", version.ref = "crashliticsGradle" }
 
 androidx-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "ktx" }
 androidx-appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "appcompat" }
@@ -127,5 +132,5 @@ gradle-toolchain = { id = "org.gradle.toolchains.foojay-resolver-convention", ve
 google-services = { id = "com.google.gms.google-services", version.ref = "googleServicesPlugin" }
 ksp = { id = "com.google.devtools.ksp", version.ref = "kspPlugin" }
 kotlin-parcelize = { id = "kotlin-parcelize", version.ref = "kotlin" }
-kotlinx-serialization = { id = "kotlinx-serialization", version.ref = "kotlin" }
+kotlinx-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
 dagger-hilt = { id = "dagger.hilt.android.plugin", version.ref = "hiltPlugin" }
