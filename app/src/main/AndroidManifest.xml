@@ -47,7 +47,7 @@
 
         <provider
             android:name="com.eugenics.freeradio.ui.util.CustomFileProvider"
-            android:authorities="com.eugenics.fileprovider"
+            android:authorities="${applicationId}.fileprovider"
             android:exported="false"
             android:grantUriPermissions="true">
             <meta-data

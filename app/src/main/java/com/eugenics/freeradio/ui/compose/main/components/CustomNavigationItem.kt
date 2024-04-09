@@ -12,7 +12,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.eugenics.freeradio.ui.theme.FreeRadioTheme
+import com.eugenics.ui.theme.GlobeRadioTheme
 
 @Composable
 fun CustomNavigationItem(
@@ -43,7 +43,7 @@ fun CustomNavigationItem(
 @Preview
 @Composable
 private fun SettingsItemPreview() {
-    FreeRadioTheme {
+    GlobeRadioTheme {
         CustomNavigationItem()
     }
 }
@@ -51,7 +51,7 @@ private fun SettingsItemPreview() {
 @Preview(uiMode = UI_MODE_NIGHT_YES)
 @Composable
 private fun SettingsItemPreviewDark() {
-    FreeRadioTheme {
+    GlobeRadioTheme {
         CustomNavigationItem()
     }
 }

@@ -14,7 +14,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import com.eugenics.freeradio.R
+import com.eugenics.resource.R
 
 @Composable
 fun SettingsAppBar(

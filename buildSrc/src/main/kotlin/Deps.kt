@@ -67,7 +67,7 @@ object Deps {
     }
 
     object Hilt {
-        private const val hiltVersion = "2.45"
+        private const val hiltVersion = "2.49"
         const val hilt = "com.google.dagger:hilt-android:$hiltVersion"
         const val compiler = "com.google.dagger:hilt-android-compiler:$hiltVersion"
         const val testing = "com.google.dagger:hilt-android-testing:$hiltVersion"
@@ -76,7 +76,7 @@ object Deps {
     }
 
     object Dagger {
-        private const val daggerVersion = "2.45"
+        private const val daggerVersion = "2.49"
         const val dagger = "com.google.dagger:dagger:$daggerVersion"
         const val compiler = "com.google.dagger:dagger-compiler:$daggerVersion"
     }

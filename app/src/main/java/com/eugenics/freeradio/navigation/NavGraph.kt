@@ -2,37 +2,34 @@ package com.eugenics.freeradio.navigation
 
 import android.os.Build
 import androidx.annotation.RequiresApi
-import androidx.compose.animation.AnimatedContentScope
-import androidx.compose.animation.ExperimentalAnimationApi
+import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.core.tween
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.remember
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
-import com.google.accompanist.navigation.animation.composable
 import com.eugenics.freeradio.ui.compose.main.MainScreen
 import com.eugenics.freeradio.ui.compose.settings.SettingsScreen
 import com.eugenics.freeradio.ui.compose.splash.SplashScreen
 import com.eugenics.freeradio.ui.viewmodels.MainViewModel
-import com.google.accompanist.navigation.animation.AnimatedNavHost
-import com.google.accompanist.navigation.animation.rememberAnimatedNavController
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
 
-@OptIn(ExperimentalAnimationApi::class)
 @RequiresApi(Build.VERSION_CODES.S)
 @Composable
 fun NavGraph(
-    navController: NavHostController = rememberAnimatedNavController(),
+    navController: NavHostController = rememberNavController(),
     mainViewModel: MainViewModel = hiltViewModel()
 ) {
-    AnimatedNavHost(
+    NavHost(
         navController = navController,
         startDestination = Screen.MainScreen.rout
     ) {
         composable(route = Screen.MainScreen.rout) {
             val playbackState = mainViewModel.playBackState.collectAsState()
-            val uiState = mainViewModel.uiState.collectAsState()
-            val dataState = mainViewModel.dataState.collectAsState()
+            val dataState = mainViewModel.uiDataState.collectAsState()
             val stationsList = mainViewModel.stations.collectAsState()
             val nowPlayingStation = mainViewModel.nowPlaying.collectAsState()
             val tagsList = mainViewModel.tagList.collectAsState()
@@ -45,8 +42,7 @@ fun NavGraph(
 
             MainScreen(
                 navController = navController,
-                uiState = uiState,
-                dataState = dataState,
+                uiDataState = dataState,
                 playbackState = playbackState,
                 stationsList = stationsList,
                 message = message,
@@ -64,13 +60,13 @@ fun NavGraph(
             route = Screen.SettingsScreen.rout,
             enterTransition = {
                 slideIntoContainer(
-                    towards = AnimatedContentScope.SlideDirection.Up,
+                    towards = AnimatedContentTransitionScope.SlideDirection.Up,
                     animationSpec = tween(500)
                 )
             },
             exitTransition = {
                 slideOutOfContainer(
-                    towards = AnimatedContentScope.SlideDirection.Down,
+                    towards = AnimatedContentTransitionScope.SlideDirection.Down,
                     animationSpec = tween(500)
                 )
             }

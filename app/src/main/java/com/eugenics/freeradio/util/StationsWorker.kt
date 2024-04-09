@@ -12,7 +12,7 @@ import androidx.work.WorkManager
 import androidx.work.WorkerParameters
 import com.eugenics.data.data.util.Response
 import com.eugenics.data.interfaces.IStationsRepository
-import com.eugenics.freeradio.R
+import com.eugenics.resource.R
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
@@ -111,6 +111,8 @@ class StationsWorker(
             }
             .build()
 
+        Log.d(TAG, "Create notification $message - $notification")
+
         createNotificationChannel()
 
         return ForegroundInfo(NOTIFICATION_ID, notification)
@@ -124,6 +126,10 @@ class StationsWorker(
             channelName,
             NotificationManager.IMPORTANCE_HIGH
         )
-        notificationManager.createNotificationChannel(notificationChannel)
+        if (notificationManager.getNotificationChannel(notificationChannel.id) == null) {
+            notificationManager.createNotificationChannel(notificationChannel)
+            Log.d(TAG, "New channel...")
+        }
+        Log.d(TAG, "Create notification channel...")
     }
 }

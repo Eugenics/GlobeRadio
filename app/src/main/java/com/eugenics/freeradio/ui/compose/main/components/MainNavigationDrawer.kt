@@ -23,8 +23,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.eugenics.core.enums.Commands
 import com.eugenics.core.model.Tag
-import com.eugenics.freeradio.R
-import com.eugenics.freeradio.ui.theme.FreeRadioTheme
+import com.eugenics.resource.R
+import com.eugenics.ui.theme.GlobeRadioTheme
 import kotlinx.coroutines.launch
 
 @Composable
@@ -183,7 +183,7 @@ fun MainNavigationDrawer(
 @Preview(uiMode = UI_MODE_NIGHT_NO)
 private fun MainNavigationDrawerPreview() {
     val tagsList = remember { mutableStateOf(listOf<Tag>()) }
-    FreeRadioTheme {
+    GlobeRadioTheme {
         MainNavigationDrawer(tagsList = tagsList) { }
     }
 }

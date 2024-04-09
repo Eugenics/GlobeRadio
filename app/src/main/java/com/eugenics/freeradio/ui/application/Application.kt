@@ -16,9 +16,9 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.eugenics.core.enums.Theme
 import com.eugenics.freeradio.navigation.NavGraph
-import com.eugenics.freeradio.ui.theme.ContentDynamicTheme
-import com.eugenics.freeradio.ui.theme.DarkColors
-import com.eugenics.freeradio.ui.theme.LightColors
+import com.eugenics.ui.theme.ContentDynamicTheme
+import com.eugenics.ui.theme.DarkColors
+import com.eugenics.ui.theme.LightColors
 import com.eugenics.freeradio.ui.viewmodels.MainViewModel
 import com.google.accompanist.navigation.animation.rememberAnimatedNavController
 
