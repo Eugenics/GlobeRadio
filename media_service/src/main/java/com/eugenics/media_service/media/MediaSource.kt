@@ -48,9 +48,10 @@ class MediaSource(
         scope.launch {
             prefs.value = prefsHelper.getPrefs()
 
-            if (stationsRepository.checkLocalStations().isEmpty()) {
+            if (stationsRepository.fetchStationsCount() == 0) {
                 Log.d(TAG, "Load remote repository...")
-                loadStationsFromRemote(firstLoad = true)
+                _state.value = MediaSourceState.STATE_FIRST_INIT.value
+                //loadStationsFromRemote(firstLoad = true)
             } else {
                 _state.value = MediaSourceState.STATE_CREATED.value
                 collectMediaSource(

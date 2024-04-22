@@ -94,6 +94,8 @@ android {
     }
 
     //sourceSets["main"].resources.srcDirs("../resource/src/main/res")
+    sourceSets["main"].assets.srcDirs("../src/main/assets")
+    sourceSets["test"].assets.srcDirs("../src/test/assets")
 }
 
 dependencies {
@@ -184,6 +186,9 @@ dependencies {
 
     // Splash Screen
     implementation(libs.androidx.core.splash)
+
+    // Jackson
+    implementation(libs.jackson.databind)
 
     // Firebase Crashlytics
     implementation("com.google.firebase:firebase-crashlytics:18.6.3")

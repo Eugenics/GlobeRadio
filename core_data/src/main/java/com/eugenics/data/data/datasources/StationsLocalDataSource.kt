@@ -76,4 +76,8 @@ class StationsLocalDataSource(private val stationDao: StationDao) : IStationsLoc
             stationDao.restoreFavorites(favorites = favorites)
         }
     }
+
+    override fun fetchStationsCount(): Int =
+        stationDao.fetchStationsCount()
+
 }

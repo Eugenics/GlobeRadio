@@ -33,6 +33,7 @@ import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -90,6 +91,8 @@ class FreeRadioMediaService : MediaBrowserServiceCompat() {
             prefsRepository = prefsRepository
         )
     }
+
+    private val mediaSourceEvent = MutableStateFlow(0)
 
     override fun onCreate() {
         super.onCreate()
@@ -285,6 +288,17 @@ class FreeRadioMediaService : MediaBrowserServiceCompat() {
                         notificationManager.showNotificationForPlayer(player)
                     }
                 }
+
+                Commands.GET_LAST_MEDIA_SOURCE_EVENT.name -> {
+                    Log.d(TAG, "GET_LAST_MEDIA_SOURCE_EVENT")
+                    val resultBundle = Bundle().apply {
+                        putInt(
+                            Commands.GET_LAST_MEDIA_SOURCE_EVENT.name,
+                            mediaSourceEvent.value
+                        )
+                    }
+                    cb?.send(0, resultBundle)
+                }
             }
             return true
         }
@@ -413,7 +427,8 @@ class FreeRadioMediaService : MediaBrowserServiceCompat() {
     }
 
     private fun sendMediaSourceState(state: Int) {
-        Log.d(TAG, "SEND MEDIA_SOURCE_STATE:${MediaSourceState.getNameByValue(value = state)}")
+        Log.d(TAG, "SEND MEDIA SOURCE STATE:$state")
+        mediaSourceEvent.value = state
 
         mediaSession.sendSessionEvent("MEDIA_SOURCE_STATE",
             Bundle().also {

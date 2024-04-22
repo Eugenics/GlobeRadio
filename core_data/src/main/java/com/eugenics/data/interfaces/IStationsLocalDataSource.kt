@@ -17,4 +17,5 @@ interface IStationsLocalDataSource : IDataSource {
     suspend fun reloadStations(stations: List<StationDaoObject>)
     suspend fun checkStations(): List<StationDaoObject>
     suspend fun restoreFavorites(favorites: List<FavoritesTmpDaoObject>)
+    fun fetchStationsCount(): Int
 }

@@ -32,4 +32,6 @@ interface IStationsRepository : IRepository {
     suspend fun restoreFavorites(favorites: List<FavoriteStation>)
 
     suspend fun deleteEmptyTags()
+
+    fun fetchStationsCount(): Int
 }
