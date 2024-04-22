@@ -47,6 +47,8 @@ class FakeStationsLocalDataSource : IStationsLocalDataSource {
         Log.d(TAG, "Favorites restored")
     }
 
+    override fun fetchStationsCount(): Int = 100
+
     companion object {
         private const val TAG = "FakeDatasource"
         const val STATIONS_CNT = 100

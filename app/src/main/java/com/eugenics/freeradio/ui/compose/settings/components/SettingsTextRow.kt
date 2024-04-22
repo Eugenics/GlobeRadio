@@ -3,6 +3,7 @@ package com.eugenics.freeradio.ui.compose.settings.components
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.material3.MaterialTheme
@@ -12,6 +13,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.eugenics.ui.theme.MinHeight
 
 @Composable
 fun SettingsTextRow(
@@ -22,6 +24,7 @@ fun SettingsTextRow(
     Row(
         modifier = Modifier
             .fillMaxWidth()
+            .height(MinHeight)
             .clickable {
                 onRowClick()
             },

@@ -82,4 +82,6 @@ class StationsRepository(
     }
 
     override suspend fun deleteEmptyTags() = stationsLocalDataSource.deleteEmptyTags()
+
+    override fun fetchStationsCount(): Int = stationsLocalDataSource.fetchStationsCount()
 }

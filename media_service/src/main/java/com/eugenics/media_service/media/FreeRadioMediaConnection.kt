@@ -4,6 +4,7 @@ import android.content.ComponentName
 import android.content.Context
 import android.os.Bundle
 import android.os.Handler
+import android.os.Looper
 import android.os.ResultReceiver
 import android.support.v4.media.MediaBrowserCompat
 import android.support.v4.media.MediaMetadataCompat
@@ -18,31 +19,41 @@ import com.google.android.exoplayer2.PlaybackException
 import com.google.android.exoplayer2.Player
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.last
 
 class FreeRadioMediaServiceConnection(context: Context, serviceComponent: ComponentName) {
 
     val isConnected = MutableStateFlow(false)
     val playbackState = MutableStateFlow(EMPTY_PLAYBACK_STATE)
-    val mediaSourceState: MutableStateFlow<Int> = MutableStateFlow(MediaSourceState.STATE_IDL.value)
+    val mediaSourceState: MutableStateFlow<Int> =
+        MutableStateFlow(MediaSourceState.STATE_IDL.value)
 
 
     val nowPlayingItem = MutableStateFlow(NOTHING_PLAYING)
     private var nowPlayingJob: Job? = null
 
-    val transportControls: MediaControllerCompat.TransportControls
-        get() = mediaController.transportControls
+    private val mediaBrowserConnectionCallback = MediaBrowserConnectionCallback()
+    private val mediaBrowser =
+        MediaBrowserCompat(
+            context,
+            serviceComponent,
+            mediaBrowserConnectionCallback,
+            null
+        ).apply {
+            Log.d(TAG, "CREATE MEDIA_BROWSER...")
+            connect()
+        }
 
-    private val mediaBrowserConnectionCallback = MediaBrowserConnectionCallback(context)
-    private val mediaBrowser = MediaBrowserCompat(
-        context,
-        serviceComponent,
-        mediaBrowserConnectionCallback,
-        null
-    ).apply {
-        connect()
+    private val mediaController: MediaControllerCompat by lazy {
+        Log.d(TAG, "CREATE MEDIA_CONTROLLER...")
+        MediaControllerCompat(context, mediaBrowser.sessionToken)
+            .apply {
+                registerCallback(MediaControllerCallback())
+            }
     }
 
-    private lateinit var mediaController: MediaControllerCompat
+    val transportControls: MediaControllerCompat.TransportControls
+        get() = mediaController.transportControls
 
     fun subscribe(
         parentId: String,
@@ -72,7 +83,7 @@ class FreeRadioMediaServiceConnection(context: Context, serviceComponent: Compon
         mediaController.sendCommand(
             command,
             parameters,
-            object : ResultReceiver(Handler()) {
+            object : ResultReceiver(Handler(Looper.myLooper()!!)) {
                 override fun onReceiveResult(resultCode: Int, resultData: Bundle?) {
                     resultCallback(resultCode, resultData)
                 }
@@ -82,13 +93,19 @@ class FreeRadioMediaServiceConnection(context: Context, serviceComponent: Compon
         false
     }
 
-    private inner class MediaBrowserConnectionCallback(private val context: Context) :
-        MediaBrowserCompat.ConnectionCallback() {
+    private inner class MediaBrowserConnectionCallback : MediaBrowserCompat.ConnectionCallback() {
         override fun onConnected() {
-            mediaController = MediaControllerCompat(context, mediaBrowser.sessionToken).apply {
-                registerCallback(MediaControllerCallback())
-            }
+            Log.d(TAG, "MEDIA_BROWSER CONNECTED...")
             isConnected.value = true
+
+            Log.d(TAG, "SEND COMMAND GET_LAST_MEDIA_SOURCE_EVENT...")
+            sendCommand(
+                Commands.GET_LAST_MEDIA_SOURCE_EVENT.name, null
+            ) { _, resultBundle ->
+                val lastState = resultBundle?.getInt(Commands.GET_LAST_MEDIA_SOURCE_EVENT.name) ?: 0
+                mediaSourceState.value = lastState
+                Log.d(TAG, "LAST MEDIA_SOURCE_STATE:$lastState")
+            }
         }
 
         override fun onConnectionSuspended() {
@@ -114,11 +131,10 @@ class FreeRadioMediaServiceConnection(context: Context, serviceComponent: Compon
         override fun onSessionEvent(event: String?, extras: Bundle?) {
             when (event) {
                 "MEDIA_SOURCE_STATE" -> {
-                    CoroutineScope(Dispatchers.IO).launch {
-                        mediaSourceState.emit(
-                            extras?.getInt("MEDIA_SOURCE_STATE") ?: 0
-                        )
-                        Log.d(TAG, "MediaSource state: ${mediaSourceState.value}")
+                    CoroutineScope(Dispatchers.Default).launch {
+                        val state = extras?.getInt("MEDIA_SOURCE_STATE") ?: 0
+                        mediaSourceState.emit(state)
+                        Log.d(TAG, "MediaSource state: ${mediaSourceState.last()}")
                     }
                 }
 
@@ -129,6 +145,8 @@ class FreeRadioMediaServiceConnection(context: Context, serviceComponent: Compon
         override fun onSessionDestroyed() {
             mediaBrowserConnectionCallback.onConnectionSuspended()
         }
+
+
     }
 
     private fun collectNowPlaying() {

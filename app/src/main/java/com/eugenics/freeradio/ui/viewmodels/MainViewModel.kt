@@ -27,12 +27,19 @@ import com.eugenics.ui_core.data.enums.UIState
 import com.eugenics.freeradio.ui.util.PlayBackState
 import com.eugenics.freeradio.util.ImageHelper
 import com.eugenics.ui_core.data.enums.UICommands
-import com.eugenics.freeradio.util.FilesHelper
+import com.eugenics.freeradio.util.IOHelper
 import com.eugenics.freeradio.util.PlaylistHelper
+import com.eugenics.freeradio.util.STATIONS_JSON_NAME
+import com.eugenics.freeradio.util.STATIONS_ZIP_ASSET_NAME
+import com.eugenics.freeradio.util.TAGS_ASSET_NAME
+import com.eugenics.freeradio.util.data.StationPojo
+import com.eugenics.freeradio.util.data.TagsPojo
+import com.eugenics.freeradio.util.data.mapToModel
 import com.eugenics.media_service.media.FreeRadioMediaServiceConnection
 import com.eugenics.ui_core.data.model.UIMessage
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.consumeEach
@@ -42,6 +49,8 @@ import kotlinx.serialization.SerializationException
 import java.util.UUID
 import javax.inject.Inject
 import kotlinx.serialization.json.Json
+import java.nio.file.Files
+import java.nio.file.Paths
 
 @HiltViewModel
 class MainViewModel @Inject constructor(
@@ -58,6 +67,12 @@ class MainViewModel @Inject constructor(
     private var currentMediaId: String = ""
     private val rootId = "/"
 
+    private val mediaSourceState = mediaServiceConnection.mediaSourceState
+
+    private var _viewModelState: Boolean = false
+    val viewModelState: Boolean
+        get() = _viewModelState
+
     private val subscriptionCallback = object : MediaBrowserCompat.SubscriptionCallback() {
         override fun onChildrenLoaded(
             parentId: String, children: List<MediaBrowserCompat.MediaItem>
@@ -66,8 +81,7 @@ class MainViewModel @Inject constructor(
 
             for (child in children) {
                 val extras = if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
-                    @Suppress("DEPRECATION")
-                    child.description.extras?.getParcelable("STATION")
+                    @Suppress("DEPRECATION") child.description.extras?.getParcelable("STATION")
                 } else {
                     child.description.extras?.getParcelable(
                         "STATION", PlayerMediaItem::class.java
@@ -105,11 +119,17 @@ class MainViewModel @Inject constructor(
         collectCurrentState()
     }
 
-    fun start() {
-        collectMediaSourceState()
-        collectNowPlaying()
+    fun start(context: Context) {
+        Log.d(TAG, "$TAG START...")
+        getTagsList(
+            tagsJsonPath = "${context.cacheDir.absolutePath}/$TAGS_ASSET_NAME",
+            context = context
+        )
         collectServiceConnection()
+        collectMediaSourceState(context)
+        collectNowPlaying()
         collectServicePlaybackState()
+        _viewModelState = true
     }
 
     private fun unsubscribe() {
@@ -165,8 +185,7 @@ class MainViewModel @Inject constructor(
                     _stations.value = listOf()
                     setSettings(visibleIndex = 0, setName = "onVisibleIndexChanged")
                 }
-                mediaServiceConnection.sendCommand(
-                    command = command,
+                mediaServiceConnection.sendCommand(command = command,
                     parameters = extras,
                     resultCallback = { result, bundle ->
                         if (result == 1) {
@@ -191,7 +210,7 @@ class MainViewModel @Inject constructor(
             mediaServiceConnection.isConnected.collect {
                 if (it) {
                     mediaServiceConnection.subscribe(rootId, subscriptionCallback)
-                    return@collect
+                    this.coroutineContext.cancel()
                 }
             }
         }
@@ -226,34 +245,45 @@ class MainViewModel @Inject constructor(
         }
     }
 
-    private fun collectMediaSourceState() {
-        viewModelScope.launch(Dispatchers.IO) {
-            mediaServiceConnection.mediaSourceState.collect { state ->
+    private fun collectMediaSourceState(context: Context) {
+        Log.d(TAG, "COLLECT MEDIA_SOURCE_STATE...")
+        viewModelScope.launch {
+            mediaSourceState.collect { state ->
+                Log.d(TAG, "COLLECTED MEDIA_SOURCE_STATE:$state")
                 when (state) {
                     MediaSourceState.STATE_FIRST_INIT.value -> {
+                        Log.d(TAG, "MEDIA_SOURCE_STATE STATE_FIRST_INIT")
                         _uiState.value = UIState.UI_STATE_SPLASH
                         sendMessage(
-                            UIMessage.TYPE_UI,
-                            messageInfoType = UIMessage.INFO_FIRST_INIT
+                            UIMessage.TYPE_UI, messageInfoType = UIMessage.INFO_FIRST_INIT
                         )
+                        uploadStationsFullList(context)
+                        withContext(Dispatchers.Main) {
+                            sendCommand(command = Commands.STATIONS_COMMAND.name)
+                        }
                     }
 
-                    MediaSourceState.STATE_CREATED.value -> _uiState.value = UIState.UI_STATE_SPLASH
+                    MediaSourceState.STATE_CREATED.value -> {
+                        Log.d(TAG, "MEDIA_SOURCE_STATE STATE_CREATED")
+                        _uiState.value = UIState.UI_STATE_SPLASH
+                    }
+
                     MediaSourceState.STATE_ERROR.value -> {
                         _uiState.value = UIState.UI_STATE_MAIN
                         _Ui_dataState.value = UIDataState.ERROR
                     }
 
                     MediaSourceState.STATE_INITIALIZING.value -> {
+                        Log.d(TAG, "MEDIA_SOURCE_STATE STATE_INITIALIZING")
                         _uiState.value = UIState.UI_STATE_MAIN
                         _Ui_dataState.value = UIDataState.LOADING
                         sendMessage(
-                            UIMessage.TYPE_UI,
-                            messageInfoType = UIMessage.INFO_LOADING
+                            UIMessage.TYPE_UI, messageInfoType = UIMessage.INFO_LOADING
                         )
                     }
 
                     MediaSourceState.STATE_INITIALIZED.value -> {
+                        Log.d(TAG, "MEDIA_SOURCE_STATE STATE_INITIALIZED")
                         _uiState.value = UIState.UI_STATE_MAIN
                         _Ui_dataState.value = UIDataState.PREPARED
                     }
@@ -321,10 +351,19 @@ class MainViewModel @Inject constructor(
         }
     }
 
-    fun getTagsList(context: Context) {
+    private fun getTagsList(tagsJsonPath: String, context: Context) {
         if (tagList.value.isEmpty()) {
             viewModelScope.launch(ioDispatcher) {
-                _tagList.value = FilesHelper.getTags(context = context)
+                var cacheEnable = true
+                if (!Files.exists(Paths.get(tagsJsonPath))) {
+                    cacheEnable = IOHelper.copyAssetToCache(TAGS_ASSET_NAME, context)
+                }
+                if (cacheEnable) {
+                    _tagList.value = IOHelper.parseJsonToList(
+                        filePath = tagsJsonPath,
+                        TagsPojo::class.java
+                    ).map { it.mapToModel() }
+                }
             }
         }
     }
@@ -348,32 +387,28 @@ class MainViewModel @Inject constructor(
 
     private fun backUpFavorites() {
         viewModelScope.launch(ioDispatcher) {
-            stationsRepository.fetchStationsByFavorites()
-                .map { station ->
-                    FavoriteStation(
-                        uuid = UUID.randomUUID().toString(), stationuuid = station.stationuuid
-                    )
-                }
-                .also { favStations ->
-                    if (favStations.isNotEmpty()) {
-                        try {
-                            _savedData.value = Json.encodeToString(
-                                serializer = Favorites.serializer(),
-                                value = Favorites.newInstance(favStations)
-                            )
-                            setUICommand(UICommands.UI_COMMAND_BACKUP_FAVORITES)
-                        } catch (e: SerializationException) {
-                            sendMessage(
-                                UIMessage.TYPE_ERROR,
-                                UIMessage.INFO_ERROR,
-                                e.message.toString()
-                            )
-                            Log.e(TAG, e.toString())
-                        }
-                    } else {
-                        sendMessage(UIMessage.TYPE_INFO, UIMessage.INFO_NO_DATA_TO_LOAD)
+            stationsRepository.fetchStationsByFavorites().map { station ->
+                FavoriteStation(
+                    uuid = UUID.randomUUID().toString(), stationuuid = station.stationuuid
+                )
+            }.also { favStations ->
+                if (favStations.isNotEmpty()) {
+                    try {
+                        _savedData.value = Json.encodeToString(
+                            serializer = Favorites.serializer(),
+                            value = Favorites.newInstance(favStations)
+                        )
+                        setUICommand(UICommands.UI_COMMAND_BACKUP_FAVORITES)
+                    } catch (e: SerializationException) {
+                        sendMessage(
+                            UIMessage.TYPE_ERROR, UIMessage.INFO_ERROR, e.message.toString()
+                        )
+                        Log.e(TAG, e.toString())
                     }
+                } else {
+                    sendMessage(UIMessage.TYPE_INFO, UIMessage.INFO_NO_DATA_TO_LOAD)
                 }
+            }
         }
     }
 
@@ -423,8 +458,35 @@ class MainViewModel @Inject constructor(
         }
     }
 
+    private suspend fun uploadStationsFullList(context: Context) {
+        Log.d(TAG, "Start stations upload...")
+        var cacheEnable = true
+        if (!Files.exists(Paths.get("${context.cacheDir.absolutePath}/$STATIONS_JSON_NAME"))) {
+            Log.d(TAG, "Cache copy...")
+            cacheEnable = IOHelper.copyAssetToCache(STATIONS_ZIP_ASSET_NAME, context)
+            if (cacheEnable) {
+                Log.d(TAG, "Start stations unzip...")
+                cacheEnable = IOHelper.unzipStationsFullList(
+                    zipFrom = "${context.cacheDir.absolutePath}/$STATIONS_ZIP_ASSET_NAME",
+                    pathTo = "${context.cacheDir.absolutePath}/$STATIONS_JSON_NAME"
+                )
+            }
+        }
+
+        if (cacheEnable) {
+            Log.d(TAG, "Start stations upload to db...")
+            val jsonFilePath = "${context.cacheDir.absolutePath}/$STATIONS_JSON_NAME"
+            val stations = IOHelper.parseJsonToList(
+                filePath = jsonFilePath,
+                StationPojo::class.java
+            )
+                .map { it.mapToModel() }
+            stationsRepository.reloadStations(stations = stations)
+            Log.d(TAG, "Send command for reload stations...")
+        }
+    }
+
     companion object {
         const val TAG = "MAIN_VIEW_MODEL"
-        private const val SPLASH_DELAY_TIME = 3000L
     }
 }

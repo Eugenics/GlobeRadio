@@ -96,7 +96,11 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        installSplashScreen()
+        installSplashScreen().apply {
+            this.setKeepOnScreenCondition {
+                !mainViewModel.viewModelState
+            }
+        }
 
         val isFits = this.resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
         Log.d(TAG, "Landscape orientation=$isFits")
@@ -105,9 +109,7 @@ class MainActivity : ComponentActivity() {
         checkPostNotificationPermission()
         checkIntentData()
 
-        mainViewModel.start()
-        mainViewModel.getTagsList(context = applicationContext)
-
+        mainViewModel.start(applicationContext)
         collectUICommands()
 
         setContent {
@@ -118,7 +120,7 @@ class MainActivity : ComponentActivity() {
     override fun onStart() {
         super.onStart()
         collectNetworkState()
-        checkStationListUpdate()
+        //checkStationListUpdate()
     }
 
     private fun collectUICommands() {

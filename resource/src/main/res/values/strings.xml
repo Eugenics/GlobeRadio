@@ -28,7 +28,7 @@
     <string name="not_saved_text">Not saved…</string>
     <string name="backup_favorites">Backup favorites</string>
     <string name="restore_favorites">Restore favorites</string>
-    <string name="init_load_text">Stations list loading.\n Please wait…</string>
+    <string name="init_load_text">Stations full list loading.\n Please wait…</string>
     <string name="no_internet_connection">No internet connection…</string>
     <string name="warning">Warning…</string>
     <string name="has_denied">has denied…</string>
@@ -40,6 +40,8 @@
     <string name="updated">Updated</string>
     <string name="job_canceled">Job canceled</string>
     <string name="empty_message">No data to show</string>
+
+    <string name="back_button">Back</string>
 
     <string name="authority" translatable="false">com.eugenics.freeradio.fileprovider</string>
     <string name="notification_channel_id" translatable="false">WORK_MANAGER_NOTIFICATION</string>

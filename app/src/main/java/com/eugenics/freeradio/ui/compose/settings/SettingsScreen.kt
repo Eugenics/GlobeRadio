@@ -22,7 +22,6 @@ import com.eugenics.freeradio.ui.compose.settings.components.SettingsAppBar
 import com.eugenics.freeradio.ui.compose.settings.components.SettingsTextRow
 import com.eugenics.freeradio.ui.compose.settings.components.ThemeChooseDialog
 import com.eugenics.ui_core.data.enums.UICommands
-import java.lang.RuntimeException
 
 @Composable
 fun SettingsScreen(
@@ -104,12 +103,6 @@ fun SettingsScreen(
                     onBackPressed()
                 },
                 nameText = stringResource(R.string.export_favorites_playlist),
-                valueText = ""
-            )
-
-            SettingsTextRow(
-                onRowClick = { throw RuntimeException("Test exception") },
-                nameText = "Test Crashlytics",
                 valueText = ""
             )
         }

@@ -9,6 +9,9 @@ interface StationDao {
     @Query("SELECT * FROM stations")
     fun fetchAllStationData(): List<StationDaoObject>
 
+    @Query("SELECT COUNT(*) FROM stations")
+    fun fetchStationsCount(): Int
+
     @Query("SELECT * FROM stations WHERE name LIKE :name OR tags LIKE :name")
     fun fetchStationByName(name: String): List<StationDaoObject>
 
