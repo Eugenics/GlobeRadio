@@ -1,4 +1,4 @@
-package com.eugenics.ui.compose.load
+package com.eugenics.ui.compose.screens.load
 
 import android.content.res.Configuration.UI_MODE_NIGHT_NO
 import android.content.res.Configuration.UI_MODE_NIGHT_YES

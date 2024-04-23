@@ -1,4 +1,4 @@
-package com.eugenics.ui.compose.load
+package com.eugenics.ui.compose.screens.load
 
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.Image
