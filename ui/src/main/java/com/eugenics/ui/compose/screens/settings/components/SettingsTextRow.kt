@@ -1,4 +1,4 @@
-package com.eugenics.freeradio.ui.compose.settings.components
+package com.eugenics.ui.compose.screens.settings.components
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Row

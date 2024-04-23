@@ -1,4 +1,4 @@
-package com.eugenics.freeradio.ui.compose.settings.components
+package com.eugenics.ui.compose.screens.settings.components
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Column

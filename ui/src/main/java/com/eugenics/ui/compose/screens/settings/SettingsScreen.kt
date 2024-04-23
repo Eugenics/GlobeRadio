@@ -1,4 +1,4 @@
-package com.eugenics.freeradio.ui.compose.settings
+package com.eugenics.ui.compose.screens.settings
 
 import android.content.res.Configuration.UI_MODE_NIGHT_NO
 import android.os.Bundle
@@ -17,10 +17,10 @@ import com.eugenics.core.model.CurrentState
 import com.eugenics.core.enums.Theme
 import com.eugenics.ui.theme.GlobeRadioTheme
 import com.eugenics.resource.R
-import com.eugenics.freeradio.ui.compose.settings.components.CategoryRow
-import com.eugenics.freeradio.ui.compose.settings.components.SettingsAppBar
-import com.eugenics.freeradio.ui.compose.settings.components.SettingsTextRow
-import com.eugenics.freeradio.ui.compose.settings.components.ThemeChooseDialog
+import com.eugenics.ui.compose.screens.settings.components.CategoryRow
+import com.eugenics.ui.compose.screens.settings.components.SettingsAppBar
+import com.eugenics.ui.compose.screens.settings.components.SettingsTextRow
+import com.eugenics.ui.compose.screens.settings.components.ThemeChooseDialog
 import com.eugenics.ui_core.data.enums.UICommands
 
 @Composable
