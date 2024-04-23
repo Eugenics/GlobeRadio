@@ -46,7 +46,7 @@
         </service>
 
         <provider
-            android:name="com.eugenics.freeradio.ui.util.CustomFileProvider"
+            android:name=".ui.util.CustomFileProvider"
             android:authorities="${applicationId}.fileprovider"
             android:exported="false"
             android:grantUriPermissions="true">

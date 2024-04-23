@@ -13,6 +13,6 @@ internal object PlaybackStateBuilder {
 }
 
 sealed class PlayBackState(val state:PlaybackStateCompat){
-    object Playing:PlayBackState(state = PlaybackStateBuilder.STATE_PLAYING)
-    object Pause:PlayBackState(state = PlaybackStateBuilder.STATE_PAUSE)
+    data object Playing: PlayBackState(state = PlaybackStateBuilder.STATE_PLAYING)
+    data object Pause: PlayBackState(state = PlaybackStateBuilder.STATE_PAUSE)
 }

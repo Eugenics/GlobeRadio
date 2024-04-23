@@ -10,8 +10,8 @@ import androidx.compose.runtime.remember
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import com.eugenics.freeradio.ui.compose.main.MainScreen
-import com.eugenics.freeradio.ui.compose.settings.SettingsScreen
-import com.eugenics.freeradio.ui.compose.splash.SplashScreen
+import com.eugenics.ui.compose.screens.settings.SettingsScreen
+import com.eugenics.ui.compose.screens.splash.SplashScreen
 import com.eugenics.freeradio.ui.viewmodels.MainViewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable

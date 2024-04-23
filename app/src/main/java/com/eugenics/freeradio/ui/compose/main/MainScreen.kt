@@ -29,11 +29,11 @@ import com.eugenics.core.model.Tag
 import com.eugenics.ui_core.data.model.UIMessage
 import com.eugenics.ui_core.data.enums.UIDataState
 import com.eugenics.freeradio.navigation.Screen
-import com.eugenics.ui.compose.load.LoadContent
+import com.eugenics.ui.compose.screens.load.LoadContent
 import com.eugenics.freeradio.ui.compose.main.components.MainTopAppBar
 import com.eugenics.freeradio.ui.compose.main.components.MainBottomAppBar
 import com.eugenics.freeradio.ui.compose.main.components.MainNavigationDrawer
-import com.eugenics.freeradio.ui.compose.warning.WarningDialog
+import com.eugenics.ui.compose.screens.components.warning.WarningDialog
 import com.eugenics.ui.theme.GlobeRadioTheme
 import com.eugenics.freeradio.ui.util.PlayBackState
 import kotlinx.coroutines.launch
