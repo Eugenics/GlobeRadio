@@ -1,4 +1,4 @@
-package com.eugenics.freeradio.ui.compose.service.components
+package com.eugenics.ui.compose.screens.splash.components
 
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth

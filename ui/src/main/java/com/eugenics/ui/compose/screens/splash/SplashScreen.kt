@@ -1,4 +1,4 @@
-package com.eugenics.freeradio.ui.compose.splash
+package com.eugenics.ui.compose.screens.splash
 
 import android.content.res.Configuration.UI_MODE_NIGHT_NO
 import android.content.res.Configuration.UI_MODE_NIGHT_YES
@@ -24,9 +24,9 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
-import com.eugenics.freeradio.R
+import com.eugenics.resource.R
+import com.eugenics.ui.compose.screens.splash.components.ServiceCard
 import com.eugenics.resource.R as RR
-import com.eugenics.freeradio.ui.compose.service.components.ServiceCard
 import com.eugenics.ui.theme.GlobeRadioTheme
 
 @Composable
@@ -34,10 +34,10 @@ fun SplashScreen(
     modifier: Modifier = Modifier,
     message: String = ""
 ) {
-    val targetValue = rememberSaveable { mutableStateOf(0f) }
+    val targetValue = rememberSaveable { mutableFloatStateOf(0f) }
 
     val alpha: Float by animateFloatAsState(
-        targetValue = targetValue.value,
+        targetValue = targetValue.floatValue,
         animationSpec = tween(500),
         finishedListener = { },
         label = ""
@@ -90,7 +90,7 @@ fun SplashScreen(
         }
     }
     SideEffect {
-        targetValue.value = 1f
+        targetValue.floatValue = 1f
     }
 }
 
