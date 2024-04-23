@@ -16,7 +16,7 @@ import com.eugenics.resource.R
 import com.eugenics.ui.compose.util.PreviewBase
 
 @Composable
-fun LoadGears(modifier: Modifier = Modifier.fillMaxSize()) {
+fun LoadGears(modifier: Modifier = Modifier) {
     val rotationPosition = remember { mutableStateOf(0f) }
     val antiClockWisePosition = remember { mutableStateOf(360f) }
     val rotation = remember { Animatable(rotationPosition.value) }
@@ -46,7 +46,7 @@ fun LoadGears(modifier: Modifier = Modifier.fillMaxSize()) {
         }
     }
     Box(
-        modifier = modifier
+        modifier = modifier.fillMaxSize()
     ) {
         Image(
             painter = painterResource(R.drawable.gear_red),

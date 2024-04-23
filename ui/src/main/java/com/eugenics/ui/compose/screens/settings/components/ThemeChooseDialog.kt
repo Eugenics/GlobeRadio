@@ -47,7 +47,7 @@ fun ThemeChooseDialog(
         confirmButton = {},
         text = {
             Column(modifier = Modifier.selectableGroup()) {
-                for (theme in Theme.values()) {
+                for (theme in Theme.entries) {
                     Card(
                         onClick = { onThemeChoose(theme) },
                         modifier = Modifier.fillMaxWidth(),
