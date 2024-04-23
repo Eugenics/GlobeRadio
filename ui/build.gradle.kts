@@ -67,6 +67,7 @@ dependencies {
     androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
 
     // Modules
+    implementation(project(":core"))
     implementation(project(":ui_core"))
     implementation(project(":resource"))
 
