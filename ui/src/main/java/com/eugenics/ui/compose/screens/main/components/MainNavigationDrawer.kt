@@ -1,4 +1,4 @@
-package com.eugenics.freeradio.ui.compose.main.components
+package com.eugenics.ui.compose.screens.main.components
 
 import android.content.res.Configuration.UI_MODE_NIGHT_NO
 import android.os.Bundle
@@ -9,6 +9,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -50,7 +51,7 @@ fun MainNavigationDrawer(
             title = { Text(text = stringResource(R.string.tags_select_string)) },
             text = {
                 LazyColumn(modifier = Modifier.fillMaxWidth()) {
-                    itemsIndexed(tagsList.value) { index, item ->
+                    itemsIndexed(tagsList.value) { _, item ->
                         Row(
                             modifier = Modifier
                                 .clickable {
@@ -112,12 +113,12 @@ fun MainNavigationDrawer(
                     )
                 }
 
-                Divider()
+                HorizontalDivider()
                 Spacer(Modifier.height(12.dp))
 
                 CustomNavigationItem(
                     text = stringResource(R.string.stations_text),
-                    icon = Icons.Filled.List,
+                    icon = Icons.AutoMirrored.Filled.List,
                     onClick = {
                         tagDialog.value = true
                         scope.launch {
@@ -140,7 +141,7 @@ fun MainNavigationDrawer(
                     }
                 )
 
-                Divider()
+                HorizontalDivider()
                 Spacer(Modifier.height(12.dp))
 
                 CustomNavigationItem(

@@ -4,7 +4,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.test.junit4.createComposeRule
 import com.eugenics.core.model.Tag
-import com.eugenics.freeradio.ui.compose.main.MainScreen
+import com.eugenics.ui.compose.screens.main.MainScreen
 import com.eugenics.ui.compose.screens.settings.SettingsScreen
 import com.eugenics.ui.theme.GlobeRadioTheme
 import dagger.hilt.android.testing.HiltAndroidRule

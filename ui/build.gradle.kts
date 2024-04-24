@@ -48,8 +48,6 @@ dependencies {
 
     // Compose
     implementation(libs.bundles.compose)
-    implementation(libs.androidx.activity.compose)
-    implementation(libs.androidx.pallete)
 
     // Compose Accompanist
     implementation(libs.accomponist.inserts)
@@ -61,6 +59,9 @@ dependencies {
     // Material 3
     implementation(libs.androidx.material3)
     implementation(libs.androidx.compose.windowsize)
+
+    //Coil compose
+    implementation(libs.coil)
 
     testImplementation("junit:junit:4.13.2")
     androidTestImplementation("androidx.test.ext:junit:1.1.5")

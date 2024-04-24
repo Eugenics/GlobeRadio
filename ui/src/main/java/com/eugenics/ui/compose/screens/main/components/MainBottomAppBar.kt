@@ -1,4 +1,4 @@
-package com.eugenics.freeradio.ui.compose.main.components
+package com.eugenics.ui.compose.screens.main.components
 
 import android.content.res.Configuration.UI_MODE_NIGHT_YES
 import android.os.Build
@@ -26,7 +26,7 @@ import coil.compose.SubcomposeAsyncImageContent
 import com.eugenics.core.model.NowPlayingStation
 import com.eugenics.resource.R
 import com.eugenics.ui.theme.GlobeRadioTheme
-import com.eugenics.freeradio.ui.util.PlayBackState
+import com.eugenics.ui_core.data.enums.PlayBackState
 
 @RequiresApi(Build.VERSION_CODES.S)
 @Composable

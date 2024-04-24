@@ -5,17 +5,19 @@ import androidx.annotation.RequiresApi
 import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.core.tween
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.asIntState
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.remember
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
-import com.eugenics.freeradio.ui.compose.main.MainScreen
+import com.eugenics.ui.compose.screens.main.MainScreen
 import com.eugenics.ui.compose.screens.settings.SettingsScreen
 import com.eugenics.ui.compose.screens.splash.SplashScreen
 import com.eugenics.freeradio.ui.viewmodels.MainViewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.eugenics.ui_core.data.enums.Screen
 
 @RequiresApi(Build.VERSION_CODES.S)
 @Composable
@@ -29,7 +31,7 @@ fun NavGraph(
     ) {
         composable(route = Screen.MainScreen.rout) {
             val playbackState = mainViewModel.playBackState.collectAsState()
-            val dataState = mainViewModel.uiDataState.collectAsState()
+            val dataState = mainViewModel.uiDataState.collectAsState().asIntState()
             val stationsList = mainViewModel.stations.collectAsState()
             val nowPlayingStation = mainViewModel.nowPlaying.collectAsState()
             val tagsList = mainViewModel.tagList.collectAsState()

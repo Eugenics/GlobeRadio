@@ -1,4 +1,4 @@
-package com.eugenics.freeradio.ui.compose.main.components
+package com.eugenics.ui.compose.screens.main.components
 
 import android.content.res.Configuration
 import android.os.Bundle
@@ -18,6 +18,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -32,13 +33,13 @@ import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImagePainter
 import coil.compose.SubcomposeAsyncImage
 import coil.compose.SubcomposeAsyncImageContent
+import com.eugenics.core.constants.SET_FAVORITES_STATION_KEY
+import com.eugenics.core.constants.SET_FAVORITES_VALUE_KEY
 import com.eugenics.core.enums.Commands
-import com.eugenics.core.model.NowPlayingStation
 import com.eugenics.core.model.Station
 import com.eugenics.resource.R
-import com.eugenics.freeradio.ui.compose.main.MainContent
+import com.eugenics.ui.compose.screens.main.MainContent
 import com.eugenics.ui.theme.GlobeRadioTheme
-import com.eugenics.media_service.media.FreeRadioMediaServiceConnection
 
 @Composable
 fun StationCard(
@@ -47,23 +48,23 @@ fun StationCard(
     onCardClick: (mediaId: String) -> Unit = {},
     onFavoriteClick: (command: String, bundle: Bundle?) -> Unit = { _, _ -> }
 ) {
-    val isFavorite = rememberSaveable { mutableStateOf(station.isFavorite) }
+    val isFavorite = rememberSaveable { mutableIntStateOf(station.isFavorite) }
     val showFavoriteDialog = rememberSaveable { mutableStateOf(false) }
 
     if (showFavoriteDialog.value) {
         FavoriteDialog(
             onDismiss = { showFavoriteDialog.value = false },
             onConfirm = {
-                isFavorite.value = 0
+                isFavorite.intValue = 0
                 showFavoriteDialog.value = false
                 val bundle = Bundle()
                 bundle.putString(
-                    FreeRadioMediaServiceConnection.SET_FAVORITES_STATION_KEY,
+                    SET_FAVORITES_STATION_KEY,
                     station.stationuuid
                 )
                 bundle.putInt(
-                    FreeRadioMediaServiceConnection.SET_FAVORITES_VALUE_KEY,
-                    isFavorite.value
+                    SET_FAVORITES_VALUE_KEY,
+                    isFavorite.intValue
                 )
                 onFavoriteClick(Commands.SET_FAVORITES_COMMAND.name, bundle)
             }
@@ -124,17 +125,17 @@ fun StationCard(
             modifier = Modifier
                 .padding(4.dp),
             onClick = {
-                if (isFavorite.value == 0) {
-                    isFavorite.value = 1
+                if (isFavorite.intValue == 0) {
+                    isFavorite.intValue = 1
 
                     val bundle = Bundle()
                     bundle.putString(
-                        FreeRadioMediaServiceConnection.SET_FAVORITES_STATION_KEY,
+                        SET_FAVORITES_STATION_KEY,
                         station.stationuuid
                     )
                     bundle.putInt(
-                        FreeRadioMediaServiceConnection.SET_FAVORITES_VALUE_KEY,
-                        isFavorite.value
+                        SET_FAVORITES_VALUE_KEY,
+                        isFavorite.intValue
                     )
                     onFavoriteClick(Commands.SET_FAVORITES_COMMAND.name, bundle)
                 } else {
@@ -144,7 +145,7 @@ fun StationCard(
         ) {
             Icon(
                 painter = painterResource(
-                    if (isFavorite.value == 0) R.drawable.ic_favorite_border
+                    if (isFavorite.intValue == 0) R.drawable.ic_favorite_border
                     else R.drawable.ic_favorite
                 ),
                 contentDescription = null,
@@ -239,12 +240,4 @@ private val fakeStation = Station(
     changeuuid = "92c2fbdc-14ec-4861-af65-49dd7de7826f",
     isFavorite = 0,
     votes = 0
-)
-
-private val nowPlayingStation = NowPlayingStation(
-    name = "Radio Schizoid - Chillout / Ambient",
-    favicon = "",
-    nowPlayingTitle = "Radio Schizoid - Chillout / Ambient",
-    stationUUID = "96202f73-0601-11e8-ae97-52543be04c81",
-    description = ""
 )

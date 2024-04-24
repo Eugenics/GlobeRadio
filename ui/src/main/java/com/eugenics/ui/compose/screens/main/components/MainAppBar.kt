@@ -1,4 +1,4 @@
-package com.eugenics.freeradio.ui.compose.main.components
+package com.eugenics.ui.compose.screens.main.components
 
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.tween

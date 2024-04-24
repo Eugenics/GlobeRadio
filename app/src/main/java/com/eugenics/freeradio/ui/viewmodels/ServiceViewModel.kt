@@ -8,7 +8,7 @@ import com.eugenics.core.model.NowPlayingStation
 import com.eugenics.core.model.Station
 import com.eugenics.core.model.StationsUiState
 import com.eugenics.core.model.Tag
-import com.eugenics.freeradio.ui.util.PlayBackState
+import com.eugenics.ui_core.data.enums.PlayBackState
 import com.eugenics.ui_core.data.enums.UICommands
 import com.eugenics.ui_core.data.enums.UIDataState
 import com.eugenics.ui_core.data.enums.UIState

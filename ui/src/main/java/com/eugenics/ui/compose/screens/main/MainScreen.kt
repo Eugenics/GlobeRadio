@@ -1,4 +1,4 @@
-package com.eugenics.freeradio.ui.compose.main
+package com.eugenics.ui.compose.screens.main
 
 import android.content.res.Configuration.UI_MODE_NIGHT_NO
 import android.content.res.Configuration.UI_MODE_NIGHT_YES
@@ -28,21 +28,21 @@ import com.eugenics.core.model.StationsUiState
 import com.eugenics.core.model.Tag
 import com.eugenics.ui_core.data.model.UIMessage
 import com.eugenics.ui_core.data.enums.UIDataState
-import com.eugenics.freeradio.navigation.Screen
 import com.eugenics.ui.compose.screens.load.LoadContent
-import com.eugenics.freeradio.ui.compose.main.components.MainTopAppBar
-import com.eugenics.freeradio.ui.compose.main.components.MainBottomAppBar
-import com.eugenics.freeradio.ui.compose.main.components.MainNavigationDrawer
+import com.eugenics.ui.compose.screens.main.components.MainTopAppBar
+import com.eugenics.ui.compose.screens.main.components.MainBottomAppBar
+import com.eugenics.ui.compose.screens.main.components.MainNavigationDrawer
 import com.eugenics.ui.compose.screens.components.warning.WarningDialog
 import com.eugenics.ui.theme.GlobeRadioTheme
-import com.eugenics.freeradio.ui.util.PlayBackState
+import com.eugenics.ui_core.data.enums.PlayBackState
+import com.eugenics.ui_core.data.enums.Screen
 import kotlinx.coroutines.launch
 
 @RequiresApi(Build.VERSION_CODES.S)
 @Composable
 fun MainScreen(
     navController: NavHostController = rememberNavController(),
-    uiDataState: State<Int> = mutableStateOf(UIDataState.LOADING),
+    uiDataState: IntState = mutableIntStateOf(UIDataState.LOADING),
     playbackState: State<PlayBackState> = mutableStateOf(PlayBackState.Pause),
     stationsList: State<List<Station>> = mutableStateOf(listOf()),
     nowPlayingStation: State<NowPlayingStation> = mutableStateOf(NowPlayingStation.emptyInstance()),
@@ -79,10 +79,10 @@ fun MainScreen(
             when (message.value.messageType) {
                 UIMessage.TYPE_WARNING -> showWarningDialog.value = true
                 UIMessage.TYPE_INFO ->
-                        snackBarHostState.showSnackbar(
-                            message = message.value.getMessage(context),
-                            duration = SnackbarDuration.Short
-                        )
+                    snackBarHostState.showSnackbar(
+                        message = message.value.getMessage(context),
+                        duration = SnackbarDuration.Short
+                    )
 
                 UIMessage.TYPE_ERROR -> snackBarHostState.showSnackbar(
                     message = message.value.getMessage(context),
@@ -95,8 +95,8 @@ fun MainScreen(
         }
     }
 
-    LaunchedEffect(key1 = uiDataState.value) {
-        when (uiDataState.value) {
+    LaunchedEffect(key1 = uiDataState.intValue) {
+        when (uiDataState.intValue) {
             UIDataState.LOADING -> showPlayerBar.value = false
             else -> showPlayerBar.value = true
         }
@@ -186,7 +186,7 @@ fun MainScreen(
                 SnackbarHost(hostState = snackBarHostState)
             }
         ) { paddingValues ->
-            when (uiDataState.value) {
+            when (uiDataState.intValue) {
                 UIDataState.LOADING -> {
                     Box(
                         modifier = Modifier.fillMaxSize()

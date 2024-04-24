@@ -1,4 +1,4 @@
-package com.eugenics.freeradio.ui.compose.main.components
+package com.eugenics.ui.compose.screens.main.components
 
 import android.content.res.Configuration.UI_MODE_NIGHT_YES
 import androidx.compose.foundation.background
@@ -16,7 +16,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
@@ -30,7 +29,6 @@ import androidx.compose.ui.unit.dp
 import com.eugenics.resource.R
 import com.eugenics.ui.theme.GlobeRadioTheme
 
-@OptIn(ExperimentalComposeUiApi::class)
 @Composable
 fun AppBarCard(
     modifier: Modifier = Modifier,

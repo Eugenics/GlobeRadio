@@ -1,4 +1,4 @@
-package com.eugenics.freeradio.ui.compose.main.components
+package com.eugenics.ui.compose.screens.main.components
 
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
