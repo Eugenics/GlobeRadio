@@ -19,9 +19,7 @@ object Deps {
         const val coreKtx = "androidx.core:core-ktx:1.10.1"
         const val appcompat = "androidx.appcompat:appcompat:1.6.1"
         const val media = "androidx.media:media:1.6.0"
-        const val lifecycleRuntime = "androidx.lifecycle:lifecycle-runtime-ktx:2.6.1"
         const val lifecycleViewModelCompose = "androidx.lifecycle:lifecycle-viewmodel-compose:2.6.1"
-        const val activityCompose = "androidx.activity:activity-compose:1.7.2"
         const val pallete = "androidx.palette:palette:1.0.0"
         const val navigation = "androidx.navigation:navigation-compose:2.5.3"
         const val testCore = "androidx.test:core:1.5.0"
@@ -30,31 +28,9 @@ object Deps {
 
     object Compose {
         private const val composeVersion = "1.4.3"
-        const val composeUi = "androidx.compose.ui:ui:$composeVersion"
-        const val composeTooling = "androidx.compose.ui:ui-tooling:$composeVersion"
-        const val composePreview = "androidx.compose.ui:ui-tooling-preview:$composeVersion"
-        const val animationGraphics =
-            "androidx.compose.animation:animation-graphics:$composeVersion"
         const val uiTesting = "androidx.compose.ui:ui-test:$composeVersion"
         const val jUnitTesting = "androidx.compose.ui:ui-test-junit4:$composeVersion"
         const val uiTestManifest = "androidx.compose.ui:ui-test-manifest:$composeVersion"
-    }
-
-    object Accomponist {
-        const val inserts = "com.google.accompanist:accompanist-insets:0.25.1"
-        const val coil = "com.google.accompanist:accompanist-coil:0.15.0"
-        const val swipe = "com.google.accompanist:accompanist-swiperefresh:0.25.1"
-        const val systemUiController =
-            "com.google.accompanist:accompanist-systemuicontroller:0.28.0"
-        const val navigaionAnimation =
-            "com.google.accompanist:accompanist-navigation-animation:0.30.0"
-    }
-
-    object Material3 {
-        private const val material3Version = "1.1.1"
-        const val material = "androidx.compose.material3:material3:$material3Version"
-        const val windowSize =
-            "androidx.compose.material3:material3-window-size-class:$material3Version"
     }
 
     object JUnit {
@@ -71,8 +47,6 @@ object Deps {
         const val hilt = "com.google.dagger:hilt-android:$hiltVersion"
         const val compiler = "com.google.dagger:hilt-android-compiler:$hiltVersion"
         const val testing = "com.google.dagger:hilt-android-testing:$hiltVersion"
-        const val navigationCompose = "androidx.hilt:hilt-navigation-compose:1.0.0"
-        const val androidPlugin = "com.google.dagger:hilt-android-gradle-plugin:$hiltVersion"
     }
 
     object Dagger {
@@ -102,16 +76,6 @@ object Deps {
             "org.jetbrains.kotlinx:kotlinx-coroutines-core:$kotlinCoroutinesVersion"
         const val coroutinesAndroid =
             "org.jetbrains.kotlinx:kotlinx-coroutines-android:$kotlinCoroutinesVersion"
-
-        private const val kotlinVersion = "1.8.21"
-        const val kotlinStdlibJdk8 = "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlinVersion"
-        const val kotlinSerialization = "org.jetbrains.kotlin:kotlin-serialization:$kotlinVersion"
-    }
-
-    object Google {
-        private const val gsonVersion = "2.10.1"
-        const val gson = "com.google.code.gson:gson:$gsonVersion"
-        const val material = "com.google.android.material:material:1.9.0"
     }
 
     object Retrofit {
@@ -150,7 +114,6 @@ object Deps {
 private typealias pdss = PluginDependenciesSpec
 private typealias pds = PluginDependencySpec
 
-inline val pdss.androidApplication: pds get() = id("com.android.application")
 inline val pdss.androidLibrary: pds get() = id("com.android.library")
 inline val pdss.kotlin: pds get() = id("org.jetbrains.kotlin.android")
 inline val pdss.parcelize: pds get() = id("kotlin-parcelize")

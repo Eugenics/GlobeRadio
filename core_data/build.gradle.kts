@@ -1,9 +1,9 @@
 plugins {
-    alias(libs.plugins.android.library)
-    kotlin
-    kapt
-    dagger
-    serialization
+    id(libs.plugins.android.library.get().pluginId)
+    id(libs.plugins.kotlin.android.get().pluginId)
+    id(libs.plugins.ksp.get().pluginId)
+    id(libs.plugins.dagger.hilt.get().pluginId)
+    id(libs.plugins.kotlinx.serialization.get().pluginId)
 }
 
 android {
@@ -36,29 +36,22 @@ android {
 }
 
 dependencies {
-
     // AndroidX
     implementation(libs.androidx.ktx)
-    implementation(Deps.AndroidX.appcompat)
 
     // Tests
-    testImplementation(Deps.JUnit.junit)
-    androidTestImplementation(Deps.JUnit.junitExt)
-
+    testImplementation(libs.junit)
+    androidTestImplementation(libs.junitExt)
 
     // Hilt
-    implementation(Deps.Hilt.hilt)
-    kapt(Deps.Hilt.compiler)
-
-    // Dagger
-    implementation(Deps.Dagger.dagger)
-    kapt(Deps.Dagger.compiler)
+    implementation(libs.hilt.android)
+    ksp(libs.hilt.compiler)
 
     // KotlinX Serialization
-    implementation(Deps.KotlinX.kotlinxSerialization)
+    implementation(libs.kotlinx.serialization)
 
     // Kotlin coroutines test
-    testImplementation(Deps.KotlinX.kotlinxCoroutinesTest)
+    testImplementation(libs.kotlinx.coroutines.test)
 
     // Modules
     implementation(project(":core"))

@@ -191,6 +191,6 @@ dependencies {
     implementation(libs.jackson.databind)
 
     // Firebase Crashlytics
-    implementation("com.google.firebase:firebase-crashlytics:18.6.3")
-    implementation("com.google.firebase:firebase-analytics:21.6.1")
+    implementation("com.google.firebase:firebase-crashlytics:18.6.4")
+    implementation("com.google.firebase:firebase-analytics:21.6.2")
 }
