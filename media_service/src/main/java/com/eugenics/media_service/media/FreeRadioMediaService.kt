@@ -15,12 +15,12 @@ import android.util.Log
 import androidx.core.content.ContextCompat
 import androidx.core.net.toUri
 import androidx.media.MediaBrowserServiceCompat
+import com.eugenics.core.constants.SET_FAVORITES_STATION_KEY
+import com.eugenics.core.constants.SET_FAVORITES_VALUE_KEY
 import com.eugenics.core.enums.MediaSourceState
 import com.eugenics.core.enums.Commands
 import com.eugenics.data.interfaces.IPrefsRepository
 import com.eugenics.data.interfaces.IStationsRepository
-import com.eugenics.media_service.media.FreeRadioMediaServiceConnection.Companion.SET_FAVORITES_STATION_KEY
-import com.eugenics.media_service.media.FreeRadioMediaServiceConnection.Companion.SET_FAVORITES_VALUE_KEY
 import com.eugenics.media_service.player.getMediaItems
 import com.google.android.exoplayer2.*
 import com.google.android.exoplayer2.audio.AudioAttributes
