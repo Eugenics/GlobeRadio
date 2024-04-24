@@ -1,17 +1,6 @@
 import org.gradle.plugin.use.PluginDependenciesSpec
 import org.gradle.plugin.use.PluginDependencySpec
 
-object BaseConfig {
-    const val jvmTarget = "17"
-    const val compileSdk = 33
-    const val minSdk = 27
-    const val targetSdk = 33
-    const val applicationId = "com.eugenics.freeradio"
-    const val versionCode = 2
-    const val versionName = "1.1"
-    const val kotlinCompilerExtensionVersion = "1.4.8"
-}
-
 object Deps {
     object Android {}
 
@@ -19,18 +8,8 @@ object Deps {
         const val coreKtx = "androidx.core:core-ktx:1.10.1"
         const val appcompat = "androidx.appcompat:appcompat:1.6.1"
         const val media = "androidx.media:media:1.6.0"
-        const val lifecycleViewModelCompose = "androidx.lifecycle:lifecycle-viewmodel-compose:2.6.1"
         const val pallete = "androidx.palette:palette:1.0.0"
         const val navigation = "androidx.navigation:navigation-compose:2.5.3"
-        const val testCore = "androidx.test:core:1.5.0"
-        const val testRunner = "androidx.test:runner:1.5.2"
-    }
-
-    object Compose {
-        private const val composeVersion = "1.4.3"
-        const val uiTesting = "androidx.compose.ui:ui-test:$composeVersion"
-        const val jUnitTesting = "androidx.compose.ui:ui-test-junit4:$composeVersion"
-        const val uiTestManifest = "androidx.compose.ui:ui-test-manifest:$composeVersion"
     }
 
     object JUnit {
@@ -65,13 +44,7 @@ object Deps {
     }
 
     object KotlinX {
-        private const val kotlinxSerializationVersion = "1.5.0"
-        const val kotlinxSerialization =
-            "org.jetbrains.kotlinx:kotlinx-serialization-json:$kotlinxSerializationVersion"
-
         private const val kotlinCoroutinesVersion = "1.7.1"
-        const val kotlinxCoroutinesTest =
-            "org.jetbrains.kotlinx:kotlinx-coroutines-test:$kotlinCoroutinesVersion"
         const val coroutinesCore =
             "org.jetbrains.kotlinx:kotlinx-coroutines-core:$kotlinCoroutinesVersion"
         const val coroutinesAndroid =
@@ -104,11 +77,6 @@ object Deps {
         const val datastore = "androidx.datastore:datastore:1.0.0"
     }
 
-    object Mockito {
-        const val core = "org.mockito:mockito-core:5.3.1"
-        const val mockitoKotlin = "org.mockito.kotlin:mockito-kotlin:5.0.0"
-        const val mocc = "io.mockk:mockk:1.13.5"
-    }
 }
 
 private typealias pdss = PluginDependenciesSpec

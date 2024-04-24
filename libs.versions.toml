@@ -43,6 +43,10 @@ splash = "1.0.1"
 jackson = "2.17.0"
 junit = "4.13.2"
 junitExt = "1.1.5"
+mockitoCore = "5.3.1"
+mockitoKotlin = "5.0.0"
+mockk = "1.13.5"
+espresso = "3.5.1"
 
 androidGradlePlugin = "8.2.2"
 androidLibraryPlugin = "8.2.2"
@@ -53,6 +57,7 @@ googleServicesPlugin = "4.4.1"
 kspPlugin = "1.9.22-1.0.17"
 googleServices = "4.4.1"
 crashliticsGradle = "2.9.9"
+
 
 [libraries]
 hilt-plugin = { group = "com.google.dagger", name = "hilt-android-gradle-plugin", version.ref = "hiltPlugin" }
@@ -113,10 +118,13 @@ androidx-paging = { group = "androidx.paging", name = "paging-runtime", version.
 androidx-workmanager = { group = "androidx.work", name = "work-runtime-ktx", version.ref = "workmanager" }
 androidx-core-splash = { group = "androidx.core", name = "core-splashscreen", version.ref = "splash" }
 jackson-databind = { group = "com.fasterxml.jackson.core", name = "jackson-databind", version.ref = "jackson" }
-
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 junitExt = { group = "androidx.test.ext", name = "junit", version.ref = "junitExt" }
+espesso = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espresso" }
 
+mockito-core = { group = "org.mockito", name = "mockito-core", version.ref = "mockitoCore" }
+mockito-kotlin = { group = "org.mockito.kotlin", name = "mockito-kotlin", version.ref = "mockitoKotlin" }
+mockk = { group = "io.mockk", name = "mockk", version.ref = "mockk" }
 
 
 [bundles]
