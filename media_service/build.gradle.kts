@@ -1,10 +1,10 @@
 plugins {
-    androidLibrary
-    kotlin
-    kapt
-    parcelize
-    serialization
-    dagger
+    id(libs.plugins.android.library.get().pluginId)
+    id(libs.plugins.kotlin.android.get().pluginId)
+    id(libs.plugins.ksp.get().pluginId)
+    id(libs.plugins.kotlin.parcelize.get().pluginId)
+    id(libs.plugins.kotlinx.serialization.get().pluginId)
+    id(libs.plugins.dagger.hilt.get().pluginId)
 }
 
 android {
@@ -36,34 +36,31 @@ android {
 }
 
 dependencies {
-
-    // AndroidX
-    implementation(Deps.AndroidX.coreKtx)
-    implementation(Deps.AndroidX.appcompat)
-    implementation(Deps.KotlinX.coroutinesCore)
-    implementation(Deps.KotlinX.coroutinesAndroid)
-
-    // Tests
-    testImplementation(Deps.JUnit.junit)
-    androidTestImplementation(Deps.JUnit.junitExt)
-    androidTestImplementation(Deps.Espresso.core)
-
-    // Android media player
-    implementation(Deps.AndroidX.media)
-
-    // Exoplayer
-    implementation(Deps.Exoplayer.exoplayer)
-    implementation(Deps.Exoplayer.extOkhttp)
-    implementation(Deps.Exoplayer.extMediasession)
-
-    // Glide dependencies
-    implementation(Deps.Images.glide)
-
-    // Hilt
-    implementation(Deps.Hilt.hilt)
-    kapt(Deps.Hilt.compiler)
-
     // modules
     implementation(project(":core"))
     implementation(project(":core_data"))
+
+    // AndroidX
+    implementation(libs.androidx.ktx)
+    implementation(libs.bundles.coroutines)
+
+    // Tests
+    testImplementation(libs.junit)
+    androidTestImplementation(libs.junitExt)
+    androidTestImplementation(libs.espesso)
+
+    // Android media player
+    implementation(libs.androidx.media)
+
+    // Exoplayer
+    implementation(libs.exoplayer)
+    implementation(libs.exoplayer.extOkhttp)
+    implementation(libs.exoplayer.extMediasession)
+
+    // Glide dependencies
+    implementation(libs.glide)
+
+    // Hilt
+    implementation(libs.hilt.android)
+    ksp(libs.hilt.compiler)
 }
