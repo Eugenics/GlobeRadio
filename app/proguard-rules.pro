@@ -23,3 +23,5 @@
 -keepclassmembers,allowobfuscation class * {
  @com.google.gson.annotations.SerializedName <fields>;
 }
+-dontwarn java.beans.ConstructorProperties
+-dontwarn java.beans.Transient

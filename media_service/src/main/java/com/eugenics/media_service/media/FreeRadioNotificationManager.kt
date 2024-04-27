@@ -107,14 +107,20 @@ internal class FreeRadioNotificationManager(
 
         private suspend fun resolveUriAsBitmap(uri: Uri): Bitmap? {
             return withContext(Dispatchers.IO) {
+                var bitmap = ContextCompat.getDrawable(context, R.drawable.pradio_wave)?.toBitmap()
                 this.coroutineContext + CoroutineExceptionHandler { _, throwable ->
                     Log.e(TAG, throwable.message.toString())
                 }
-                Glide.with(context).applyDefaultRequestOptions(glideOptions)
-                    .asBitmap()
-                    .load(uri)
-                    .submit(NOTIFICATION_LARGE_ICON_SIZE, NOTIFICATION_LARGE_ICON_SIZE)
-                    .get()
+                try {
+                    bitmap = Glide.with(context).applyDefaultRequestOptions(glideOptions)
+                        .asBitmap()
+                        .load(uri)
+                        .submit(NOTIFICATION_LARGE_ICON_SIZE, NOTIFICATION_LARGE_ICON_SIZE)
+                        .get()
+                } catch (e: Exception) {
+                    Log.e(TAG, e.toString())
+                }
+                bitmap
             }
         }
     }

@@ -8,6 +8,7 @@ versionCode = "3"
 versionName = "1.1"
 kotlinCompilerExtensionVersion = "1.5.10"
 paging = "3.2.1"
+ndkVersion = "26.0.10792818"
 
 ktx = "1.13.0"
 hilt = "2.49"

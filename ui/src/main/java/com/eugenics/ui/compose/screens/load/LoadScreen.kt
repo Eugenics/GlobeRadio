@@ -17,9 +17,9 @@ import com.eugenics.ui.theme.GlobeRadioTheme
 @Composable
 fun LoadContent(text: String) {
     Column(
-        modifier = Modifier.fillMaxSize(),
         verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = Modifier.fillMaxSize()
     ) {
         LoadGears(
             modifier = Modifier
@@ -41,7 +41,7 @@ fun LoadContent(text: String) {
 @Preview(
     name = "LoadScreenLightMode",
     uiMode = UI_MODE_NIGHT_NO,
-    apiLevel = 27,
+    apiLevel = 34,
     device = "spec:parent=pixel_5,orientation=portrait"
 )
 private fun LoadScreenLightModePreview() {
@@ -54,7 +54,7 @@ private fun LoadScreenLightModePreview() {
 @Preview(
     name = "LoadScreenLightLandscapeMode",
     uiMode = UI_MODE_NIGHT_NO,
-    apiLevel = 27,
+    apiLevel = 34,
     device = "spec:parent=pixel_5,orientation=landscape"
 )
 private fun LoadScreenLightLandscapeModePreview() {
@@ -67,7 +67,7 @@ private fun LoadScreenLightLandscapeModePreview() {
 @Preview(
     name = "LoadScreenDarkMode",
     uiMode = UI_MODE_NIGHT_YES,
-    apiLevel = 27,
+    apiLevel = 34,
     device = "spec:parent=pixel_5,orientation=portrait"
 )
 private fun LoadScreenDarkModePreview() {

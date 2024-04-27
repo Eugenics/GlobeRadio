@@ -3,8 +3,8 @@ package com.eugenics.ui.compose.screens.load
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.offset
+import androidx.compose.foundation.layout.size
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -46,42 +46,42 @@ fun LoadGears(modifier: Modifier = Modifier) {
         }
     }
     Box(
-        modifier = modifier.fillMaxSize()
+        modifier = modifier.size(250.dp)
     ) {
         Image(
             painter = painterResource(R.drawable.gear_red),
             contentDescription = null,
             modifier = Modifier
+                .offset(x = 0.dp, y = (-40).dp)
                 .rotate(rotationPosition.value)
+                .align(Alignment.Center)
         )
-        Box(modifier = Modifier.offset(x = 70.dp, y = 70.dp)) {
-            Image(
-                painter = painterResource(R.drawable.gear_blue),
-                contentDescription = null,
-                modifier = Modifier
-                    .rotate(antiClockWisePosition.value)
-            )
-        }
-        Box(modifier = Modifier.offset(x = (-70).dp, y = 70.dp)) {
-            Image(
-                painter = painterResource(R.drawable.gear_green),
-                contentDescription = null,
-                modifier = Modifier
-                    .rotate(antiClockWisePosition.value)
-            )
-        }
+        Image(
+            painter = painterResource(R.drawable.gear_blue),
+            contentDescription = null,
+            modifier = Modifier
+                .offset(x = 70.dp, y = 30.dp)
+                .rotate(antiClockWisePosition.value)
+                .align(Alignment.Center)
+        )
+        Image(
+            painter = painterResource(R.drawable.gear_green),
+            contentDescription = null,
+            modifier = Modifier
+                .offset(x = (-70).dp, y = 30.dp)
+                .rotate(antiClockWisePosition.value)
+                .align(Alignment.Center)
+        )
     }
 }
 
 @Composable
 @Preview(
     name = "GearsPreview",
-    apiLevel = 27
+    apiLevel = 34,
 )
 private fun PreviewLoadingScreen() {
-    PreviewBase {
-        Box(modifier = Modifier.fillMaxSize()) {
-            LoadGears(modifier = Modifier.align(Alignment.Center))
-        }
+    PreviewBase(isDarkTheme = true) {
+        LoadGears()
     }
 }
