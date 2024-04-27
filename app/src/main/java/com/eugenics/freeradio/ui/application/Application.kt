@@ -2,7 +2,6 @@ package com.eugenics.freeradio.ui.application
 
 import android.os.Build
 import androidx.annotation.RequiresApi
-import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.isSystemInDarkTheme
@@ -14,18 +13,17 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.compose.rememberNavController
 import com.eugenics.core.enums.Theme
 import com.eugenics.freeradio.navigation.NavGraph
 import com.eugenics.ui.theme.ContentDynamicTheme
 import com.eugenics.ui.theme.DarkColors
 import com.eugenics.ui.theme.LightColors
 import com.eugenics.freeradio.ui.viewmodels.MainViewModel
-import com.google.accompanist.navigation.animation.rememberAnimatedNavController
 
 private const val THEME_ANIMATION_LABEL = "theme_dynamic_color"
 
 @RequiresApi(Build.VERSION_CODES.S)
-@OptIn(ExperimentalAnimationApi::class)
 @Composable
 fun Application(
     viewModel: MainViewModel = hiltViewModel()
@@ -53,7 +51,7 @@ fun Application(
     }
 
     val content = @Composable {
-        val navController = rememberAnimatedNavController()
+        val navController = rememberNavController()
         Surface(tonalElevation = 5.dp) {
             NavGraph(
                 navController = navController,
