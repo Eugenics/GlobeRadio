@@ -10,6 +10,7 @@ import androidx.core.content.ContextCompat
 import androidx.core.graphics.drawable.toBitmap
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.engine.DiskCacheStrategy
+import com.bumptech.glide.load.engine.GlideException
 import com.bumptech.glide.request.RequestOptions
 import com.eugenics.media_service.R
 import com.google.android.exoplayer2.Player
@@ -117,8 +118,9 @@ internal class FreeRadioNotificationManager(
                         .load(uri)
                         .submit(NOTIFICATION_LARGE_ICON_SIZE, NOTIFICATION_LARGE_ICON_SIZE)
                         .get()
-                } catch (e: Exception) {
+                } catch (e: GlideException) {
                     Log.e(TAG, e.toString())
+                    e.logRootCauses(TAG)
                 }
                 bitmap
             }
