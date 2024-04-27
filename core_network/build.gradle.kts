@@ -1,10 +1,10 @@
 plugins {
-    androidLibrary
-    kotlin
-    kapt
-    parcelize
-    serialization
-    dagger
+    id(libs.plugins.android.library.get().pluginId)
+    id(libs.plugins.ksp.get().pluginId)
+    id(libs.plugins.kotlin.android.get().pluginId)
+    id(libs.plugins.kotlin.parcelize.get().pluginId)
+    id(libs.plugins.kotlinx.serialization.get().pluginId)
+    id(libs.plugins.dagger.hilt.get().pluginId)
 }
 
 android {
@@ -39,22 +39,14 @@ android {
 dependencies {
 
     // AndroidX
-    implementation(Deps.AndroidX.coreKtx)
-    implementation(Deps.AndroidX.appcompat)
+    implementation(libs.androidx.ktx)
 
     // Retrofit
-    implementation(Deps.Retrofit.retrofit)
-    implementation(Deps.Retrofit.gsonConverter)
-    implementation(Deps.Retrofit.serializationConverter)
-    implementation(Deps.Retrofit.intercepter)
+    implementation(libs.bundles.retrofit)
 
     // Hilt
     implementation(libs.hilt.android)
-    kapt(libs.hilt.compiler)
-
-    // Dagger
-    implementation(Deps.Dagger.dagger)
-    kapt(Deps.Dagger.compiler)
+    ksp(libs.hilt.compiler)
 
     //Modules
     implementation(project(":core"))

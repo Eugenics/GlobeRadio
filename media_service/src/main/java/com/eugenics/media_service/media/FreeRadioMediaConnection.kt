@@ -164,9 +164,6 @@ class FreeRadioMediaServiceConnection(context: Context, serviceComponent: Compon
         @Volatile
         private var instance: FreeRadioMediaServiceConnection? = null
 
-        const val SET_FAVORITES_STATION_KEY = "setFavoritesStationKey"
-        const val SET_FAVORITES_VALUE_KEY = "setFavoritesValueKey"
-
         fun getInstance(context: Context, serviceComponent: ComponentName) =
             instance ?: synchronized(this) {
                 instance ?: FreeRadioMediaServiceConnection(context, serviceComponent)

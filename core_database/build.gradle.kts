@@ -1,8 +1,8 @@
 plugins {
-    androidLibrary
-    kotlin
-    kapt
-    dagger
+    id(libs.plugins.android.library.get().pluginId)
+    id(libs.plugins.kotlin.android.get().pluginId)
+    id(libs.plugins.ksp.get().pluginId)
+    id(libs.plugins.dagger.hilt.get().pluginId)
 }
 
 android {
@@ -30,9 +30,8 @@ android {
         targetCompatibility = JavaVersion.VERSION_17
     }
 
-    kapt {
-        arguments { arg("room.schemaLocation", "$projectDir/schemas") }
-        correctErrorTypes = true
+    ksp {
+        arg("room.schemaLocation", "$projectDir/schemas")
     }
 
     kotlinOptions {
@@ -48,14 +47,10 @@ dependencies {
 
     // Hilt
     implementation(libs.hilt.android)
-    kapt(libs.hilt.compiler)
-
-    // Dagger
-    implementation(libs.dagger)
-    kapt(libs.dagger.compiler)
+    ksp(libs.hilt.compiler)
 
     //Room
-    kapt(libs.room.compiler)
+    ksp(libs.room.compiler)
     implementation(libs.room.ktx)
     testImplementation(libs.room.testing)
     implementation(libs.room.paging)

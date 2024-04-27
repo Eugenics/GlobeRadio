@@ -96,6 +96,8 @@ android {
     //sourceSets["main"].resources.srcDirs("../resource/src/main/res")
     sourceSets["main"].assets.srcDirs("../src/main/assets")
     sourceSets["test"].assets.srcDirs("../src/test/assets")
+
+    ndkVersion = libs.versions.ndkVersion.get()
 }
 
 dependencies {
@@ -156,27 +158,27 @@ dependencies {
     implementation(libs.androidx.datastore)
 
     // Instrumental tests
-    androidTestImplementation(Deps.JUnit.junitExt)
-    androidTestImplementation(Deps.Espresso.core)
-    androidTestImplementation(Deps.AndroidX.testCore)
-    androidTestImplementation(Deps.AndroidX.testRunner)
-    androidTestImplementation(Deps.Hilt.testing)
+    androidTestImplementation(libs.junitExt)
+    androidTestImplementation(libs.espesso)
+    androidTestImplementation(libs.androidx.test.core)
+    androidTestImplementation(libs.androidx.test.runner)
+    androidTestImplementation(libs.hilt.testing)
     kspAndroidTest(libs.hilt.compiler)
 
     // Local tests
-    testImplementation(Deps.JUnit.junit)
-    testImplementation(Deps.AndroidX.testCore)
-    testImplementation(Deps.AndroidX.lifecycleViewModelCompose)
-    testImplementation(Deps.Mockito.core)
-    testImplementation(Deps.Mockito.mockitoKotlin)
-    testImplementation(Deps.Mockito.mocc)
-    testImplementation(Deps.KotlinX.kotlinxCoroutinesTest)
-    testImplementation(Deps.Hilt.testing)
+    testImplementation(libs.junit)
+    testImplementation(libs.androidx.test.core)
+    testImplementation(libs.androidx.lifecycle.viewmodel.compose)
+    testImplementation(libs.mockito.core)
+    testImplementation(libs.mockito.kotlin)
+    testImplementation(libs.mockk)
+    testImplementation(libs.kotlinx.coroutines.test)
+    testImplementation(libs.hilt.testing)
 
     // Compose testing dependencies
-    androidTestImplementation(Deps.Compose.uiTesting)
-    androidTestImplementation(Deps.Compose.jUnitTesting)
-    debugImplementation(Deps.Compose.uiTestManifest)
+    androidTestImplementation(libs.compose.ui.testing)
+    androidTestImplementation(libs.compose.junit.testing)
+    debugImplementation(libs.compose.ui.testmanifest)
 
     // Firebase
     implementation(libs.google.firebase)
@@ -191,6 +193,6 @@ dependencies {
     implementation(libs.jackson.databind)
 
     // Firebase Crashlytics
-    implementation("com.google.firebase:firebase-crashlytics:18.6.3")
-    implementation("com.google.firebase:firebase-analytics:21.6.1")
+    implementation("com.google.firebase:firebase-crashlytics:18.6.4")
+    implementation("com.google.firebase:firebase-analytics:21.6.2")
 }

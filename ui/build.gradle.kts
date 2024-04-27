@@ -40,36 +40,32 @@ android {
 }
 
 dependencies {
-
-    implementation(libs.androidx.ktx)
-    implementation(libs.androidx.appcompat)
-    implementation(libs.androidx.lifecycle.runtime)
-    implementation(libs.google.material)
-
-    // Compose
-    implementation(libs.bundles.compose)
-    implementation(libs.androidx.activity.compose)
-    implementation(libs.androidx.pallete)
-
-    // Compose Accompanist
-    implementation(libs.accomponist.inserts)
-    implementation(libs.accomponist.coil)
-    implementation(libs.accomponist.swipe)
-    implementation(libs.accomponist.systemUiController)
-    implementation(libs.accomponist.navigaionAnimation)
-
-    // Material 3
-    implementation(libs.androidx.material3)
-    implementation(libs.androidx.compose.windowsize)
-
-    testImplementation("junit:junit:4.13.2")
-    androidTestImplementation("androidx.test.ext:junit:1.1.5")
-    androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
-
     // Modules
+    implementation(project(":core"))
     implementation(project(":ui_core"))
     implementation(project(":resource"))
 
     //Libs
     implementation(files("libs/material-colors-util.jar"))
+
+    implementation(libs.androidx.ktx)
+    implementation(libs.androidx.lifecycle.runtime)
+    implementation(libs.google.material)
+
+    // Compose
+    implementation(libs.bundles.compose)
+
+    // Compose Accompanist
+    implementation(libs.bundles.accomponist)
+
+    // Material 3
+    implementation(libs.androidx.material3)
+    implementation(libs.androidx.compose.windowsize)
+
+    //Coil compose
+    implementation(libs.coil)
+
+    testImplementation(libs.junit)
+    androidTestImplementation(libs.junitExt)
+    androidTestImplementation(libs.espesso)
 }
