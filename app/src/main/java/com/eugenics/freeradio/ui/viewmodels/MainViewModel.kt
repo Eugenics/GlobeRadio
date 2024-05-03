@@ -22,8 +22,7 @@ import com.eugenics.core.model.FavoriteStation
 import com.eugenics.core.model.Favorites
 import com.eugenics.core.model.StationsUiState
 import com.eugenics.data.interfaces.IStationsRepository
-import com.eugenics.ui_core.data.enums.UIDataState
-import com.eugenics.ui_core.data.enums.UIState
+import com.eugenics.ui_core.data.enums.DataState
 import com.eugenics.freeradio.util.ImageHelper
 import com.eugenics.ui_core.data.enums.UICommands
 import com.eugenics.freeradio.util.IOHelper
@@ -253,7 +252,6 @@ class MainViewModel @Inject constructor(
                 when (state) {
                     MediaSourceState.STATE_FIRST_INIT.value -> {
                         Log.d(TAG, "MEDIA_SOURCE_STATE STATE_FIRST_INIT")
-                        _uiState.value = UIState.UI_STATE_SPLASH
                         sendMessage(
                             UIMessage.TYPE_UI, messageInfoType = UIMessage.INFO_FIRST_INIT
                         )
@@ -265,18 +263,15 @@ class MainViewModel @Inject constructor(
 
                     MediaSourceState.STATE_CREATED.value -> {
                         Log.d(TAG, "MEDIA_SOURCE_STATE STATE_CREATED")
-                        _uiState.value = UIState.UI_STATE_SPLASH
                     }
 
                     MediaSourceState.STATE_ERROR.value -> {
-                        _uiState.value = UIState.UI_STATE_MAIN
-                        _Ui_dataState.value = UIDataState.ERROR
+                        _Ui_dataState.value = DataState.Error
                     }
 
                     MediaSourceState.STATE_INITIALIZING.value -> {
                         Log.d(TAG, "MEDIA_SOURCE_STATE STATE_INITIALIZING")
-                        _uiState.value = UIState.UI_STATE_MAIN
-                        _Ui_dataState.value = UIDataState.LOADING
+                        _Ui_dataState.value = DataState.Loading
                         sendMessage(
                             UIMessage.TYPE_UI, messageInfoType = UIMessage.INFO_LOADING
                         )
@@ -284,8 +279,7 @@ class MainViewModel @Inject constructor(
 
                     MediaSourceState.STATE_INITIALIZED.value -> {
                         Log.d(TAG, "MEDIA_SOURCE_STATE STATE_INITIALIZED")
-                        _uiState.value = UIState.UI_STATE_MAIN
-                        _Ui_dataState.value = UIDataState.PREPARED
+                        _Ui_dataState.value = DataState.Prepared
                     }
                 }
             }

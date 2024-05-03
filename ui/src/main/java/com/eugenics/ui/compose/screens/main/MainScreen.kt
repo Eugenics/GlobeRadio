@@ -27,7 +27,7 @@ import com.eugenics.core.model.Station
 import com.eugenics.core.model.StationsUiState
 import com.eugenics.core.model.Tag
 import com.eugenics.ui_core.data.model.UIMessage
-import com.eugenics.ui_core.data.enums.UIDataState
+import com.eugenics.ui_core.data.enums.DataState
 import com.eugenics.ui.compose.screens.load.LoadContent
 import com.eugenics.ui.compose.screens.main.components.MainTopAppBar
 import com.eugenics.ui.compose.screens.main.components.MainBottomAppBar
@@ -36,13 +36,14 @@ import com.eugenics.ui.compose.screens.components.warning.WarningDialog
 import com.eugenics.ui.theme.GlobeRadioTheme
 import com.eugenics.ui_core.data.enums.PlayBackState
 import com.eugenics.ui_core.data.enums.Screen
+import com.eugenics.ui_core.data.enums.UIDataState
 import kotlinx.coroutines.launch
 
 @RequiresApi(Build.VERSION_CODES.S)
 @Composable
 fun MainScreen(
     navController: NavHostController = rememberNavController(),
-    uiDataState: IntState = mutableIntStateOf(UIDataState.LOADING),
+    uiDataState: State<UIDataState> = mutableStateOf(DataState.Loading),
     playbackState: State<PlayBackState> = mutableStateOf(PlayBackState.Pause),
     stationsList: State<List<Station>> = mutableStateOf(listOf()),
     nowPlayingStation: State<NowPlayingStation> = mutableStateOf(NowPlayingStation.emptyInstance()),
@@ -95,9 +96,9 @@ fun MainScreen(
         }
     }
 
-    LaunchedEffect(key1 = uiDataState.intValue) {
-        when (uiDataState.intValue) {
-            UIDataState.LOADING -> showPlayerBar.value = false
+    LaunchedEffect(key1 = uiDataState.value) {
+        when (uiDataState.value) {
+            DataState.Loading -> showPlayerBar.value = false
             else -> showPlayerBar.value = true
         }
     }
@@ -186,8 +187,8 @@ fun MainScreen(
                 SnackbarHost(hostState = snackBarHostState)
             }
         ) { paddingValues ->
-            when (uiDataState.intValue) {
-                UIDataState.LOADING -> {
+            when (uiDataState.value) {
+                DataState.Loading -> {
                     Box(
                         modifier = Modifier.fillMaxSize()
                     ) {

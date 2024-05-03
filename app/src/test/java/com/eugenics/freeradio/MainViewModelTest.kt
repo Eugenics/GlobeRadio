@@ -4,7 +4,6 @@ import android.content.ComponentName
 import android.content.Context
 import androidx.datastore.core.DataStoreFactory
 import com.eugenics.data.testing.FakeStationsRepositoryFactory
-import com.eugenics.ui_core.data.enums.UIState
 import com.eugenics.freeradio.ui.viewmodels.MainViewModel
 import com.eugenics.freeradio.util.SettingsSerializer
 import com.eugenics.media_service.media.FreeRadioMediaService
@@ -45,11 +44,6 @@ class MainViewModelTest {
 
     @Before
     fun setup() {
-    }
-
-    @Test
-    fun testUIState() {
-        assertEquals(UIState.UI_STATE_SPLASH, mainViewModel.uiState.value)
     }
 
     @Test

@@ -5,8 +5,8 @@ import androidx.annotation.RequiresApi
 import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.core.tween
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.asIntState
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
@@ -17,6 +17,7 @@ import com.eugenics.freeradio.ui.viewmodels.MainViewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.eugenics.ui.compose.screens.settings.data.SettingsScreenHandlers
 import com.eugenics.ui_core.data.enums.Screen
 
 @RequiresApi(Build.VERSION_CODES.S)
@@ -26,12 +27,11 @@ fun NavGraph(
     mainViewModel: MainViewModel = hiltViewModel()
 ) {
     NavHost(
-        navController = navController,
-        startDestination = Screen.MainScreen.rout
+        navController = navController, startDestination = Screen.MainScreen.rout
     ) {
         composable(route = Screen.MainScreen.rout) {
             val playbackState = mainViewModel.playBackState.collectAsState()
-            val dataState = mainViewModel.uiDataState.collectAsState().asIntState()
+            val dataState = mainViewModel.uiDataState.collectAsState()
             val stationsList = mainViewModel.stations.collectAsState()
             val nowPlayingStation = mainViewModel.nowPlaying.collectAsState()
             val tagsList = mainViewModel.tagList.collectAsState()
@@ -58,30 +58,30 @@ fun NavGraph(
                 stationsUiState = stationsUiState
             )
         }
-        composable(
-            route = Screen.SettingsScreen.rout,
-            enterTransition = {
-                slideIntoContainer(
-                    towards = AnimatedContentTransitionScope.SlideDirection.Up,
-                    animationSpec = tween(500)
-                )
-            },
-            exitTransition = {
-                slideOutOfContainer(
-                    towards = AnimatedContentTransitionScope.SlideDirection.Down,
-                    animationSpec = tween(500)
+        composable(route = Screen.SettingsScreen.rout, enterTransition = {
+            slideIntoContainer(
+                towards = AnimatedContentTransitionScope.SlideDirection.Up,
+                animationSpec = tween(500)
+            )
+        }, exitTransition = {
+            slideOutOfContainer(
+                towards = AnimatedContentTransitionScope.SlideDirection.Down,
+                animationSpec = tween(500)
+            )
+        }) {
+            val settings = mainViewModel.currentStateObject.collectAsState()
+
+            val settingsScreenHandlers = remember {
+                mutableStateOf(
+                    SettingsScreenHandlers.newInstance(
+                        onBackPressed = { navController.popBackStack() },
+                        onThemePick = { theme -> mainViewModel.setSettings(theme = theme) },
+                        onSendCommand = mainViewModel::sendCommand
+                    )
                 )
             }
-        ) {
-            val settings = mainViewModel.currentStateObject.collectAsState()
-            val onSendCommand = remember { mainViewModel::sendCommand }
 
-            SettingsScreen(
-                settings = settings,
-                onBackPressed = { navController.popBackStack() },
-                onThemePick = { theme -> mainViewModel.setSettings(theme = theme) },
-                sendCommand = onSendCommand
-            )
+            SettingsScreen(settings = settings, settingsHandlers = settingsScreenHandlers)
         }
         composable(route = Screen.SplashScreen.rout) {
             SplashScreen()

@@ -2,7 +2,6 @@ package com.eugenics.freeradio.ui.viewmodels
 
 import android.util.Log
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
 import com.eugenics.core.model.CurrentState
 import com.eugenics.core.model.NowPlayingStation
 import com.eugenics.core.model.Station
@@ -10,13 +9,12 @@ import com.eugenics.core.model.StationsUiState
 import com.eugenics.core.model.Tag
 import com.eugenics.ui_core.data.enums.PlayBackState
 import com.eugenics.ui_core.data.enums.UICommands
+import com.eugenics.ui_core.data.enums.DataState
 import com.eugenics.ui_core.data.enums.UIDataState
-import com.eugenics.ui_core.data.enums.UIState
 import com.eugenics.ui_core.data.model.UIMessage
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.launch
 import java.util.UUID
 
 open class ServiceViewModel : ViewModel() {
@@ -25,11 +23,8 @@ open class ServiceViewModel : ViewModel() {
     protected val _nowPlaying = MutableStateFlow(NowPlayingStation.emptyInstance())
     val nowPlaying: StateFlow<NowPlayingStation> = _nowPlaying
 
-    protected val _uiState: MutableStateFlow<UIState> = MutableStateFlow(UIState.UI_STATE_SPLASH)
-    val uiState: StateFlow<UIState> = _uiState
-
-    protected val _Ui_dataState: MutableStateFlow<Int> = MutableStateFlow(UIDataState.LOADING)
-    val uiDataState: StateFlow<Int> = _Ui_dataState
+    protected val _Ui_dataState: MutableStateFlow<UIDataState> = MutableStateFlow(DataState.Loading)
+    val uiDataState: StateFlow<UIDataState> = _Ui_dataState
 
     protected val _stations: MutableStateFlow<List<Station>> = MutableStateFlow(mutableListOf())
     val stations: StateFlow<List<Station>> = _stations
@@ -75,18 +70,5 @@ open class ServiceViewModel : ViewModel() {
 
     fun setPrimaryDynamicColor(rgb: Int) {
         _primaryDynamicColor.value = rgb
-    }
-
-    protected fun collectStates() {
-        viewModelScope.launch {
-            uiState.collect {
-                Log.d(MainViewModel.TAG, it.name)
-            }
-        }
-        viewModelScope.launch {
-            uiDataState.collect {
-                Log.d(MainViewModel.TAG, UIDataState.getStateName(it))
-            }
-        }
     }
 }
