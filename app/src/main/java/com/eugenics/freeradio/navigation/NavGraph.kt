@@ -5,6 +5,7 @@ import androidx.annotation.RequiresApi
 import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.core.tween
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.State
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -12,11 +13,11 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import com.eugenics.ui.compose.screens.main.MainScreen
 import com.eugenics.ui.compose.screens.settings.SettingsScreen
-import com.eugenics.ui.compose.screens.splash.SplashScreen
 import com.eugenics.freeradio.ui.viewmodels.MainViewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.eugenics.ui.compose.screens.main.data.MainScreenHandlers
 import com.eugenics.ui.compose.screens.settings.data.SettingsScreenHandlers
 import com.eugenics.ui_core.data.enums.Screen
 
@@ -30,32 +31,24 @@ fun NavGraph(
         navController = navController, startDestination = Screen.MainScreen.rout
     ) {
         composable(route = Screen.MainScreen.rout) {
-            val playbackState = mainViewModel.playBackState.collectAsState()
-            val dataState = mainViewModel.uiDataState.collectAsState()
-            val stationsList = mainViewModel.stations.collectAsState()
-            val nowPlayingStation = mainViewModel.nowPlaying.collectAsState()
-            val tagsList = mainViewModel.tagList.collectAsState()
-            val message = mainViewModel.message.collectAsState()
-            val stationsUiState = mainViewModel.stationsUiState.collectAsState()
-            val onPlayClick = remember { mainViewModel::onPlayClick }
-            val onSearchClick = remember { mainViewModel::onSearch }
-            val onSendCommand = remember { mainViewModel::sendCommand }
-            val onFavoriteClick = remember { mainViewModel::sendCommand }
+            val mainScreenHandlers: State<MainScreenHandlers> = remember {
+                mutableStateOf(
+                    MainScreenHandlers.newInstance(
+                        onPlayClick = mainViewModel::onPlayClick,
+                        onSearchClick = mainViewModel::onSearch,
+                        onSendCommand = mainViewModel::sendCommand,
+                        onFavoriteClick = mainViewModel::sendCommand,
+                        onVisibleIndexChange = { index -> mainViewModel.setSettings(visibleIndex = index) }
+                    )
+                )
+            }
+
+            val mainStates = mainViewModel.mainScreenStates.collectAsState()
 
             MainScreen(
                 navController = navController,
-                uiDataState = dataState,
-                playbackState = playbackState,
-                stationsList = stationsList,
-                message = message,
-                onPlayClick = onPlayClick,
-                onSearchClick = onSearchClick,
-                sendCommand = onSendCommand,
-                onFavoriteClick = onFavoriteClick,
-                nowPlayingStation = nowPlayingStation,
-                tagsList = tagsList,
-                onVisibleIndexChange = { mainViewModel.setSettings(visibleIndex = it) },
-                stationsUiState = stationsUiState
+                handlers = mainScreenHandlers,
+                states = mainStates
             )
         }
         composable(route = Screen.SettingsScreen.rout, enterTransition = {
@@ -69,8 +62,6 @@ fun NavGraph(
                 animationSpec = tween(500)
             )
         }) {
-            val settings = mainViewModel.currentStateObject.collectAsState()
-
             val settingsScreenHandlers = remember {
                 mutableStateOf(
                     SettingsScreenHandlers.newInstance(
@@ -81,10 +72,10 @@ fun NavGraph(
                 )
             }
 
-            SettingsScreen(settings = settings, settingsHandlers = settingsScreenHandlers)
-        }
-        composable(route = Screen.SplashScreen.rout) {
-            SplashScreen()
+            SettingsScreen(
+                settings = mainViewModel.currentState.collectAsState(),
+                handlers = settingsScreenHandlers
+            )
         }
     }
 }

@@ -1,9 +1,6 @@
 package com.eugenics.ui.compose.screens.main
 
-import android.content.res.Configuration.UI_MODE_NIGHT_NO
-import android.content.res.Configuration.UI_MODE_NIGHT_YES
 import android.os.Build
-import android.os.Bundle
 import androidx.annotation.RequiresApi
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.LinearOutSlowInEasing
@@ -22,10 +19,6 @@ import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
-import com.eugenics.core.model.NowPlayingStation
-import com.eugenics.core.model.Station
-import com.eugenics.core.model.StationsUiState
-import com.eugenics.core.model.Tag
 import com.eugenics.ui_core.data.model.UIMessage
 import com.eugenics.ui_core.data.enums.DataState
 import com.eugenics.ui.compose.screens.load.LoadContent
@@ -33,33 +26,36 @@ import com.eugenics.ui.compose.screens.main.components.MainTopAppBar
 import com.eugenics.ui.compose.screens.main.components.MainBottomAppBar
 import com.eugenics.ui.compose.screens.main.components.MainNavigationDrawer
 import com.eugenics.ui.compose.screens.components.warning.WarningDialog
-import com.eugenics.ui.theme.GlobeRadioTheme
-import com.eugenics.ui_core.data.enums.PlayBackState
+import com.eugenics.ui.compose.screens.main.data.MainScreenHandlers
+import com.eugenics.ui.compose.screens.main.data.MainScreenStates
+import com.eugenics.ui.compose.util.PreviewBase
 import com.eugenics.ui_core.data.enums.Screen
-import com.eugenics.ui_core.data.enums.UIDataState
 import kotlinx.coroutines.launch
+
 
 @RequiresApi(Build.VERSION_CODES.S)
 @Composable
 fun MainScreen(
     navController: NavHostController = rememberNavController(),
-    uiDataState: State<UIDataState> = mutableStateOf(DataState.Loading),
-    playbackState: State<PlayBackState> = mutableStateOf(PlayBackState.Pause),
-    stationsList: State<List<Station>> = mutableStateOf(listOf()),
-    nowPlayingStation: State<NowPlayingStation> = mutableStateOf(NowPlayingStation.emptyInstance()),
-    sendCommand: (command: String, parameters: Bundle?) -> Unit = { _, _ -> },
-    tagsList: State<List<Tag>>,
-    stationsUiState: State<StationsUiState> = mutableStateOf(StationsUiState.emptyInstance()),
-    message: State<UIMessage> = mutableStateOf(UIMessage.emptyInstance()),
-    onPlayClick: (mediaId: String?) -> Unit = {},
-    onSearchClick: (query: String) -> Unit = {},
-    onFavoriteClick: (command: String, bundle: Bundle?) -> Unit = { _, _ -> },
-    onVisibleIndexChange: (index: Int) -> Unit = {}
+    states: State<MainScreenStates>,
+    handlers: State<MainScreenHandlers>
 ) {
     val drawerState = rememberDrawerState(DrawerValue.Closed)
     val scope = rememberCoroutineScope()
     val padding = WindowInsets.systemBars.asPaddingValues()
     val isScrolledUp = rememberSaveable { mutableStateOf(false) }
+
+
+    val tags = remember(states.value.tagList) { mutableStateOf(states.value.tagList) }
+    val nowPlayingStation =
+        remember(states.value.nowPlaying) { mutableStateOf(states.value.nowPlaying) }
+    val playbackState =
+        remember(states.value.playBackState) { mutableStateOf(states.value.playBackState) }
+    val dataState = remember(states.value.dataState) { mutableStateOf(states.value.dataState) }
+    val stationsUiState =
+        remember(states.value.stationsUiState) { mutableStateOf(states.value.stationsUiState) }
+    val stationsList = remember(states.value.stations) { mutableStateOf(states.value.stations) }
+    val message = remember(states.value.message) { mutableStateOf(states.value.message) }
 
     val commonModifier = Modifier
         .padding(
@@ -96,8 +92,8 @@ fun MainScreen(
         }
     }
 
-    LaunchedEffect(key1 = uiDataState.value) {
-        when (uiDataState.value) {
+    LaunchedEffect(key1 = dataState.value) {
+        when (dataState.value) {
             DataState.Loading -> showPlayerBar.value = false
             else -> showPlayerBar.value = true
         }
@@ -118,8 +114,8 @@ fun MainScreen(
                 drawerState.close()
             }
         },
-        sendCommand = sendCommand,
-        tagsList = tagsList
+        sendCommand = handlers.value.onSendCommand,
+        tagsList = tags
     ) {
         Scaffold(
             topBar = {
@@ -149,7 +145,7 @@ fun MainScreen(
                                 }
                             }
                         },
-                        onSearchClick = onSearchClick
+                        onSearchClick = handlers.value.onSearchClick
                     )
                 }
             },
@@ -179,7 +175,7 @@ fun MainScreen(
                             .padding(bottom = padding.calculateBottomPadding() + 5.dp),
                         nowPlayingStation = nowPlayingStation,
                         playbackState = playbackState,
-                        onPlayClick = onPlayClick
+                        onPlayClick = handlers.value.onPlayClick
                     )
                 }
             },
@@ -187,7 +183,7 @@ fun MainScreen(
                 SnackbarHost(hostState = snackBarHostState)
             }
         ) { paddingValues ->
-            when (uiDataState.value) {
+            when (dataState.value) {
                 DataState.Loading -> {
                     Box(
                         modifier = Modifier.fillMaxSize()
@@ -200,13 +196,13 @@ fun MainScreen(
                     MainContent(
                         paddingValues = paddingValues,
                         stations = stationsList,
-                        onCardClick = onPlayClick,
-                        onFavoriteClick = onFavoriteClick,
+                        onCardClick = handlers.value.onPlayClick,
+                        onFavoriteClick = handlers.value.onFavoriteClick,
                         onScrolled = {
                             isScrolledUp.value = it
                         },
                         stationsUiState = stationsUiState,
-                        onVisibleIndexChange = onVisibleIndexChange,
+                        onVisibleIndexChange = handlers.value.onVisibleIndexChange,
                         nowPlayingStation = nowPlayingStation
                     )
                 }
@@ -217,20 +213,41 @@ fun MainScreen(
 
 @RequiresApi(Build.VERSION_CODES.S)
 @Composable
-@Preview(uiMode = UI_MODE_NIGHT_NO)
+@Preview
 private fun MainScreenPreviewNight() {
-    val tagsList = remember { mutableStateOf(listOf<Tag>()) }
-    GlobeRadioTheme {
-        MainScreen(tagsList = tagsList)
+    val handlers = remember {
+        mutableStateOf(MainScreenHandlers.newInstance({}, {}, { _, _ -> }, { _, _ -> }, {}))
+    }
+    val states = remember { mutableStateOf(MainScreenStates.emptyInstance()) }
+
+//    val tags = remember { mutableStateOf(listOf<Tag>()) }
+//    val nowPlayingStation = remember { mutableStateOf(NowPlayingStation.emptyInstance()) }
+//    val playbackState = remember { mutableStateOf(PlayBackState.Pause) }
+//    val dataState = remember { mutableStateOf(DataState.Loading) }
+//    val stationsUiState = remember { mutableStateOf(StationsUiState.emptyInstance()) }
+//    val stationsList = remember { mutableStateOf(listOf<Station>()) }
+//    val message = remember { mutableStateOf(UIMessage.emptyInstance()) }
+    PreviewBase {
+        MainScreen(
+            handlers = handlers,
+            states = states
+        )
     }
 }
 
 @RequiresApi(Build.VERSION_CODES.S)
 @Composable
-@Preview(uiMode = UI_MODE_NIGHT_YES)
+@Preview
 private fun MainScreenPreviewDay() {
-    val tagsList = remember { mutableStateOf(listOf<Tag>()) }
-    GlobeRadioTheme {
-        MainScreen(tagsList = tagsList)
+    val handlers = remember {
+        mutableStateOf(MainScreenHandlers.newInstance({}, {}, { _, _ -> }, { _, _ -> }, {}))
+    }
+    val states = remember { mutableStateOf(MainScreenStates.emptyInstance()) }
+
+    PreviewBase(isDarkTheme = true) {
+        MainScreen(
+            handlers = handlers,
+            states = states
+        )
     }
 }

@@ -11,7 +11,7 @@ import java.io.OutputStream
 
 object SettingsSerializer : Serializer<CurrentState> {
     private const val TAG = "SettingsSerializer"
-    override val defaultValue: CurrentState = CurrentState.getDefaultValueInstance()
+    override val defaultValue: CurrentState = CurrentState.emptyInstance()
 
     override suspend fun readFrom(input: InputStream): CurrentState =
         try {

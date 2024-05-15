@@ -1,7 +1,6 @@
 package com.eugenics.freeradio.ui.activity
 
 import android.Manifest
-import android.app.Activity
 import android.content.Intent
 import android.content.res.Configuration
 import android.net.ConnectivityManager
@@ -28,7 +27,7 @@ import androidx.work.WorkInfo
 import androidx.work.WorkManager
 import com.eugenics.resource.R
 import com.eugenics.freeradio.ui.application.Application
-import com.eugenics.ui_core.data.enums.UICommands
+import com.eugenics.ui_core.data.enums.UICommand
 import com.eugenics.freeradio.ui.viewmodels.MainViewModel
 import com.eugenics.freeradio.util.StationsWorker
 import com.eugenics.freeradio.util.createInternetConnectivityListener
@@ -77,7 +76,7 @@ class MainActivity : ComponentActivity() {
         registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
             if (result.data != null) {
                 when (result.resultCode) {
-                    Activity.RESULT_OK -> mainViewModel.sendMessage(
+                    RESULT_OK -> mainViewModel.sendMessage(
                         UIMessage.TYPE_INFO,
                         UIMessage.INFO_INFO,
                         getString(R.string.saved_text)
@@ -128,19 +127,19 @@ class MainActivity : ComponentActivity() {
             repeatOnLifecycle(state = Lifecycle.State.STARTED) {
                 mainViewModel.uiCommands.collect { command ->
                     when (command) {
-                        UICommands.UI_COMMAND_BACKUP_FAVORITES -> shareDataToFile(
+                        UICommand.UI_COMMAND_BACKUP_FAVORITES -> shareDataToFile(
                             mainViewModel.savedData.value, SHARE_JSON_FILE_NAME
                         )
 
-                        UICommands.UI_COMMAND_RESTORE_FAVORITES -> filePickLauncher.launch("*/*")
+                        UICommand.UI_COMMAND_RESTORE_FAVORITES -> filePickLauncher.launch("*/*")
 
-                        UICommands.UI_EXPORT_FAVORITES_PLAYLIST -> shareDataToFile(
+                        UICommand.UI_EXPORT_FAVORITES_PLAYLIST -> shareDataToFile(
                             mainViewModel.savedData.value, SHARE_PLAYLIST_FILE_NAME
                         )
 
                         else -> {}
                     }
-                    mainViewModel.setUICommand(UICommands.UI_COMMAND_IDL)
+                    mainViewModel.setUICommand(UICommand.UI_COMMAND_IDL)
                 }
             }
         }
@@ -254,11 +253,11 @@ class MainActivity : ComponentActivity() {
 
     private fun checkStationListUpdate() {
         val currentTime = Calendar.getInstance().timeInMillis
-        val lastUpdate = if (mainViewModel.currentStateObject.value.lastStationsListUpdate == 0L) {
+        val lastUpdate = if (mainViewModel.currentState.value.lastStationsListUpdate == 0L) {
             mainViewModel.setSettings(lastStationsListUpdate = currentTime)
             currentTime
         } else {
-            mainViewModel.currentStateObject.value.lastStationsListUpdate
+            mainViewModel.currentState.value.lastStationsListUpdate
         }
 
         if ((lastUpdate + WEEK_MILL_TIME) < currentTime) {

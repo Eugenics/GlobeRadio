@@ -1,6 +1,6 @@
 package com.eugenics.ui_core.data.enums
 
-enum class UICommands {
+enum class UICommand {
     UI_COMMAND_IDL,
     UI_COMMAND_BACKUP_FAVORITES,
     UI_COMMAND_RESTORE_FAVORITES,

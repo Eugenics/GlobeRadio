@@ -20,12 +20,12 @@ import com.eugenics.ui.compose.screens.settings.components.SettingsTextRow
 import com.eugenics.ui.compose.screens.settings.components.ThemeChooseDialog
 import com.eugenics.ui.compose.screens.settings.data.SettingsScreenHandlers
 import com.eugenics.ui.compose.util.PreviewBase
-import com.eugenics.ui_core.data.enums.UICommands
+import com.eugenics.ui_core.data.enums.UICommand
 
 @Composable
 fun SettingsScreen(
     settings: State<CurrentState>,
-    settingsHandlers: State<SettingsScreenHandlers>
+    handlers: State<SettingsScreenHandlers>
 ) {
     val showThemeDialog = remember { mutableStateOf(false) }
     val themeName = rememberSaveable { mutableStateOf(settings.value.theme.name) }
@@ -42,7 +42,7 @@ fun SettingsScreen(
         ThemeChooseDialog(
             currentTheme = settings.value.theme,
             onThemeChoose = { theme ->
-                settingsHandlers.value.onThemePick(theme)
+                handlers.value.onThemePick(theme)
                 showThemeDialog.value = false
             }
         ) {
@@ -55,7 +55,7 @@ fun SettingsScreen(
             modifier = Modifier.padding(paddingValues = paddingValues)
         ) {
             SettingsAppBar(
-                onBackPressed = settingsHandlers.value.onBackPressed
+                onBackPressed = handlers.value.onBackPressed
             )
 
             CategoryRow(categoryName = stringResource(R.string.display_text))
@@ -70,8 +70,8 @@ fun SettingsScreen(
 
             SettingsTextRow(
                 onRowClick = {
-                    settingsHandlers.value.onSendCommand(
-                        UICommands.UI_COMMAND_BACKUP_FAVORITES.name,
+                    handlers.value.onSendCommand(
+                        UICommand.UI_COMMAND_BACKUP_FAVORITES.name,
                         null
                     )
                 },
@@ -81,11 +81,11 @@ fun SettingsScreen(
 
             SettingsTextRow(
                 onRowClick = {
-                    settingsHandlers.value.onSendCommand(
-                        UICommands.UI_COMMAND_RESTORE_FAVORITES.name,
+                    handlers.value.onSendCommand(
+                        UICommand.UI_COMMAND_RESTORE_FAVORITES.name,
                         null
                     )
-                    settingsHandlers.value.onBackPressed()
+                    handlers.value.onBackPressed()
                 },
                 nameText = stringResource(R.string.restore_favorites),
                 valueText = ""
@@ -93,11 +93,11 @@ fun SettingsScreen(
 
             SettingsTextRow(
                 onRowClick = {
-                    settingsHandlers.value.onSendCommand(
-                        UICommands.UI_EXPORT_FAVORITES_PLAYLIST.name,
+                    handlers.value.onSendCommand(
+                        UICommand.UI_EXPORT_FAVORITES_PLAYLIST.name,
                         null
                     )
-                    settingsHandlers.value.onBackPressed()
+                    handlers.value.onBackPressed()
                 },
                 nameText = stringResource(R.string.export_favorites_playlist),
                 valueText = ""
@@ -110,12 +110,12 @@ fun SettingsScreen(
 @Preview
 private fun SettingsScreenPreview() {
     PreviewBase {
-        val settings = remember { mutableStateOf(CurrentState.getDefaultValueInstance()) }
+        val settings = remember { mutableStateOf(CurrentState.emptyInstance()) }
         val settingsHandlers =
             remember { mutableStateOf(SettingsScreenHandlers({}, {}, { _, _ -> })) }
         SettingsScreen(
             settings = settings,
-            settingsHandlers = settingsHandlers
+            handlers = settingsHandlers
         )
     }
 }

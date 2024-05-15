@@ -38,7 +38,7 @@ fun MainBottomAppBar(
     onPlayClick: (String?) -> Unit = {}
 ) {
 
-    val clickIcon = remember {
+    val clickIcon = remember(playbackState.value) {
         derivedStateOf {
             if (playbackState.value is PlayBackState.Playing) {
                 R.drawable.ic_pause

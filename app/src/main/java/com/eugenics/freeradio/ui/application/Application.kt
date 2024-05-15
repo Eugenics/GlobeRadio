@@ -22,13 +22,14 @@ import com.eugenics.ui.theme.LightColors
 import com.eugenics.freeradio.ui.viewmodels.MainViewModel
 
 private const val THEME_ANIMATION_LABEL = "theme_dynamic_color"
+private const val TWEEN_ANIMATION_DURATION = 1000
 
 @RequiresApi(Build.VERSION_CODES.S)
 @Composable
 fun Application(
     viewModel: MainViewModel = hiltViewModel()
 ) {
-    val theme = viewModel.currentStateObject.collectAsState().value.theme
+    val theme = viewModel.currentState.collectAsState().value.theme
     val isDarkTheme = when (theme) {
         Theme.DARK -> true
         Theme.CONTENT_DARK -> true
@@ -69,7 +70,8 @@ fun Application(
         } else {
             defaultColor
         },
-        animationSpec = tween(1500), label = THEME_ANIMATION_LABEL
+        animationSpec = tween(TWEEN_ANIMATION_DURATION),
+        label = THEME_ANIMATION_LABEL
     )
 
     ContentDynamicTheme(
