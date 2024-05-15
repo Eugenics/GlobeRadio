@@ -9,6 +9,7 @@ import android.support.v4.media.MediaMetadataCompat
 import android.support.v4.media.session.PlaybackStateCompat
 import android.util.Log
 import androidx.datastore.core.DataStore
+import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.palette.graphics.Palette
 import com.eugenics.core.enums.MediaSourceState
@@ -22,10 +23,9 @@ import com.eugenics.core.model.FavoriteStation
 import com.eugenics.core.model.Favorites
 import com.eugenics.core.model.StationsUiState
 import com.eugenics.data.interfaces.IStationsRepository
-import com.eugenics.ui_core.data.enums.UIDataState
-import com.eugenics.ui_core.data.enums.UIState
+import com.eugenics.ui_core.data.enums.DataState
 import com.eugenics.freeradio.util.ImageHelper
-import com.eugenics.ui_core.data.enums.UICommands
+import com.eugenics.ui_core.data.enums.UICommand
 import com.eugenics.freeradio.util.IOHelper
 import com.eugenics.freeradio.util.PlaylistHelper
 import com.eugenics.freeradio.util.STATIONS_JSON_NAME
@@ -35,6 +35,7 @@ import com.eugenics.freeradio.util.data.StationPojo
 import com.eugenics.freeradio.util.data.TagsPojo
 import com.eugenics.freeradio.util.data.mapToModel
 import com.eugenics.media_service.media.FreeRadioMediaServiceConnection
+import com.eugenics.ui.compose.screens.main.data.MainScreenStates
 import com.eugenics.ui_core.data.enums.PlayBackState
 import com.eugenics.ui_core.data.model.UIMessage
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -43,6 +44,9 @@ import kotlinx.coroutines.cancel
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.consumeEach
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.SerializationException
@@ -57,7 +61,27 @@ class MainViewModel @Inject constructor(
     private val mediaServiceConnection: FreeRadioMediaServiceConnection,
     private val stationsRepository: IStationsRepository,
     private val dataStore: DataStore<CurrentState>
-) : ServiceViewModel() {
+) : ViewModel() {
+    private val ioDispatcher = Dispatchers.IO
+    private val defaultDispatcher = Dispatchers.Default
+
+    private val _mainScreenStates: MutableStateFlow<MainScreenStates> = MutableStateFlow(
+        MainScreenStates.emptyInstance()
+    )
+    val mainScreenStates: StateFlow<MainScreenStates> = _mainScreenStates
+
+    private val _currentState: MutableStateFlow<CurrentState> =
+        MutableStateFlow(CurrentState.emptyInstance())
+    val currentState: StateFlow<CurrentState> = _currentState
+
+    private val _uiCommand: MutableStateFlow<UICommand> = MutableStateFlow(UICommand.UI_COMMAND_IDL)
+    val uiCommands: StateFlow<UICommand> = _uiCommand
+
+    private val _savedData: MutableStateFlow<String> = MutableStateFlow("")
+    val savedData: StateFlow<String> = _savedData
+
+    private val _primaryDynamicColor: MutableStateFlow<Int> = MutableStateFlow(0)
+    val primaryDynamicColor: StateFlow<Int> = _primaryDynamicColor
 
     private val settingsChannel: Channel<CurrentState> =
         Channel(capacity = 10, onBufferOverflow = BufferOverflow.SUSPEND)
@@ -110,7 +134,9 @@ class MainViewModel @Inject constructor(
                     )
                 }
             }
-            _stations.value = stationServiceContent
+            _mainScreenStates.update {
+                mainScreenStates.value.copyObject(stations = stationServiceContent)
+            }
         }
     }
 
@@ -148,7 +174,7 @@ class MainViewModel @Inject constructor(
      */
     fun onPlayClick(mediaId: String? = currentMediaId) {
         when (mediaId ?: currentMediaId) {
-            currentMediaId -> if (playBackState.value == PlayBackState.Playing) {
+            currentMediaId -> if (mainScreenStates.value.playBackState == PlayBackState.Playing) {
                 mediaServiceConnection.transportControls.pause()
             } else {
                 mediaServiceConnection.transportControls.play()
@@ -163,17 +189,20 @@ class MainViewModel @Inject constructor(
 
     fun onSearch(query: String) {
         setSettings(visibleIndex = 0, setName = "onVisibleIndexChanged")
-        _stations.value = listOf()
+        _mainScreenStates.update {
+            mainScreenStates.value.clearStationsList()
+        }
         mediaServiceConnection.transportControls.playFromSearch(query, null)
     }
 
     fun sendCommand(command: String, extras: Bundle? = null) {
         when (command) {
-            UICommands.UI_COMMAND_BACKUP_FAVORITES.name -> backUpFavorites()
-            UICommands.UI_COMMAND_RESTORE_FAVORITES.name -> _uiCommand.value =
-                UICommands.UI_COMMAND_RESTORE_FAVORITES
+            UICommand.UI_COMMAND_BACKUP_FAVORITES.name -> backUpFavorites()
+            UICommand.UI_COMMAND_RESTORE_FAVORITES.name ->
+                _uiCommand.value = UICommand.UI_COMMAND_RESTORE_FAVORITES
 
-            UICommands.UI_EXPORT_FAVORITES_PLAYLIST.name -> exportFavoritesAsPlayList()
+
+            UICommand.UI_EXPORT_FAVORITES_PLAYLIST.name -> exportFavoritesAsPlayList()
 
             in enumValues<Commands>().map { it.name }.toList() -> {
                 setSettings(
@@ -182,7 +211,9 @@ class MainViewModel @Inject constructor(
                     setName = "sendCommandTag"
                 )
                 if (command != Commands.SET_FAVORITES_COMMAND.name) {
-                    _stations.value = listOf()
+                    _mainScreenStates.update {
+                        mainScreenStates.value.clearStationsList()
+                    }
                     setSettings(visibleIndex = 0, setName = "onVisibleIndexChanged")
                 }
                 mediaServiceConnection.sendCommand(command = command,
@@ -217,30 +248,37 @@ class MainViewModel @Inject constructor(
     }
 
     private fun collectNowPlaying() {
-        viewModelScope.launch(ioDispatcher) {
+        viewModelScope.launch(defaultDispatcher) {
             nowPlayingMetaData.collect { metaData ->
-                _nowPlaying.value = NowPlayingStation.newInstance(
-                    name = metaData.getString(MediaMetadataCompat.METADATA_KEY_TITLE) ?: "",
-                    favicon = metaData.description.iconUri.toString(),
-                    nowPlayingTitle = metaData.getString(MediaMetadataCompat.METADATA_KEY_DISPLAY_TITLE)
-                        ?: "",
-                    stationUUID = metaData.getString(MediaMetadataCompat.METADATA_KEY_MEDIA_ID)
-                        ?: "",
-                    description = metaData.getString(MediaMetadataCompat.METADATA_KEY_DISPLAY_DESCRIPTION)
-                        ?: ""
-                )
-                currentMediaId = nowPlaying.value.stationUUID
+                _mainScreenStates.update {
+                    mainScreenStates.value.copyObject(
+                        nowPlaying = NowPlayingStation.newInstance(
+                            name = metaData.getString(MediaMetadataCompat.METADATA_KEY_TITLE) ?: "",
+                            favicon = metaData.description.iconUri.toString(),
+                            nowPlayingTitle = metaData.getString(MediaMetadataCompat.METADATA_KEY_DISPLAY_TITLE)
+                                ?: "",
+                            stationUUID = metaData.getString(MediaMetadataCompat.METADATA_KEY_MEDIA_ID)
+                                ?: "",
+                            description = metaData.getString(MediaMetadataCompat.METADATA_KEY_DISPLAY_DESCRIPTION)
+                                ?: ""
+                        )
+                    )
+                }
+                currentMediaId = mainScreenStates.value.nowPlaying.stationUUID
                 setSettings(stationUuid = currentMediaId, setName = "collectNowPlaying")
-                getDynamicColor(url = nowPlaying.value.favicon)
+                getDynamicColor(url = mainScreenStates.value.nowPlaying.favicon)
             }
         }
     }
 
     private fun collectCurrentState() {
         viewModelScope.launch(ioDispatcher) {
-            dataStore.data.collect {
-                _currentStateObject.value = it
-                setStationUiState(it.stationUuid, it.stationsVisibleIndex)
+            dataStore.data.collect { collectedState ->
+                _currentState.update {
+                    collectedState
+                }
+                setStationUiState(collectedState.stationUuid, collectedState.stationsVisibleIndex)
+                Log.d(TAG, "COLLECTED CURRENT_STATED: ${_currentState.value}")
             }
         }
     }
@@ -253,7 +291,6 @@ class MainViewModel @Inject constructor(
                 when (state) {
                     MediaSourceState.STATE_FIRST_INIT.value -> {
                         Log.d(TAG, "MEDIA_SOURCE_STATE STATE_FIRST_INIT")
-                        _uiState.value = UIState.UI_STATE_SPLASH
                         sendMessage(
                             UIMessage.TYPE_UI, messageInfoType = UIMessage.INFO_FIRST_INIT
                         )
@@ -263,20 +300,20 @@ class MainViewModel @Inject constructor(
                         }
                     }
 
-                    MediaSourceState.STATE_CREATED.value -> {
+                    MediaSourceState.STATE_CREATED.value ->
                         Log.d(TAG, "MEDIA_SOURCE_STATE STATE_CREATED")
-                        _uiState.value = UIState.UI_STATE_SPLASH
-                    }
 
-                    MediaSourceState.STATE_ERROR.value -> {
-                        _uiState.value = UIState.UI_STATE_MAIN
-                        _Ui_dataState.value = UIDataState.ERROR
-                    }
+                    MediaSourceState.STATE_ERROR.value ->
+                        _mainScreenStates.update {
+                            mainScreenStates.value.copyObject(uiDataState = DataState.Error)
+                        }
+
 
                     MediaSourceState.STATE_INITIALIZING.value -> {
                         Log.d(TAG, "MEDIA_SOURCE_STATE STATE_INITIALIZING")
-                        _uiState.value = UIState.UI_STATE_MAIN
-                        _Ui_dataState.value = UIDataState.LOADING
+                        _mainScreenStates.update {
+                            mainScreenStates.value.copyObject(uiDataState = DataState.Loading)
+                        }
                         sendMessage(
                             UIMessage.TYPE_UI, messageInfoType = UIMessage.INFO_LOADING
                         )
@@ -284,8 +321,9 @@ class MainViewModel @Inject constructor(
 
                     MediaSourceState.STATE_INITIALIZED.value -> {
                         Log.d(TAG, "MEDIA_SOURCE_STATE STATE_INITIALIZED")
-                        _uiState.value = UIState.UI_STATE_MAIN
-                        _Ui_dataState.value = UIDataState.PREPARED
+                        _mainScreenStates.update {
+                            mainScreenStates.value.copyObject(uiDataState = DataState.Prepared)
+                        }
                     }
                 }
             }
@@ -296,10 +334,14 @@ class MainViewModel @Inject constructor(
         viewModelScope.launch(Dispatchers.IO) {
             mediaServiceConnection.playbackState.collect { stateCompat ->
                 when (stateCompat.state) {
-                    PlaybackStateCompat.STATE_PLAYING -> _playBackState.value =
-                        PlayBackState.Playing
+                    PlaybackStateCompat.STATE_PLAYING ->
+                        _mainScreenStates.update {
+                            mainScreenStates.value.copyObject(playBackState = PlayBackState.Playing)
+                        }
 
-                    else -> _playBackState.value = PlayBackState.Pause
+                    else -> _mainScreenStates.update {
+                        mainScreenStates.value.copyObject(playBackState = PlayBackState.Pause)
+                    }
                 }
             }
         }
@@ -320,16 +362,16 @@ class MainViewModel @Inject constructor(
      */
 
     fun setSettings(
-        tag: String = currentStateObject.value.tag,
-        stationUuid: String = currentStateObject.value.stationUuid,
-        theme: Theme = currentStateObject.value.theme,
-        command: String = currentStateObject.value.command,
-        visibleIndex: Int = currentStateObject.value.stationsVisibleIndex,
-        lastStationsListUpdate: Long = currentStateObject.value.lastStationsListUpdate,
+        tag: String = currentState.value.tag,
+        stationUuid: String = currentState.value.stationUuid,
+        theme: Theme = currentState.value.theme,
+        command: String = currentState.value.command,
+        visibleIndex: Int = currentState.value.stationsVisibleIndex,
+        lastStationsListUpdate: Long = currentState.value.lastStationsListUpdate,
         setName: String = "default"
     ) {
-        viewModelScope.launch(ioDispatcher) {
-            val currentState = CurrentState(
+        viewModelScope.launch(defaultDispatcher) {
+            val newStateObject = CurrentState(
                 tag = tag,
                 stationUuid = stationUuid,
                 theme = theme,
@@ -337,8 +379,8 @@ class MainViewModel @Inject constructor(
                 stationsVisibleIndex = visibleIndex,
                 lastStationsListUpdate = lastStationsListUpdate
             )
-            if (currentState != currentStateObject.value) {
-                settingsChannel.send(currentState)
+            if (newStateObject != currentState.value) {
+                settingsChannel.send(newStateObject)
                 Log.d(TAG, "send settings with settings name: $setName")
             }
         }
@@ -346,38 +388,44 @@ class MainViewModel @Inject constructor(
 
     private fun setStationUiState(stationUuid: String, visibleIndex: Int) {
         val newStationUiState = StationsUiState(stationUuid, visibleIndex)
-        if (stationsUiState.value != newStationUiState) {
-            _stationsUiState.value = newStationUiState
+        if (mainScreenStates.value.stationsUiState != newStationUiState) {
+            _mainScreenStates.update {
+                mainScreenStates.value.copyObject(stationsUiState = newStationUiState)
+            }
         }
     }
 
     private fun getTagsList(tagsJsonPath: String, context: Context) {
-        if (tagList.value.isEmpty()) {
+        if (mainScreenStates.value.tagList.isEmpty()) {
             viewModelScope.launch(ioDispatcher) {
                 var cacheEnable = true
                 if (!Files.exists(Paths.get(tagsJsonPath))) {
                     cacheEnable = IOHelper.copyAssetToCache(TAGS_ASSET_NAME, context)
                 }
                 if (cacheEnable) {
-                    _tagList.value = IOHelper.parseJsonToList(
-                        filePath = tagsJsonPath,
-                        TagsPojo::class.java
-                    ).map { it.mapToModel() }
+                    _mainScreenStates.update {
+                        mainScreenStates.value.copyObject(
+                            tagList = IOHelper.parseJsonToList(
+                                filePath = tagsJsonPath,
+                                TagsPojo::class.java
+                            ).map { it.mapToModel() }
+                        )
+                    }
                 }
             }
         }
     }
 
-    fun setUICommand(command: UICommands) {
+    fun setUICommand(command: UICommand) {
         _uiCommand.value = command
     }
 
     private fun exportFavoritesAsPlayList() {
-        viewModelScope.launch(ioDispatcher) {
+        viewModelScope.launch(defaultDispatcher) {
             stationsRepository.fetchStationsByFavorites().apply {
                 if (this.isNotEmpty()) {
                     _savedData.value = PlaylistHelper.convertStationsToPlaylist(this)
-                    setUICommand(UICommands.UI_EXPORT_FAVORITES_PLAYLIST)
+                    setUICommand(UICommand.UI_EXPORT_FAVORITES_PLAYLIST)
                 } else {
                     sendMessage(UIMessage.TYPE_INFO, UIMessage.INFO_NO_DATA_TO_LOAD)
                 }
@@ -398,7 +446,7 @@ class MainViewModel @Inject constructor(
                             serializer = Favorites.serializer(),
                             value = Favorites.newInstance(favStations)
                         )
-                        setUICommand(UICommands.UI_COMMAND_BACKUP_FAVORITES)
+                        setUICommand(UICommand.UI_COMMAND_BACKUP_FAVORITES)
                     } catch (e: SerializationException) {
                         sendMessage(
                             UIMessage.TYPE_ERROR, UIMessage.INFO_ERROR, e.message.toString()
@@ -484,6 +532,27 @@ class MainViewModel @Inject constructor(
             stationsRepository.reloadStations(stations = stations)
             Log.d(TAG, "Send command for reload stations...")
         }
+    }
+
+    fun sendMessage(messageType: Int, messageInfoType: Int, messageText: String = "") {
+        _mainScreenStates.update {
+            mainScreenStates.value.copyObject(
+                message = UIMessage.newInstance(
+                    id = UUID.randomUUID().toString(),
+                    messageType = messageType,
+                    messageInfoType = messageInfoType,
+                    messageText = messageText
+                )
+            )
+        }
+        Log.d(TAG, messageInfoType.toString())
+    }
+
+    fun setPrimaryDynamicColor(rgb: Int) {
+        _primaryDynamicColor.update {
+            rgb
+        }
+        Log.d(TAG,"RGB COLOR UPDATED: $rgb")
     }
 
     companion object {

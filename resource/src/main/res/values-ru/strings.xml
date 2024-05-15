@@ -39,6 +39,8 @@
     <string name="updated">Обновлено</string>
     <string name="job_canceled">Задача отменена</string>
     <string name="empty_message">Нет данных для отображения</string>
+    <string name="display_text">Экран</string>
+    <string name="utility_text">Дополнительно</string>
 
     <string name="back_button">Вернуться</string>
 </resources>

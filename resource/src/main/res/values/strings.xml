@@ -40,6 +40,8 @@
     <string name="updated">Updated</string>
     <string name="job_canceled">Job canceled</string>
     <string name="empty_message">No data to show</string>
+    <string name="display_text">Display</string>
+    <string name="utility_text">Utility</string>
 
     <string name="back_button">Back</string>
 

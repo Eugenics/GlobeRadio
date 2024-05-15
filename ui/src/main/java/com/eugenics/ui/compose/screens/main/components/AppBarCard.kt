@@ -1,6 +1,7 @@
 package com.eugenics.ui.compose.screens.main.components
 
-import android.content.res.Configuration.UI_MODE_NIGHT_YES
+import androidx.compose.animation.animateContentSize
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
@@ -27,7 +28,7 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.eugenics.resource.R
-import com.eugenics.ui.theme.GlobeRadioTheme
+import com.eugenics.ui.compose.util.PreviewBase
 
 @Composable
 fun AppBarCard(
@@ -57,7 +58,7 @@ fun AppBarCard(
             ) {
                 Icon(
                     imageVector = Icons.Filled.Menu,
-                    contentDescription = null
+                    contentDescription = stringResource(R.string.search_hint_text)
                 )
             }
         }
@@ -128,7 +129,7 @@ fun AppBarCard(
                     ) {
                         Icon(
                             imageVector = Icons.Filled.Search,
-                            contentDescription = null
+                            contentDescription = stringResource(R.string.search_hint_text)
                         )
                     }
                 }
@@ -140,15 +141,31 @@ fun AppBarCard(
 @Composable
 @Preview
 private fun AppBarCardPreview() {
-    GlobeRadioTheme {
-        AppBarCard()
+    PreviewBase {
+        AppBarCard(
+            modifier = Modifier
+                .fillMaxWidth()
+                .animateContentSize(
+                    animationSpec = tween(durationMillis = 300)
+                ),
+            onMenuClick = {},
+            onSearchClick = {}
+        )
     }
 }
 
 @Composable
-@Preview(uiMode = UI_MODE_NIGHT_YES)
+@Preview
 private fun AppBarCardPreviewDark() {
-    GlobeRadioTheme {
-        AppBarCard()
+    PreviewBase(isDarkTheme = true) {
+        AppBarCard(
+            modifier = Modifier
+                .fillMaxWidth()
+                .animateContentSize(
+                    animationSpec = tween(durationMillis = 300)
+                ),
+            onMenuClick = {},
+            onSearchClick = {}
+        )
     }
 }

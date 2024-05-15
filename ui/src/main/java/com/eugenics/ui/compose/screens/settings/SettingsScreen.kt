@@ -1,7 +1,5 @@
 package com.eugenics.ui.compose.screens.settings
 
-import android.content.res.Configuration.UI_MODE_NIGHT_NO
-import android.os.Bundle
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.*
@@ -15,20 +13,19 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import com.eugenics.core.model.CurrentState
 import com.eugenics.core.enums.Theme
-import com.eugenics.ui.theme.GlobeRadioTheme
 import com.eugenics.resource.R
 import com.eugenics.ui.compose.screens.settings.components.CategoryRow
 import com.eugenics.ui.compose.screens.settings.components.SettingsAppBar
 import com.eugenics.ui.compose.screens.settings.components.SettingsTextRow
 import com.eugenics.ui.compose.screens.settings.components.ThemeChooseDialog
-import com.eugenics.ui_core.data.enums.UICommands
+import com.eugenics.ui.compose.screens.settings.data.SettingsScreenHandlers
+import com.eugenics.ui.compose.util.PreviewBase
+import com.eugenics.ui_core.data.enums.UICommand
 
 @Composable
 fun SettingsScreen(
-    settings: State<CurrentState> = mutableStateOf(CurrentState.getDefaultValueInstance()),
-    onBackPressed: () -> Unit = {},
-    onThemePick: (theme: Theme) -> Unit = { _ -> },
-    sendCommand: (command: String, parameters: Bundle?) -> Unit = { _, _ -> }
+    settings: State<CurrentState>,
+    handlers: State<SettingsScreenHandlers>
 ) {
     val showThemeDialog = remember { mutableStateOf(false) }
     val themeName = rememberSaveable { mutableStateOf(settings.value.theme.name) }
@@ -45,7 +42,7 @@ fun SettingsScreen(
         ThemeChooseDialog(
             currentTheme = settings.value.theme,
             onThemeChoose = { theme ->
-                onThemePick(theme)
+                handlers.value.onThemePick(theme)
                 showThemeDialog.value = false
             }
         ) {
@@ -58,10 +55,10 @@ fun SettingsScreen(
             modifier = Modifier.padding(paddingValues = paddingValues)
         ) {
             SettingsAppBar(
-                onBackPressed = onBackPressed
+                onBackPressed = handlers.value.onBackPressed
             )
 
-            CategoryRow(categoryName = "Display")
+            CategoryRow(categoryName = stringResource(R.string.display_text))
 
             SettingsTextRow(
                 onRowClick = { showThemeDialog.value = true },
@@ -69,12 +66,12 @@ fun SettingsScreen(
                 valueText = themeName.value
             )
 
-            CategoryRow(categoryName = "Utility")
+            CategoryRow(categoryName = stringResource(R.string.utility_text))
 
             SettingsTextRow(
                 onRowClick = {
-                    sendCommand(
-                        UICommands.UI_COMMAND_BACKUP_FAVORITES.name,
+                    handlers.value.onSendCommand(
+                        UICommand.UI_COMMAND_BACKUP_FAVORITES.name,
                         null
                     )
                 },
@@ -84,11 +81,11 @@ fun SettingsScreen(
 
             SettingsTextRow(
                 onRowClick = {
-                    sendCommand(
-                        UICommands.UI_COMMAND_RESTORE_FAVORITES.name,
+                    handlers.value.onSendCommand(
+                        UICommand.UI_COMMAND_RESTORE_FAVORITES.name,
                         null
                     )
-                    onBackPressed()
+                    handlers.value.onBackPressed()
                 },
                 nameText = stringResource(R.string.restore_favorites),
                 valueText = ""
@@ -96,11 +93,11 @@ fun SettingsScreen(
 
             SettingsTextRow(
                 onRowClick = {
-                    sendCommand(
-                        UICommands.UI_EXPORT_FAVORITES_PLAYLIST.name,
+                    handlers.value.onSendCommand(
+                        UICommand.UI_EXPORT_FAVORITES_PLAYLIST.name,
                         null
                     )
-                    onBackPressed()
+                    handlers.value.onBackPressed()
                 },
                 nameText = stringResource(R.string.export_favorites_playlist),
                 valueText = ""
@@ -110,9 +107,15 @@ fun SettingsScreen(
 }
 
 @Composable
-@Preview(uiMode = UI_MODE_NIGHT_NO)
+@Preview
 private fun SettingsScreenPreview() {
-    GlobeRadioTheme {
-        SettingsScreen()
+    PreviewBase {
+        val settings = remember { mutableStateOf(CurrentState.emptyInstance()) }
+        val settingsHandlers =
+            remember { mutableStateOf(SettingsScreenHandlers({}, {}, { _, _ -> })) }
+        SettingsScreen(
+            settings = settings,
+            handlers = settingsHandlers
+        )
     }
 }

@@ -8,6 +8,7 @@ import androidx.compose.material3.dynamicDarkColorScheme
 import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
@@ -83,17 +84,23 @@ fun ContentDynamicTheme(
     content: @Composable () -> Unit
 ) {
     val context = LocalContext.current
-    val argb = color.toArgb()
-    val colorScheme = if (isSystemTheme && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-        if (isDarkColorsScheme)
-            dynamicDarkColorScheme(context)
-        else
-            dynamicLightColorScheme(context)
-    } else {
-        if (isDarkColorsScheme) {
-            Scheme.darkContent(argb).toDarkColorScheme()
+
+    val colorScheme = remember(
+        key1 = isDarkColorsScheme,
+        key2 = isSystemTheme,
+        key3 = color
+    ) {
+        if (isSystemTheme && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            if (isDarkColorsScheme)
+                dynamicDarkColorScheme(context)
+            else
+                dynamicLightColorScheme(context)
         } else {
-            Scheme.lightContent(argb).toLightColorScheme()
+            if (isDarkColorsScheme) {
+                Scheme.darkContent(color.toArgb()).toDarkColorScheme()
+            } else {
+                Scheme.lightContent(color.toArgb()).toLightColorScheme()
+            }
         }
     }
 

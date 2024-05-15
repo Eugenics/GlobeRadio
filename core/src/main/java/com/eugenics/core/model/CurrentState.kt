@@ -17,7 +17,7 @@ data class CurrentState(
     val lastStationsListUpdate: Long
 ) : Parcelable {
     companion object {
-        fun getDefaultValueInstance(): CurrentState =
+        fun emptyInstance(): CurrentState =
             CurrentState(
                 tag = "",
                 stationUuid = "",

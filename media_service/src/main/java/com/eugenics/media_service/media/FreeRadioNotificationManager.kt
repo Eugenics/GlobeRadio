@@ -10,7 +10,6 @@ import androidx.core.content.ContextCompat
 import androidx.core.graphics.drawable.toBitmap
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.engine.DiskCacheStrategy
-import com.bumptech.glide.load.engine.GlideException
 import com.bumptech.glide.request.RequestOptions
 import com.eugenics.media_service.R
 import com.google.android.exoplayer2.Player
@@ -46,6 +45,10 @@ internal class FreeRadioNotificationManager(
             .setNotificationListener(notificationListener)
             .setChannelNameResourceId(R.string.notification_channel_name)
             .build()
+
+    private val coroutineExceptionHandler = CoroutineExceptionHandler { _, throwable ->
+        Log.e(TAG, throwable.message.toString())
+    }
 
     init {
         notificationManager.setMediaSessionToken(sessionToken)
@@ -95,7 +98,7 @@ internal class FreeRadioNotificationManager(
 
                 iconUri != currentIconUri && iconUri != null -> {
                     currentIconUri = iconUri
-                    runBlocking {
+                    runBlocking(coroutineExceptionHandler) {
                         currentBitmap = resolveUriAsBitmap(iconUri)
                         currentBitmap?.let { callback.onBitmap(it) }
                     }
@@ -107,20 +110,17 @@ internal class FreeRadioNotificationManager(
         }
 
         private suspend fun resolveUriAsBitmap(uri: Uri): Bitmap? {
-            return withContext(Dispatchers.IO) {
+            return withContext(Dispatchers.IO + coroutineExceptionHandler) {
                 var bitmap = ContextCompat.getDrawable(context, R.drawable.pradio_wave)?.toBitmap()
-                this.coroutineContext + CoroutineExceptionHandler { _, throwable ->
-                    Log.e(TAG, throwable.message.toString())
-                }
                 try {
-                    bitmap = Glide.with(context).applyDefaultRequestOptions(glideOptions)
+                    bitmap = Glide.with(context)
+                        .applyDefaultRequestOptions(glideOptions)
                         .asBitmap()
                         .load(uri)
                         .submit(NOTIFICATION_LARGE_ICON_SIZE, NOTIFICATION_LARGE_ICON_SIZE)
                         .get()
-                } catch (e: GlideException) {
+                } catch (e: Exception) {
                     Log.e(TAG, e.toString())
-                    e.logRootCauses(TAG)
                 }
                 bitmap
             }
@@ -138,3 +138,4 @@ internal class FreeRadioNotificationManager(
 private val glideOptions = RequestOptions()
     .fallback(R.drawable.pradio_wave)
     .diskCacheStrategy(DiskCacheStrategy.ALL)
+    .timeout(15000)
