@@ -38,6 +38,8 @@ android {
         setProperty("archivesBaseName", versionFileName)
     }
 
+
+
     signingConfigs {
         create("release") {
             val sensitiveFile = rootProject.file("sensitive.properties")
@@ -52,9 +54,14 @@ android {
     }
 
     buildTypes {
+        debug {
+            applicationIdSuffix = ".debug"
+            isDebuggable = true
+        }
+
         release {
-            isMinifyEnabled = true
-            isShrinkResources = true
+            isMinifyEnabled = false
+            isShrinkResources = false
             isDebuggable = false
             signingConfig = signingConfigs.getByName("release")
             proguardFiles(
