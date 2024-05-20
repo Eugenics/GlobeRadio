@@ -21,7 +21,17 @@
 #-renamesourcefileattribute SourceFile
 
 -keepclassmembers,allowobfuscation class * {
- @com.google.gson.annotations.SerializedName <fields>;
+    @com.google.gson.annotations.SerializedName <fields>;
 }
+
+# Jackson
+-keepclasseswithmembers class * {
+    @com.fasterxml.jackson.annotation.JsonSetter <fields>;
+}
+
 -dontwarn java.beans.ConstructorProperties
 -dontwarn java.beans.Transient
+-dontwarn com.fasterxml.jackson.annotation.JsonSetter
+
+# General
+-keepattributes SourceFile,LineNumberTable,*Annotation*,EnclosingMethod,Signature,Exceptions,InnerClasses

@@ -41,6 +41,35 @@
           ]
         }
       }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:206375240702:android:b67d152442f85273b136af",
+        "android_client_info": {
+          "package_name": "com.eugenics.freeradio.debug"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "206375240702-9mmagf90c2lcadppoi4o16so74gruk6h.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBkuo0dSCLMC6ZgI9owRcIQxmjNGisS65M"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "206375240702-9mmagf90c2lcadppoi4o16so74gruk6h.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
     }
   ],
   "configuration_version": "1"
