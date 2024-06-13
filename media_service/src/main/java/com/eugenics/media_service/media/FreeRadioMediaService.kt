@@ -17,12 +17,16 @@ import androidx.core.net.toUri
 import androidx.media.MediaBrowserServiceCompat
 import com.eugenics.core.constants.SET_FAVORITES_STATION_KEY
 import com.eugenics.core.constants.SET_FAVORITES_VALUE_KEY
-import com.eugenics.core.enums.MediaSourceState
 import com.eugenics.core.enums.Commands
+import com.eugenics.core.enums.MediaSourceState
 import com.eugenics.data.interfaces.IPrefsRepository
 import com.eugenics.data.interfaces.IStationsRepository
 import com.eugenics.media_service.player.getMediaItems
-import com.google.android.exoplayer2.*
+import com.google.android.exoplayer2.C
+import com.google.android.exoplayer2.ExoPlayer
+import com.google.android.exoplayer2.MediaItem
+import com.google.android.exoplayer2.MediaMetadata
+import com.google.android.exoplayer2.Player
 import com.google.android.exoplayer2.audio.AudioAttributes
 import com.google.android.exoplayer2.ext.mediasession.MediaSessionConnector
 import com.google.android.exoplayer2.ext.mediasession.TimelineQueueNavigator
@@ -37,9 +41,10 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
-private const val MEDIA_SESSION_LOG_TAG = "free_radio_media_session"
+private const val MEDIA_SESSION_LOG_TAG = "FREE_RADIO_MEDIA_SESSION"
 private const val STATIONS_ROOT = "/"
 private const val EMPTY_ROOT = "@empty@"
+
 
 @AndroidEntryPoint
 class FreeRadioMediaService : MediaBrowserServiceCompat() {
@@ -99,19 +104,23 @@ class FreeRadioMediaService : MediaBrowserServiceCompat() {
 
         collectMediaState()
 
-        mediaSession = MediaSessionCompat(baseContext, MEDIA_SESSION_LOG_TAG).apply {
+        mediaSession = MediaSessionCompat(this, MEDIA_SESSION_LOG_TAG).apply {
             stateBuilder = PlaybackStateCompat.Builder()
                 .setActions(
                     PlaybackStateCompat.ACTION_PLAY
                             or PlaybackStateCompat.ACTION_PLAY_PAUSE
+                            or PlaybackStateCompat.ACTION_PLAY_FROM_MEDIA_ID
+                            or PlaybackStateCompat.ACTION_SKIP_TO_NEXT
+                            or PlaybackStateCompat.ACTION_SKIP_TO_PREVIOUS
                 )
+            //setSessionToken(sessionToken)
             setPlaybackState(stateBuilder.build())
-
-            setCallback(mediaSessionCallbacks)
-
-            setSessionToken(sessionToken)
-            isActive = true
         }
+        mediaSession.setCallback(mediaSessionCallbacks)
+        mediaSession.setFlags(MediaSessionCompat.FLAG_HANDLES_TRANSPORT_CONTROLS)
+        this.sessionToken = mediaSession.sessionToken
+        mediaSession.isActive = true
+
         val mediaSessionConnector = MediaSessionConnector(mediaSession)
         mediaSessionConnector.setPlaybackPreparer(playbackPrepare)
         mediaSessionConnector.setQueueNavigator(QueueNavigator(mediaSession))
@@ -400,6 +409,10 @@ class FreeRadioMediaService : MediaBrowserServiceCompat() {
                                             val extras = Bundle()
                                             extras.putString("url", playerMediaItem.url)
                                             extras.putString(
+                                                "favorite",
+                                                if (playerMediaItem.isFavorite == 0) "" else "1"
+                                            )
+                                            extras.putString(
                                                 MediaMetadataCompat.METADATA_KEY_MEDIA_ID,
                                                 playerMediaItem.uuid
                                             )
@@ -439,8 +452,31 @@ class FreeRadioMediaService : MediaBrowserServiceCompat() {
 
     private val mediaSessionCallbacks = object : MediaSessionCompat.Callback() {
 
+
+        /**
+         * Override to handle requests to skip to the next media item.
+         */
+        override fun onSkipToNext() {
+            super.onSkipToNext()
+            Log.d(TAG, "ON_SKIP_TO_NEXT")
+        }
+
+        /**
+         * Override to handle requests to skip to the previous media item.
+         */
+        override fun onSkipToPrevious() {
+            Log.d(TAG, "ON_SKIP_TO_PREV")
+        }
+
         override fun onPlayFromMediaId(mediaId: String?, extras: Bundle?) {
             Log.d(TAG, "ON_PLAY_FROM_MEDIA_ID:$mediaId")
+        }
+
+        /**
+         * Override to handle requests to begin playback.
+         */
+        override fun onPlay() {
+            Log.d(TAG, "ON_PLAY")
         }
     }
 
@@ -470,13 +506,16 @@ class FreeRadioMediaService : MediaBrowserServiceCompat() {
                         MediaMetadataCompat.METADATA_KEY_MEDIA_ID,
                         player.currentMediaItem?.mediaId
                     )
+                    .putString(
+                        "favorite",
+                        player.currentMediaItem?.mediaMetadata?.extras?.getString("favorite") ?: ""
+                    )
                     .build()
                 return metaData.description
             }
             return MediaDescriptionCompat.Builder().build()
         }
     }
-
 
     companion object {
         const val TAG = "FREE_RADIO_MEDIA_SERVICE"

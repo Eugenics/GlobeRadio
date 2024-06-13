@@ -51,6 +51,7 @@ espresso = "3.5.1"
 retrofitVersion = "2.9.0"
 retrofitConverterSerialization = "0.8.0"
 exoplayerVersion = "2.19.1"
+material3Adaptiv = "1.0.0-beta02"
 
 androidGradlePlugin = "8.2.2"
 androidLibraryPlugin = "8.2.2"
@@ -84,6 +85,7 @@ androidx-test-runner = { group = "androidx.test", name = "runner", version.ref =
 androidx-test-core-ktx = { group = "androidx.test", name = "core-ktx", version.ref = "testCore" }
 androidx-hilt-navigationcompose = { group = "androidx.hilt", name = "hilt-navigation-compose", version.ref = "hiltNavigationCompose" }
 androidx-material3 = { group = "androidx.compose.material3", name = "material3", version.ref = "material3" }
+androidx-material3-adaptiv = { group = "androidx.compose.material3.adaptive", name = "adaptive", version.ref = "material3Adaptiv" }
 androidx-compose-windowsize = { group = "androidx.compose.material3", name = "material3-window-size-class", version.ref = "material3" }
 androidx-datastore = { group = "androidx.datastore", name = "datastore", version.ref = "datastore" }
 androidx-paging-ktx = { group = "androidx.paging", name = "paging-runtime-ktx", version.ref = "paging" }

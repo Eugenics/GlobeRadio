@@ -11,8 +11,6 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -27,7 +25,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImagePainter
@@ -38,6 +35,7 @@ import com.eugenics.core.constants.SET_FAVORITES_VALUE_KEY
 import com.eugenics.core.enums.Commands
 import com.eugenics.core.model.Station
 import com.eugenics.resource.R
+import com.eugenics.ui.compose.screens.components.dialogs.FavoriteDialog
 import com.eugenics.ui.compose.screens.main.MainContent
 import com.eugenics.ui.theme.GlobeRadioTheme
 
@@ -153,36 +151,6 @@ fun StationCard(
             )
         }
     }
-}
-
-@Composable
-private fun FavoriteDialog(
-    onDismiss: () -> Unit,
-    onConfirm: () -> Unit
-) {
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        confirmButton = {
-            Button(onClick = onConfirm) {
-                Text(text = stringResource(R.string.yes_string))
-            }
-        },
-        dismissButton = {
-            Button(
-                onClick = onDismiss
-            ) {
-                Text(text = stringResource(R.string.no_string))
-            }
-        },
-        title = { Text(text = stringResource(R.string.favorites_text)) },
-        text = {
-            Text(
-                text = stringResource(R.string.favorites_confirm_string),
-                style = MaterialTheme.typography.bodyLarge
-            )
-        },
-        shape = MaterialTheme.shapes.medium
-    )
 }
 
 @Preview(uiMode = Configuration.UI_MODE_NIGHT_NO)

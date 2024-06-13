@@ -175,7 +175,8 @@ fun MainScreen(
                             .padding(bottom = padding.calculateBottomPadding() + 5.dp),
                         nowPlayingStation = nowPlayingStation,
                         playbackState = playbackState,
-                        onPlayClick = handlers.value.onPlayClick
+                        onPlayClick = handlers.value.onPlayClick,
+                        onBottomAppBarClick = { navController.navigate(Screen.DetailScreen.rout) }
                     )
                 }
             },

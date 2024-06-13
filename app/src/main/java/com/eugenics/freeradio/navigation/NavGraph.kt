@@ -17,6 +17,8 @@ import com.eugenics.freeradio.ui.viewmodels.MainViewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.eugenics.ui.compose.screens.detail.DetailScreen
+import com.eugenics.ui.compose.screens.detail.data.DetailScreenHandlers
 import com.eugenics.ui.compose.screens.main.data.MainScreenHandlers
 import com.eugenics.ui.compose.screens.settings.data.SettingsScreenHandlers
 import com.eugenics.ui_core.data.enums.Screen
@@ -27,6 +29,8 @@ fun NavGraph(
     navController: NavHostController = rememberNavController(),
     mainViewModel: MainViewModel = hiltViewModel()
 ) {
+    val mainStates = mainViewModel.mainScreenStates.collectAsState()
+
     NavHost(
         navController = navController, startDestination = Screen.MainScreen.rout
     ) {
@@ -42,8 +46,6 @@ fun NavGraph(
                     )
                 )
             }
-
-            val mainStates = mainViewModel.mainScreenStates.collectAsState()
 
             MainScreen(
                 navController = navController,
@@ -72,9 +74,41 @@ fun NavGraph(
                 )
             }
 
+            val currentState = mainViewModel.currentState.collectAsState()
+
             SettingsScreen(
-                settings = mainViewModel.currentState.collectAsState(),
+                settings = currentState,
                 handlers = settingsScreenHandlers
+            )
+        }
+
+        composable(route = Screen.DetailScreen.rout) {
+            val detailScreenHandlers = remember {
+                mutableStateOf(
+                    DetailScreenHandlers.newInstance(
+                        onMenuPressed = {},
+                        onBackPressed = navController::popBackStack,
+                        onNextPressed = mainViewModel::onNextClick,
+                        onPlayPressed = mainViewModel::onPlayClick,
+                        onPrevPressed = mainViewModel::onPrevClick,
+                        onFavoritePressed = mainViewModel::sendCommand
+                    )
+                )
+            }
+
+            val playBackState =
+                remember(mainStates.value.playBackState) {
+                    mutableStateOf(mainStates.value.playBackState)
+                }
+            val nowPlayingStation =
+                remember(mainStates.value.nowPlaying) {
+                    mutableStateOf(mainStates.value.nowPlaying)
+                }
+
+            DetailScreen(
+                playbackState = playBackState,
+                nowPlayingStation = nowPlayingStation,
+                detailScreenHandlers = detailScreenHandlers
             )
         }
     }

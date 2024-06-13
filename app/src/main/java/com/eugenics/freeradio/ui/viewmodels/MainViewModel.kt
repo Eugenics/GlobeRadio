@@ -23,6 +23,8 @@ import com.eugenics.core.model.FavoriteStation
 import com.eugenics.core.model.Favorites
 import com.eugenics.core.model.StationsUiState
 import com.eugenics.data.interfaces.IStationsRepository
+import com.eugenics.freeradio.ui.util.IMediaControls
+import com.eugenics.freeradio.ui.util.MediaControlsBuilder
 import com.eugenics.ui_core.data.enums.DataState
 import com.eugenics.freeradio.util.ImageHelper
 import com.eugenics.ui_core.data.enums.UICommand
@@ -56,6 +58,9 @@ import kotlinx.serialization.json.Json
 import java.nio.file.Files
 import java.nio.file.Paths
 
+private const val CHANNEL_CAPACITY = 10
+private const val ROOT_ID = "/"
+
 @HiltViewModel
 class MainViewModel @Inject constructor(
     private val mediaServiceConnection: FreeRadioMediaServiceConnection,
@@ -84,18 +89,21 @@ class MainViewModel @Inject constructor(
     val primaryDynamicColor: StateFlow<Int> = _primaryDynamicColor
 
     private val settingsChannel: Channel<CurrentState> =
-        Channel(capacity = 10, onBufferOverflow = BufferOverflow.SUSPEND)
+        Channel(capacity = CHANNEL_CAPACITY, onBufferOverflow = BufferOverflow.SUSPEND)
 
     private val nowPlayingMetaData = mediaServiceConnection.nowPlayingItem
 
     private var currentMediaId: String = ""
-    private val rootId = "/"
 
     private val mediaSourceState = mediaServiceConnection.mediaSourceState
 
     private var _viewModelState: Boolean = false
     val viewModelState: Boolean
         get() = _viewModelState
+
+    private val mediaControls: IMediaControls = MediaControlsBuilder()
+        .setMediaServiceConnection(mediaServiceConnection = mediaServiceConnection)
+        .build()
 
     private val subscriptionCallback = object : MediaBrowserCompat.SubscriptionCallback() {
         override fun onChildrenLoaded(
@@ -159,7 +167,7 @@ class MainViewModel @Inject constructor(
     }
 
     private fun unsubscribe() {
-        mediaServiceConnection.unsubscribe(rootId)
+        mediaServiceConnection.unsubscribe(ROOT_ID)
     }
 
     override fun onCleared() {
@@ -173,18 +181,26 @@ class MainViewModel @Inject constructor(
      * MediaService commands
      */
     fun onPlayClick(mediaId: String? = currentMediaId) {
+
         when (mediaId ?: currentMediaId) {
             currentMediaId -> if (mainScreenStates.value.playBackState == PlayBackState.Playing) {
-                mediaServiceConnection.transportControls.pause()
+                mediaControls.pause()
             } else {
-                mediaServiceConnection.transportControls.play()
+                mediaControls.play(mediaId ?: currentMediaId)
             }
 
             else -> {
-                mediaServiceConnection.transportControls.playFromMediaId(mediaId, null)
-//                setSettings(stationUuid = mediaId ?: currentMediaId, setName = "onPlayClick")
+                mediaId?.let { mediaControls.play(it) }
             }
         }
+    }
+
+    fun onNextClick() {
+        mediaControls.next()
+    }
+
+    fun onPrevClick() {
+        mediaControls.prev()
     }
 
     fun onSearch(query: String) {
@@ -192,10 +208,11 @@ class MainViewModel @Inject constructor(
         _mainScreenStates.update {
             mainScreenStates.value.clearStationsList()
         }
-        mediaServiceConnection.transportControls.playFromSearch(query, null)
+        mediaControls.search(query)
     }
 
     fun sendCommand(command: String, extras: Bundle? = null) {
+        Log.d(TAG, "Send command: $command")
         when (command) {
             UICommand.UI_COMMAND_BACKUP_FAVORITES.name -> backUpFavorites()
             UICommand.UI_COMMAND_RESTORE_FAVORITES.name ->
@@ -240,7 +257,7 @@ class MainViewModel @Inject constructor(
         viewModelScope.launch {
             mediaServiceConnection.isConnected.collect {
                 if (it) {
-                    mediaServiceConnection.subscribe(rootId, subscriptionCallback)
+                    mediaServiceConnection.subscribe(ROOT_ID, subscriptionCallback)
                     this.coroutineContext.cancel()
                 }
             }
@@ -260,13 +277,15 @@ class MainViewModel @Inject constructor(
                             stationUUID = metaData.getString(MediaMetadataCompat.METADATA_KEY_MEDIA_ID)
                                 ?: "",
                             description = metaData.getString(MediaMetadataCompat.METADATA_KEY_DISPLAY_DESCRIPTION)
-                                ?: ""
+                                ?: "",
+                            isFavorite = !metaData.getString("favorite").isNullOrBlank()
                         )
                     )
                 }
                 currentMediaId = mainScreenStates.value.nowPlaying.stationUUID
                 setSettings(stationUuid = currentMediaId, setName = "collectNowPlaying")
                 getDynamicColor(url = mainScreenStates.value.nowPlaying.favicon)
+                Log.d(TAG, "MAIN_SCREEN_STATES: ${mainScreenStates.value}")
             }
         }
     }
@@ -549,10 +568,8 @@ class MainViewModel @Inject constructor(
     }
 
     fun setPrimaryDynamicColor(rgb: Int) {
-        _primaryDynamicColor.update {
-            rgb
-        }
-        Log.d(TAG,"RGB COLOR UPDATED: $rgb")
+        _primaryDynamicColor.update { rgb }
+        Log.d(TAG, "RGB COLOR UPDATED: $rgb")
     }
 
     companion object {

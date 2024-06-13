@@ -5,6 +5,7 @@ import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.*
@@ -35,7 +36,8 @@ fun MainBottomAppBar(
     nowPlayingStation: State<NowPlayingStation> =
         mutableStateOf(NowPlayingStation.newInstance(name = "Sample name...")),
     playbackState: State<PlayBackState>,
-    onPlayClick: (String?) -> Unit = {}
+    onPlayClick: (String?) -> Unit = {},
+    onBottomAppBarClick: () -> Unit = {}
 ) {
 
     val clickIcon = remember(playbackState.value) {
@@ -56,6 +58,10 @@ fun MainBottomAppBar(
             .background(
                 color = MaterialTheme.colorScheme.background,
                 shape = MaterialTheme.shapes.medium
+            )
+            .clickable(
+                enabled = true,
+                onClick = onBottomAppBarClick
             )
     ) {
         SubcomposeAsyncImage(

@@ -55,6 +55,7 @@ class FreeRadioMediaServiceConnection(context: Context, serviceComponent: Compon
     val transportControls: MediaControllerCompat.TransportControls
         get() = mediaController.transportControls
 
+
     fun subscribe(
         parentId: String,
         callback: MediaBrowserCompat.SubscriptionCallback =
@@ -120,15 +121,18 @@ class FreeRadioMediaServiceConnection(context: Context, serviceComponent: Compon
     private inner class MediaControllerCallback : MediaControllerCompat.Callback() {
         override fun onPlaybackStateChanged(state: PlaybackStateCompat?) {
             playbackState.value = state ?: EMPTY_PLAYBACK_STATE
+            Log.d(TAG, "ON_PLAYBACK_STATE_CHANGED")
         }
 
         override fun onMetadataChanged(metadata: MediaMetadataCompat?) {
+//            metadata?.let { nowPlaying.value = it }
         }
 
         override fun onQueueChanged(queue: MutableList<MediaSessionCompat.QueueItem>?) {
         }
 
         override fun onSessionEvent(event: String?, extras: Bundle?) {
+            Log.d(TAG, "ON_SESSION_EVENT")
             when (event) {
                 "MEDIA_SOURCE_STATE" -> {
                     CoroutineScope(Dispatchers.Default).launch {
@@ -143,14 +147,13 @@ class FreeRadioMediaServiceConnection(context: Context, serviceComponent: Compon
         }
 
         override fun onSessionDestroyed() {
+            Log.d(TAG, "ON_SESSION_DESTROY")
             mediaBrowserConnectionCallback.onConnectionSuspended()
         }
-
-
     }
 
     private fun collectNowPlaying() {
-        val scope = CoroutineScope(Dispatchers.IO)
+        val scope = CoroutineScope(Dispatchers.Default)
         nowPlayingJob = scope.launch {
             nowPlaying.collect {
                 nowPlayingItem.value = it
@@ -213,6 +216,11 @@ class FreeRadioMediaServiceConnection(context: Context, serviceComponent: Compon
                     .putString(
                         MediaMetadataCompat.METADATA_KEY_MEDIA_ID,
                         mediaMetadata.extras?.getString(MediaMetadataCompat.METADATA_KEY_MEDIA_ID)
+                            ?: ""
+                    )
+                    .putString(
+                        "favorite",
+                        mediaMetadata.extras?.getString("favorite")
                             ?: ""
                     )
                     .build()

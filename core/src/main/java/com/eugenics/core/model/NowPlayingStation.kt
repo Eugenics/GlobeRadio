@@ -9,7 +9,8 @@ data class NowPlayingStation(
     val favicon: String,
     val nowPlayingTitle: String,
     val stationUUID: String,
-    val description: String
+    val description: String,
+    val isFavorite: Boolean
 ) : Parcelable {
     companion object {
         fun emptyInstance() =
@@ -18,7 +19,8 @@ data class NowPlayingStation(
                 favicon = "",
                 nowPlayingTitle = "",
                 stationUUID = "",
-                description = ""
+                description = "",
+                isFavorite = false
             )
 
         fun newInstance(
@@ -26,14 +28,16 @@ data class NowPlayingStation(
             favicon: String = "",
             nowPlayingTitle: String = "",
             stationUUID: String = "",
-            description: String = ""
+            description: String = "",
+            isFavorite: Boolean = false
         ) =
             NowPlayingStation(
                 name = name,
                 favicon = favicon,
                 nowPlayingTitle = nowPlayingTitle,
                 stationUUID = stationUUID,
-                description = description
+                description = description,
+                isFavorite = isFavorite
             )
     }
 }

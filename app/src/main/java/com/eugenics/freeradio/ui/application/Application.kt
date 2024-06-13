@@ -7,10 +7,9 @@ import androidx.compose.animation.core.tween
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.remember
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.compose.rememberNavController
@@ -22,14 +21,20 @@ import com.eugenics.ui.theme.LightColors
 import com.eugenics.freeradio.ui.viewmodels.MainViewModel
 
 private const val THEME_ANIMATION_LABEL = "theme_dynamic_color"
-private const val TWEEN_ANIMATION_DURATION = 1000
+private const val TWEEN_ANIMATION_DURATION = 250
 
 @RequiresApi(Build.VERSION_CODES.S)
 @Composable
 fun Application(
     viewModel: MainViewModel = hiltViewModel()
 ) {
-    val theme = viewModel.currentState.collectAsState().value.theme
+    val theme = remember(viewModel.currentState.collectAsState().value.theme) {
+        viewModel.currentState.value.theme
+    }
+
+    val isSystemTheme = !listOf(Theme.CONTENT_DARK, Theme.CONTENT_LIGHT).contains(theme)
+    val isContentTheme = listOf(Theme.CONTENT_DARK, Theme.CONTENT_LIGHT).contains(theme)
+
     val isDarkTheme = when (theme) {
         Theme.DARK -> true
         Theme.CONTENT_DARK -> true
@@ -45,27 +50,15 @@ fun Application(
         LightColors.primary
     }
 
-    LaunchedEffect(dynamicColor) {
-        if (dynamicColor.value == 0) {
-            viewModel.setPrimaryDynamicColor(defaultColor.toArgb())
-        }
-    }
-
-    val content = @Composable {
-        val navController = rememberNavController()
-        Surface(tonalElevation = 5.dp) {
-            NavGraph(
-                navController = navController,
-                mainViewModel = viewModel
-            )
-        }
-    }
-
-    val isSystemTheme = !listOf(Theme.CONTENT_DARK, Theme.CONTENT_LIGHT).contains(theme)
+//    LaunchedEffect(dynamicColor) {
+//        if (dynamicColor.value == 0) {
+//            viewModel.setPrimaryDynamicColor(defaultColor.toArgb())
+//        }
+//    }
 
     val color = animateColorAsState(
         targetValue =
-        if (listOf(Theme.CONTENT_DARK, Theme.CONTENT_LIGHT).contains(theme)) {
+        if (isContentTheme) {
             Color(dynamicColor.value)
         } else {
             defaultColor
@@ -77,7 +70,14 @@ fun Application(
     ContentDynamicTheme(
         isDarkColorsScheme = isDarkTheme,
         color = color.value,
-        content = content,
         isSystemTheme = isSystemTheme
-    )
+    ){
+        val navController = rememberNavController()
+        Surface(tonalElevation = 5.dp) {
+            NavGraph(
+                navController = navController,
+                mainViewModel = viewModel
+            )
+        }
+    }
 }

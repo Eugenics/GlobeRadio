@@ -61,6 +61,7 @@ dependencies {
     // Material 3
     implementation(libs.androidx.material3)
     implementation(libs.androidx.compose.windowsize)
+    implementation(libs.androidx.material3.adaptiv)
 
     //Coil compose
     implementation(libs.coil)
