@@ -52,6 +52,7 @@ retrofitVersion = "2.9.0"
 retrofitConverterSerialization = "0.8.0"
 exoplayerVersion = "2.19.1"
 material3Adaptiv = "1.0.0-beta02"
+media3 = "1.3.1"
 
 androidGradlePlugin = "8.2.2"
 androidLibraryPlugin = "8.2.2"
@@ -153,6 +154,11 @@ exoplayer = { group = "com.google.android.exoplayer", name = "exoplayer", versio
 exoplayer-extOkhttp = { group = "com.google.android.exoplayer", name = "extension-okhttp", version.ref = "exoplayerVersion" }
 exoplayer-extMediasession = { group = "com.google.android.exoplayer", name = "extension-mediasession", version.ref = "exoplayerVersion" }
 
+media3-common = { group = "androidx.media3", name = "media3-common", version.ref = "media3" }
+media3-session = { group = "androidx.media3", name = "media3-session", version.ref = "media3" }
+media3-exoplayer = { group = "androidx.media3", name = "media3-exoplayer", version.ref = "media3" }
+media3-ui = { group = "androidx.media3", name = "media3-ui", version.ref = "media3" }
+
 [bundles]
 compose = ["compose-ui", "compose-tooling", "compose-preview", "compose-animation-graphics",
     "compose-animation", "compose-animation-core"]
@@ -165,6 +171,7 @@ accomponist = ["accomponist-inserts", "accomponist-swipe", "accomponist-coil", "
     "accomponist-systemUiController"]
 room = ["room-compiler", "room-ktx", "room-paging"]
 retrofit = ["retrofit-core", "retrofit-converter-gson", "retrofit-converter-serialization", "okhttp-intercepter"]
+meida3 = ["media3-common", "media3-session", "media3-exoplayer", "media3-ui"]
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "androidGradlePlugin" }
