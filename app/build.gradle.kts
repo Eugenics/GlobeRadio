@@ -10,6 +10,7 @@ plugins {
     id(libs.plugins.kotlinx.serialization.get().pluginId)
     id(libs.plugins.dagger.hilt.get().pluginId)
     id(libs.plugins.google.services.get().pluginId)
+    id(libs.plugins.kotlin.compose.compiler.get().pluginId)
     id("com.google.firebase.crashlytics")
 }
 
@@ -76,9 +77,7 @@ android {
         compose = true
         buildConfig = true          // С 8 версии AGP делать вручную
     }
-    composeOptions {
-        kotlinCompilerExtensionVersion = libs.versions.kotlinCompilerExtensionVersion.get()
-    }
+
     packaging {
         resources {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
@@ -98,6 +97,10 @@ android {
     testOptions {
         unitTests.isIncludeAndroidResources = true
         unitTests.isReturnDefaultValues = true
+    }
+
+    composeCompiler {
+        enableStrongSkippingMode = true
     }
 
     //sourceSets["main"].resources.srcDirs("../resource/src/main/res")

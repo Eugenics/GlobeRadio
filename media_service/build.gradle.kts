@@ -63,4 +63,7 @@ dependencies {
     // Hilt
     implementation(libs.hilt.android)
     ksp(libs.hilt.compiler)
+
+    // Media3
+    implementation(libs.bundles.meida3)
 }

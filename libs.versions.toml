@@ -10,11 +10,11 @@ kotlinCompilerExtensionVersion = "1.5.10"
 paging = "3.2.1"
 ndkVersion = "26.0.10792818"
 
+kotlin = "2.0.0"
 ktx = "1.13.0"
 hilt = "2.49"
 dagger = "2.49"
 hiltPlugin = "2.49"
-kotlin = "1.9.22"
 appcompat = "1.6.1"
 media = "1.7.0"
 lifecycle = "2.7.0"
@@ -60,7 +60,7 @@ kotlinAndroidPlugin = "1.9.10"
 kotlinJvmPlugin = "1.9.22"
 gradleToolChainPlugin = "0.4.0"
 googleServicesPlugin = "4.4.1"
-kspPlugin = "1.9.22-1.0.17"
+kspPlugin = "2.0.0-1.0.22"
 googleServices = "4.4.1"
 crashliticsGradle = "2.9.9"
 okhttpIntercepter = "4.11.0"
@@ -72,6 +72,8 @@ kotlin-serialization = { group = "org.jetbrains.kotlin", name = "kotlin-serializ
 android-tools = { group = "com.android.tools.build", name = "gradle", version.ref = "androidGradlePlugin" }
 google-services = { group = "com.google.gms", name = "google-services", version.ref = "googleServices" }
 crashlitics-gradle = { group = "com.google.firebase", name = "firebase-crashlytics-gradle", version.ref = "crashliticsGradle" }
+
+
 
 androidx-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "ktx" }
 androidx-appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "appcompat" }
@@ -176,7 +178,6 @@ meida3 = ["media3-common", "media3-session", "media3-exoplayer", "media3-ui"]
 [plugins]
 android-application = { id = "com.android.application", version.ref = "androidGradlePlugin" }
 android-library = { id = "com.android.library", version.ref = "androidLibraryPlugin" }
-kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlinAndroidPlugin" }
 kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlinJvmPlugin" }
 gradle-toolchain = { id = "org.gradle.toolchains.foojay-resolver-convention", version.ref = "gradleToolChainPlugin" }
 google-services = { id = "com.google.gms.google-services", version.ref = "googleServicesPlugin" }
@@ -184,3 +185,5 @@ ksp = { id = "com.google.devtools.ksp", version.ref = "kspPlugin" }
 kotlin-parcelize = { id = "kotlin-parcelize", version.ref = "kotlin" }
 kotlinx-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
 dagger-hilt = { id = "dagger.hilt.android.plugin", version.ref = "hiltPlugin" }
+kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
+kotlin-compose-compiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
