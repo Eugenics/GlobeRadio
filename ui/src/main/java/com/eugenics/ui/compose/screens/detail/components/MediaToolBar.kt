@@ -30,8 +30,7 @@ fun MediaToolBar(
     prevButtonState: State<Boolean>,
     nextButtonState: State<Boolean>,
     onPlayPressed: () -> Unit,
-    onPrevPressed: () -> Unit,
-    onNextPressed: () -> Unit
+    onNextPressed: (Boolean) -> Unit
 ) {
     val buttonSize = 60.dp
     val spacerSize = 15.dp
@@ -43,7 +42,7 @@ fun MediaToolBar(
     ) {
         // Previous button
         CustomIconButton(
-            onClick = onPrevPressed,
+            onClick = { onNextPressed(false) },
             enabled = prevButtonState.value,
             stateLayerSize = 60.dp,
             modifier = Modifier.clip(CircleShape)
@@ -81,7 +80,7 @@ fun MediaToolBar(
 
         // Next button
         CustomIconButton(
-            onClick = onNextPressed,
+            onClick = { onNextPressed(true) },
             enabled = nextButtonState.value,
             stateLayerSize = 60.dp,
             modifier = Modifier.clip(CircleShape)
@@ -105,7 +104,6 @@ private fun PreviewMediaToolBar() {
     PreviewBase {
         MediaToolBar(
             onPlayPressed = {},
-            onPrevPressed = {},
             onNextPressed = {},
             playbackState = playbackState,
             nextButtonState = nextButtonState,

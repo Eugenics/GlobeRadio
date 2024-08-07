@@ -114,7 +114,7 @@ fun MainScreen(
                 drawerState.close()
             }
         },
-        sendCommand = handlers.value.onSendCommand,
+        onGetTagItem = handlers.value.onGetTagItem,
         tagsList = tags
     ) {
         Scaffold(
@@ -198,7 +198,7 @@ fun MainScreen(
                         paddingValues = paddingValues,
                         stations = stationsList,
                         onCardClick = handlers.value.onPlayClick,
-                        onFavoriteClick = handlers.value.onFavoriteClick,
+                        onSendCommand = handlers.value.onSendCommand,
                         onScrolled = {
                             isScrolledUp.value = it
                         },
@@ -217,17 +217,10 @@ fun MainScreen(
 @Preview
 private fun MainScreenPreviewNight() {
     val handlers = remember {
-        mutableStateOf(MainScreenHandlers.newInstance({}, {}, { _, _ -> }, { _, _ -> }, {}))
+        mutableStateOf(MainScreenHandlers.newInstance({ _, _ -> }, {}, { _ -> }, { _, _ -> }, {}))
     }
     val states = remember { mutableStateOf(MainScreenStates.emptyInstance()) }
 
-//    val tags = remember { mutableStateOf(listOf<Tag>()) }
-//    val nowPlayingStation = remember { mutableStateOf(NowPlayingStation.emptyInstance()) }
-//    val playbackState = remember { mutableStateOf(PlayBackState.Pause) }
-//    val dataState = remember { mutableStateOf(DataState.Loading) }
-//    val stationsUiState = remember { mutableStateOf(StationsUiState.emptyInstance()) }
-//    val stationsList = remember { mutableStateOf(listOf<Station>()) }
-//    val message = remember { mutableStateOf(UIMessage.emptyInstance()) }
     PreviewBase {
         MainScreen(
             handlers = handlers,
@@ -241,7 +234,7 @@ private fun MainScreenPreviewNight() {
 @Preview
 private fun MainScreenPreviewDay() {
     val handlers = remember {
-        mutableStateOf(MainScreenHandlers.newInstance({}, {}, { _, _ -> }, { _, _ -> }, {}))
+        mutableStateOf(MainScreenHandlers.newInstance({ _, _ -> }, {}, { _ -> }, { _, _ -> }, {}))
     }
     val states = remember { mutableStateOf(MainScreenStates.emptyInstance()) }
 

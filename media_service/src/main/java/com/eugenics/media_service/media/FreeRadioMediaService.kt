@@ -15,12 +15,11 @@ import android.util.Log
 import androidx.core.content.ContextCompat
 import androidx.core.net.toUri
 import androidx.media.MediaBrowserServiceCompat
+import com.eugenics.core.constants.SET_FAVORITES_COMMAND
 import com.eugenics.core.constants.SET_FAVORITES_STATION_KEY
 import com.eugenics.core.constants.SET_FAVORITES_VALUE_KEY
 import com.eugenics.core.enums.Commands
 import com.eugenics.core.enums.MediaSourceState
-import com.eugenics.data.interfaces.IPrefsRepository
-import com.eugenics.data.interfaces.IStationsRepository
 import com.eugenics.media_service.player.getMediaItems
 import com.google.android.exoplayer2.C
 import com.google.android.exoplayer2.ExoPlayer
@@ -48,12 +47,6 @@ private const val EMPTY_ROOT = "@empty@"
 
 @AndroidEntryPoint
 class FreeRadioMediaService : MediaBrowserServiceCompat() {
-
-    @Inject
-    lateinit var stationsRepository: IStationsRepository
-
-    @Inject
-    lateinit var prefsRepository: IPrefsRepository
 
     private val serviceJob = SupervisorJob()
     private val serviceScope = CoroutineScope(Dispatchers.Main + serviceJob)
@@ -90,12 +83,8 @@ class FreeRadioMediaService : MediaBrowserServiceCompat() {
 
     private var isForegroundService = false
 
-    private val mediaSource: MediaSource by lazy {
-        MediaSource(
-            stationsRepository = stationsRepository,
-            prefsRepository = prefsRepository
-        )
-    }
+    @Inject
+    lateinit var mediaSource: MediaSource
 
     private val mediaSourceEvent = MutableStateFlow(0)
 
@@ -267,7 +256,7 @@ class FreeRadioMediaService : MediaBrowserServiceCompat() {
                     )
                 }
 
-                Commands.SET_FAVORITES_COMMAND.name -> {
+                SET_FAVORITES_COMMAND -> {
                     Log.d(TAG, "SERVICE_COMMAND_SET_FAVORITES")
                     extras?.let { bundle ->
                         val stationUuid = bundle.getString(SET_FAVORITES_STATION_KEY)

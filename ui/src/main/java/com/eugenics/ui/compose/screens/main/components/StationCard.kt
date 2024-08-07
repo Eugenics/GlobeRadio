@@ -1,7 +1,6 @@
 package com.eugenics.ui.compose.screens.main.components
 
 import android.content.res.Configuration
-import android.os.Bundle
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -16,6 +15,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -30,9 +30,6 @@ import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImagePainter
 import coil.compose.SubcomposeAsyncImage
 import coil.compose.SubcomposeAsyncImageContent
-import com.eugenics.core.constants.SET_FAVORITES_STATION_KEY
-import com.eugenics.core.constants.SET_FAVORITES_VALUE_KEY
-import com.eugenics.core.enums.Commands
 import com.eugenics.core.model.Station
 import com.eugenics.resource.R
 import com.eugenics.ui.compose.screens.components.dialogs.FavoriteDialog
@@ -42,11 +39,11 @@ import com.eugenics.ui.theme.GlobeRadioTheme
 @Composable
 fun StationCard(
     isActive: Boolean = false,
-    station: Station,
+    station: State<Station>,
     onCardClick: (mediaId: String) -> Unit = {},
-    onFavoriteClick: (command: String, bundle: Bundle?) -> Unit = { _, _ -> }
+    onFavoriteClick: (itemId: String) -> Unit = { _ -> }
 ) {
-    val isFavorite = rememberSaveable { mutableIntStateOf(station.isFavorite) }
+    val isFavorite = rememberSaveable { mutableIntStateOf(station.value.isFavorite) }
     val showFavoriteDialog = rememberSaveable { mutableStateOf(false) }
 
     if (showFavoriteDialog.value) {
@@ -55,16 +52,7 @@ fun StationCard(
             onConfirm = {
                 isFavorite.intValue = 0
                 showFavoriteDialog.value = false
-                val bundle = Bundle()
-                bundle.putString(
-                    SET_FAVORITES_STATION_KEY,
-                    station.stationuuid
-                )
-                bundle.putInt(
-                    SET_FAVORITES_VALUE_KEY,
-                    isFavorite.intValue
-                )
-                onFavoriteClick(Commands.SET_FAVORITES_COMMAND.name, bundle)
+                onFavoriteClick(station.value.stationuuid)
             }
         )
     }
@@ -81,12 +69,12 @@ fun StationCard(
                 }
             )
             .clickable {
-                onCardClick(station.stationuuid)
+                onCardClick(station.value.stationuuid)
             }
 
     ) {
         SubcomposeAsyncImage(
-            model = station.favicon,
+            model = station.value.favicon,
             contentDescription = null,
             modifier = Modifier
                 .size(65.dp, 65.dp)
@@ -108,12 +96,12 @@ fun StationCard(
             modifier = Modifier.weight(1f)
         ) {
             Text(
-                text = station.name,
+                text = station.value.name,
                 style = MaterialTheme.typography.bodyLarge,
                 modifier = Modifier.fillMaxWidth()
             )
             Text(
-                text = "${station.codec}:${station.bitrate}",
+                text = "${station.value.codec}:${station.value.bitrate}",
                 style = MaterialTheme.typography.bodySmall,
                 modifier = Modifier.fillMaxWidth()
             )
@@ -125,17 +113,7 @@ fun StationCard(
             onClick = {
                 if (isFavorite.intValue == 0) {
                     isFavorite.intValue = 1
-
-                    val bundle = Bundle()
-                    bundle.putString(
-                        SET_FAVORITES_STATION_KEY,
-                        station.stationuuid
-                    )
-                    bundle.putInt(
-                        SET_FAVORITES_VALUE_KEY,
-                        isFavorite.intValue
-                    )
-                    onFavoriteClick(Commands.SET_FAVORITES_COMMAND.name, bundle)
+                    onFavoriteClick(station.value.stationuuid)
                 } else {
                     showFavoriteDialog.value = true
                 }
@@ -161,7 +139,7 @@ private fun StationCardNightPreviewDay() {
         MainContent(
             paddingValues = PaddingValues(),
             stations = stations,
-            onCardClick = {},
+            onCardClick = { _, _ -> },
             onScrolled = {}
         )
     }
@@ -175,7 +153,7 @@ private fun StationCardNightPreviewNight() {
         MainContent(
             paddingValues = PaddingValues(),
             stations = stations,
-            onCardClick = {},
+            onCardClick = { _, _ -> },
             onScrolled = {}
         )
     }
@@ -184,9 +162,10 @@ private fun StationCardNightPreviewNight() {
 @Preview(uiMode = Configuration.UI_MODE_NIGHT_NO)
 @Composable
 private fun CardDayPreview() {
+    val station = remember{mutableStateOf(fakeStation)}
     GlobeRadioTheme {
         StationCard(
-            station = fakeStation
+            station = station
         )
     }
 }

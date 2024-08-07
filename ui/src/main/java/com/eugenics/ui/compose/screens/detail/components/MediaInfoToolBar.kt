@@ -23,9 +23,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.eugenics.core.constants.SET_FAVORITES_COMMAND
 import com.eugenics.core.constants.SET_FAVORITES_STATION_KEY
 import com.eugenics.core.constants.SET_FAVORITES_VALUE_KEY
-import com.eugenics.core.enums.Commands
 import com.eugenics.core.model.NowPlayingStation
 import com.eugenics.resource.R
 import com.eugenics.ui.compose.screens.components.dialogs.FavoriteDialog
@@ -55,7 +55,7 @@ fun MediaInfoToolBar(
                     nowPlayingStation.value.stationUUID
                 )
                 bundle.putInt(SET_FAVORITES_VALUE_KEY, 0)
-                onFavoriteClick(Commands.SET_FAVORITES_COMMAND.name, bundle)
+                onFavoriteClick(SET_FAVORITES_COMMAND, bundle)
             }
         )
     }
@@ -75,7 +75,7 @@ fun MediaInfoToolBar(
                         nowPlayingStation.value.stationUUID
                     )
                     bundle.putInt(SET_FAVORITES_VALUE_KEY, 1)
-                    onFavoriteClick(Commands.SET_FAVORITES_COMMAND.name, bundle)
+                    onFavoriteClick(SET_FAVORITES_COMMAND, bundle)
                 } else {
                     showFavoriteDialog.value = true
                 }

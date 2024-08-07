@@ -11,7 +11,7 @@ plugins {
     id(libs.plugins.dagger.hilt.get().pluginId)
     id(libs.plugins.google.services.get().pluginId)
     id(libs.plugins.kotlin.compose.compiler.get().pluginId)
-    id("com.google.firebase.crashlytics")
+    id(libs.plugins.google.crashlytics.get().pluginId)
 }
 
 android {
@@ -203,6 +203,8 @@ dependencies {
     implementation(libs.jackson.databind)
 
     // Firebase Crashlytics
-    implementation("com.google.firebase:firebase-crashlytics:18.6.4")
-    implementation("com.google.firebase:firebase-analytics:21.6.2")
+    implementation(libs.bundles.firebaseAnalytics)
+
+    // Media3
+    implementation(libs.bundles.meida3)
 }

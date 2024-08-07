@@ -42,7 +42,7 @@ data class MainScreenStates(
     companion object {
         fun emptyInstance(): MainScreenStates = MainScreenStates(
             nowPlaying = NowPlayingStation.emptyInstance(),
-            dataState = DataState.Loading,
+            dataState = DataState.Idle,
             stations = listOf(),
             playBackState = PlayBackState.Pause,
             tagList = listOf(),

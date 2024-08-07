@@ -9,7 +9,6 @@ import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Text
@@ -22,7 +21,6 @@ import androidx.compose.ui.unit.dp
 import com.eugenics.core.enums.Theme
 import com.eugenics.resource.R
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ThemeChooseDialog(
     currentTheme: Theme = Theme.SYSTEM,

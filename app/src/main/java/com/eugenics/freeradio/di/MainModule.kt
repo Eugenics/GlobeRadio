@@ -2,14 +2,21 @@ package com.eugenics.freeradio.di
 
 import android.content.ComponentName
 import android.content.Context
+import androidx.annotation.OptIn
 import androidx.datastore.core.DataStore
 import androidx.datastore.core.DataStoreFactory
+import androidx.media3.common.util.UnstableApi
+import androidx.media3.session.MediaBrowser
+import androidx.media3.session.MediaController
+import androidx.media3.session.SessionToken
 import com.eugenics.core.model.CurrentState
 import com.eugenics.data.interfaces.IStationsRepository
 import com.eugenics.freeradio.util.CustomWorkerFactory
 import com.eugenics.freeradio.util.SettingsSerializer
 import com.eugenics.media_service.media.FreeRadioMediaService
 import com.eugenics.media_service.media.FreeRadioMediaServiceConnection
+import com.eugenics.media_service.media3.GlobeRadioMediaService
+import com.google.common.util.concurrent.ListenableFuture
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -24,9 +31,7 @@ class MainModule {
 
     @Singleton
     @Provides
-    fun provideMediaServiceConnection(
-        @ApplicationContext context: Context
-    ): FreeRadioMediaServiceConnection =
+    fun provideMediaServiceConnection(@ApplicationContext context: Context): FreeRadioMediaServiceConnection =
         FreeRadioMediaServiceConnection.getInstance(
             context = context,
             ComponentName(context, FreeRadioMediaService::class.java)
@@ -49,4 +54,27 @@ class MainModule {
     @Singleton
     fun provideWorkmanagerFactory(repository: IStationsRepository): CustomWorkerFactory =
         CustomWorkerFactory(repository = repository)
+
+    @OptIn(UnstableApi::class)
+    @Provides
+    @Singleton
+    fun provideSessionToken(@ApplicationContext context: Context): SessionToken =
+        SessionToken(context, ComponentName(context, GlobeRadioMediaService::class.java))
+
+    @Provides
+    @Singleton
+    fun provideMediaBrowser(
+        @ApplicationContext context: Context,
+        sessionToken: SessionToken
+    ): ListenableFuture<MediaBrowser> =
+        MediaBrowser.Builder(context, sessionToken)
+            .buildAsync()
+
+    @Provides
+    @Singleton
+    fun provideMediaControllerFuture(
+        @ApplicationContext context: Context,
+        sessionToken: SessionToken
+    ): ListenableFuture<MediaController> =
+        MediaController.Builder(context, sessionToken).buildAsync()
 }

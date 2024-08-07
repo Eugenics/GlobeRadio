@@ -19,7 +19,7 @@ data class CurrentState(
     companion object {
         fun emptyInstance(): CurrentState =
             CurrentState(
-                tag = "",
+                tag = "All",
                 stationUuid = "",
                 theme = Theme.SYSTEM,
                 command = Commands.STATIONS_COMMAND.name,

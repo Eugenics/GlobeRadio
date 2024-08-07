@@ -13,10 +13,10 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import com.eugenics.ui.compose.screens.main.MainScreen
 import com.eugenics.ui.compose.screens.settings.SettingsScreen
-import com.eugenics.freeradio.ui.viewmodels.MainViewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.eugenics.freeradio.ui.viewmodels.MediaViewModel
 import com.eugenics.ui.compose.screens.detail.DetailScreen
 import com.eugenics.ui.compose.screens.detail.data.DetailScreenHandlers
 import com.eugenics.ui.compose.screens.main.data.MainScreenHandlers
@@ -27,9 +27,9 @@ import com.eugenics.ui_core.data.enums.Screen
 @Composable
 fun NavGraph(
     navController: NavHostController = rememberNavController(),
-    mainViewModel: MainViewModel = hiltViewModel()
+    mediaViewModel: MediaViewModel = hiltViewModel()
 ) {
-    val mainStates = mainViewModel.mainScreenStates.collectAsState()
+    val mainStates = mediaViewModel.mainScreenStates.collectAsState()
 
     NavHost(
         navController = navController, startDestination = Screen.MainScreen.rout
@@ -38,11 +38,11 @@ fun NavGraph(
             val mainScreenHandlers: State<MainScreenHandlers> = remember {
                 mutableStateOf(
                     MainScreenHandlers.newInstance(
-                        onPlayClick = mainViewModel::onPlayClick,
-                        onSearchClick = mainViewModel::onSearch,
-                        onSendCommand = mainViewModel::sendCommand,
-                        onFavoriteClick = mainViewModel::sendCommand,
-                        onVisibleIndexChange = { index -> mainViewModel.setSettings(visibleIndex = index) }
+                        onPlayClick = mediaViewModel::onItemClick,
+                        onSearchClick = {},
+                        onGetTagItem = mediaViewModel::getTagMediaItem,
+                        onSendCommand = mediaViewModel::sendCommand,
+                        onVisibleIndexChange = { index -> mediaViewModel.setSettings(visibleIndex = index) }
                     )
                 )
             }
@@ -68,13 +68,13 @@ fun NavGraph(
                 mutableStateOf(
                     SettingsScreenHandlers.newInstance(
                         onBackPressed = { navController.popBackStack() },
-                        onThemePick = { theme -> mainViewModel.setSettings(theme = theme) },
-                        onSendCommand = mainViewModel::sendCommand
+                        onThemePick = { theme -> mediaViewModel.setSettings(theme = theme) },
+                        onSendCommand = { _, _ -> }//,mainViewModel::sendCommand
                     )
                 )
             }
 
-            val currentState = mainViewModel.currentState.collectAsState()
+            val currentState = mediaViewModel.currentUiState.collectAsState()
 
             SettingsScreen(
                 settings = currentState,
@@ -88,10 +88,9 @@ fun NavGraph(
                     DetailScreenHandlers.newInstance(
                         onMenuPressed = {},
                         onBackPressed = navController::popBackStack,
-                        onNextPressed = mainViewModel::onNextClick,
-                        onPlayPressed = mainViewModel::onPlayClick,
-                        onPrevPressed = mainViewModel::onPrevClick,
-                        onFavoritePressed = mainViewModel::sendCommand
+                        onNextPressed = mediaViewModel::seek,
+                        onPlayPressed = mediaViewModel::play,
+                        onFavoritePressed = mediaViewModel::sendCommand,
                     )
                 )
             }

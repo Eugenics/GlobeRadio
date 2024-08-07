@@ -47,7 +47,6 @@ fun DetailScreen(
         MediaToolBar(
             modifier = Modifier.padding(bottom = paddings.calculateBottomPadding() + 10.dp),
             playbackState = playbackState,
-            onPrevPressed = detailScreenHandlers.value.onPrevPressed,
             onPlayPressed = detailScreenHandlers.value.onPlayPressed,
             onNextPressed = detailScreenHandlers.value.onNextPressed,
             nextButtonState = nextButtonState,

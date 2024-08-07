@@ -18,7 +18,7 @@ import com.eugenics.freeradio.navigation.NavGraph
 import com.eugenics.ui.theme.ContentDynamicTheme
 import com.eugenics.ui.theme.DarkColors
 import com.eugenics.ui.theme.LightColors
-import com.eugenics.freeradio.ui.viewmodels.MainViewModel
+import com.eugenics.freeradio.ui.viewmodels.MediaViewModel
 
 private const val THEME_ANIMATION_LABEL = "theme_dynamic_color"
 private const val TWEEN_ANIMATION_DURATION = 250
@@ -26,10 +26,10 @@ private const val TWEEN_ANIMATION_DURATION = 250
 @RequiresApi(Build.VERSION_CODES.S)
 @Composable
 fun Application(
-    viewModel: MainViewModel = hiltViewModel()
+    viewModel: MediaViewModel = hiltViewModel()
 ) {
-    val theme = remember(viewModel.currentState.collectAsState().value.theme) {
-        viewModel.currentState.value.theme
+    val theme = remember(viewModel.currentUiState.collectAsState().value.theme) {
+        viewModel.currentUiState.value.theme
     }
 
     val isSystemTheme = !listOf(Theme.CONTENT_DARK, Theme.CONTENT_LIGHT).contains(theme)
@@ -76,7 +76,7 @@ fun Application(
         Surface(tonalElevation = 5.dp) {
             NavGraph(
                 navController = navController,
-                mainViewModel = viewModel
+                mediaViewModel = viewModel
             )
         }
     }

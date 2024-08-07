@@ -11,6 +11,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
+import com.eugenics.core.constants.MEDIA_ITEM_ID_KEY
+import com.eugenics.core.constants.SET_FAVORITES_COMMAND
 import com.eugenics.core.model.NowPlayingStation
 import com.eugenics.core.model.Station
 import com.eugenics.core.model.StationsUiState
@@ -26,15 +28,16 @@ fun MainContent(
     stations: State<List<Station>>,
     stationsUiState: State<StationsUiState> = mutableStateOf(StationsUiState.emptyInstance()),
     nowPlayingStation: State<NowPlayingStation> = mutableStateOf(NowPlayingStation.emptyInstance()),
-    onFavoriteClick: (command: String, bundle: Bundle?) -> Unit = { _, _ -> },
-    onCardClick: (mediaId: String) -> Unit,
+    onSendCommand: (command: String, bundle: Bundle?) -> Unit = { _, _ -> },
+    onCardClick: (mediaId: String, playThenReady: Boolean) -> Unit,
     onScrolled: (isScrolledUp: Boolean) -> Unit,
     onVisibleIndexChange: (index: Int) -> Unit = {}
 ) {
     val columnState = rememberLazyListState(
         initialFirstVisibleItemIndex = stationsUiState.value.visibleIndex
     )
-    val columnVisibleIndex = rememberSaveable { mutableIntStateOf(columnState.firstVisibleItemIndex) }
+    val columnVisibleIndex =
+        rememberSaveable { mutableIntStateOf(columnState.firstVisibleItemIndex) }
     val firstVisibleIndex = rememberSaveable { mutableIntStateOf(0) }
 
     val activeCardIndex = rememberSaveable { mutableIntStateOf(0) }
@@ -65,7 +68,10 @@ fun MainContent(
             modifier = Modifier.fillMaxWidth(),
             state = columnState
         ) {
-            itemsIndexed(stations.value) { index, station ->
+            itemsIndexed(items = stations.value,
+                key = { index, item ->
+                    stations.value[index].stationuuid
+                }) { index, station ->
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier
@@ -81,13 +87,23 @@ fun MainContent(
                         )
 
                 ) {
+                    val cardStation = remember { mutableStateOf(station) }
                     StationCard(
-                        station = station,
-                        onCardClick = { mediaId ->
-                            onCardClick(mediaId)
-                            activeCardIndex.intValue = index
+                        station = cardStation,
+                        onCardClick = remember {
+                            { mediaId ->
+                                onCardClick(mediaId, true)
+                                activeCardIndex.intValue = index
+                            }
                         },
-                        onFavoriteClick = onFavoriteClick,
+                        onFavoriteClick = remember {
+                            { itemId ->
+                                val bundle = Bundle().apply {
+                                    this.putString(MEDIA_ITEM_ID_KEY, itemId)
+                                }
+                                onSendCommand(SET_FAVORITES_COMMAND, bundle)
+                            }
+                        },
                         isActive = station.stationuuid == nowPlayingStation.value.stationUUID
                     )
                 }

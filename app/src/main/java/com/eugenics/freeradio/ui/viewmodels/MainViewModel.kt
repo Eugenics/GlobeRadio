@@ -12,6 +12,7 @@ import androidx.datastore.core.DataStore
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.palette.graphics.Palette
+import com.eugenics.core.constants.SET_FAVORITES_COMMAND
 import com.eugenics.core.enums.MediaSourceState
 import com.eugenics.core.enums.Commands
 import com.eugenics.core.model.NowPlayingStation
@@ -227,7 +228,7 @@ class MainViewModel @Inject constructor(
                     tag = extras?.getString("TAG") ?: "",
                     setName = "sendCommandTag"
                 )
-                if (command != Commands.SET_FAVORITES_COMMAND.name) {
+                if (command != SET_FAVORITES_COMMAND) {
                     _mainScreenStates.update {
                         mainScreenStates.value.clearStationsList()
                     }
@@ -241,7 +242,7 @@ class MainViewModel @Inject constructor(
                         } else {
                             Log.e(
                                 TAG,
-                                bundle?.getString(Commands.SET_FAVORITES_COMMAND.name)
+                                bundle?.getString(SET_FAVORITES_COMMAND)
                                     ?: "Command: $command error"
                             )
                         }

@@ -11,26 +11,26 @@ import android.os.Bundle
 import android.os.Environment
 import android.util.Log
 import androidx.activity.ComponentActivity
+import androidx.activity.SystemBarStyle
 import androidx.activity.compose.setContent
+import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.annotation.RequiresApi
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.toArgb
 import androidx.core.content.FileProvider
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.core.view.WindowCompat
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
-import androidx.work.ExistingWorkPolicy
-import androidx.work.OneTimeWorkRequestBuilder
-import androidx.work.WorkInfo
-import androidx.work.WorkManager
 import com.eugenics.resource.R
 import com.eugenics.freeradio.ui.application.Application
-import com.eugenics.ui_core.data.enums.UICommand
-import com.eugenics.freeradio.ui.viewmodels.MainViewModel
-import com.eugenics.freeradio.util.StationsWorker
+import com.eugenics.freeradio.ui.viewmodels.MediaViewModel
 import com.eugenics.freeradio.util.createInternetConnectivityListener
+import com.eugenics.ui_core.data.enums.DataState
+import com.eugenics.ui_core.data.enums.UICommand
 import com.eugenics.ui_core.data.model.UIMessage
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
@@ -38,7 +38,6 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.File
 import java.io.IOException
-import java.util.Calendar
 
 private const val SHARE_JSON_FILE_NAME = "favorites.json"
 private const val SHARE_PLAYLIST_FILE_NAME = "favorites_playlist.m3u8"
@@ -48,7 +47,7 @@ private const val UPDATE_STATIONS_WORK_NAME = "UPDATE_STATIONS_LIST"
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
 
-    private val mainViewModel: MainViewModel by viewModels()
+    private val mediaViewModel: MediaViewModel by viewModels()
 
     private val permissionsRequestLauncher =
         registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { permissions ->
@@ -65,7 +64,7 @@ class MainActivity : ComponentActivity() {
             val file = contentResolver.openInputStream(uri)
             file?.let { inputStream ->
                 val json = String(inputStream.readBytes())
-                mainViewModel.restoreFavorites(favoritesJsonString = json)
+                //mainViewModel.restoreFavorites(favoritesJsonString = json)
                 Log.d(TAG, json)
                 file.close()
             }
@@ -76,13 +75,13 @@ class MainActivity : ComponentActivity() {
         registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
             if (result.data != null) {
                 when (result.resultCode) {
-                    RESULT_OK -> mainViewModel.sendMessage(
+                    RESULT_OK -> mediaViewModel.sendMessage(
                         UIMessage.TYPE_INFO,
                         UIMessage.INFO_INFO,
                         getString(R.string.saved_text)
                     )
 
-                    else -> mainViewModel.sendMessage(
+                    else -> mediaViewModel.sendMessage(
                         UIMessage.TYPE_INFO,
                         UIMessage.INFO_INFO,
                         getString(R.string.not_saved_text)
@@ -95,9 +94,18 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        enableEdgeToEdge(
+            navigationBarStyle = SystemBarStyle.auto(
+                Color.Transparent.toArgb(), Color.Transparent.toArgb()
+            )
+        )
+        if (Build.VERSION.SDK_INT >= 29) {
+            window.isNavigationBarContrastEnforced = false
+        }
+
         installSplashScreen().apply {
             this.setKeepOnScreenCondition {
-                !mainViewModel.viewModelState
+                mediaViewModel.mainScreenStates.value.dataState == DataState.Idle
             }
         }
 
@@ -107,39 +115,37 @@ class MainActivity : ComponentActivity() {
 
         checkPostNotificationPermission()
         checkIntentData()
-
-        mainViewModel.start(applicationContext)
         collectUICommands()
+        collectNetworkState()
 
         setContent {
-            Application(viewModel = mainViewModel)
+            Application(viewModel = mediaViewModel)
         }
     }
 
     override fun onStart() {
         super.onStart()
-        collectNetworkState()
         //checkStationListUpdate()
     }
 
     private fun collectUICommands() {
         lifecycleScope.launch(Dispatchers.Default) {
             repeatOnLifecycle(state = Lifecycle.State.STARTED) {
-                mainViewModel.uiCommands.collect { command ->
+                mediaViewModel.uiCommand.collect { command ->
                     when (command) {
                         UICommand.UI_COMMAND_BACKUP_FAVORITES -> shareDataToFile(
-                            mainViewModel.savedData.value, SHARE_JSON_FILE_NAME
+                            mediaViewModel.savedData.value, SHARE_JSON_FILE_NAME
                         )
 
                         UICommand.UI_COMMAND_RESTORE_FAVORITES -> filePickLauncher.launch("*/*")
 
                         UICommand.UI_EXPORT_FAVORITES_PLAYLIST -> shareDataToFile(
-                            mainViewModel.savedData.value, SHARE_PLAYLIST_FILE_NAME
+                            mediaViewModel.savedData.value, SHARE_PLAYLIST_FILE_NAME
                         )
 
                         else -> {}
                     }
-                    mainViewModel.setUICommand(UICommand.UI_COMMAND_IDL)
+                    mediaViewModel.setUICommand(UICommand.UI_COMMAND_IDL)
                 }
             }
         }
@@ -174,7 +180,7 @@ class MainActivity : ComponentActivity() {
                 startShare.launch(shareIntent)
             } else {
                 withContext(Dispatchers.Main) {
-                    mainViewModel.sendMessage(
+                    mediaViewModel.sendMessage(
                         UIMessage.TYPE_INFO,
                         UIMessage.INFO_NO_DATA_TO_SAVE,
                         getString(R.string.no_data_to_share)
@@ -239,56 +245,60 @@ class MainActivity : ComponentActivity() {
             networkRequest, internetListener.networkCallback
         )
         lifecycleScope.launch {
-            internetListener.isActive.collect {
-                if (!it) {
-                    mainViewModel.sendMessage(
-                        UIMessage.TYPE_WARNING,
-                        UIMessage.INFO_INFO,
-                        getString(R.string.no_internet_connection)
-                    )
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
+                internetListener.isActive.collect {
+                    if (!it) {
+                        mediaViewModel.sendMessage(
+                            UIMessage.TYPE_WARNING,
+                            UIMessage.INFO_INFO,
+                            getString(R.string.no_internet_connection)
+                        )
+                    }
                 }
             }
         }
     }
 
     private fun checkStationListUpdate() {
-        val currentTime = Calendar.getInstance().timeInMillis
-        val lastUpdate = if (mainViewModel.currentState.value.lastStationsListUpdate == 0L) {
-            mainViewModel.setSettings(lastStationsListUpdate = currentTime)
-            currentTime
-        } else {
-            mainViewModel.currentState.value.lastStationsListUpdate
-        }
-
-        if ((lastUpdate + WEEK_MILL_TIME) < currentTime) {
-            val workerRequest = OneTimeWorkRequestBuilder<StationsWorker>().build()
-            val workManager = WorkManager.getInstance(applicationContext)
-            workManager.beginUniqueWork(
-                UPDATE_STATIONS_WORK_NAME, ExistingWorkPolicy.KEEP, workerRequest
-            ).enqueue()
-
-            val workInfoResult = WorkManager.getInstance(applicationContext)
-                .getWorkInfoByIdLiveData(workerRequest.id)
-
-            workInfoResult.observe(this) { workInfo ->
-                when (workInfo.state) {
-                    WorkInfo.State.SUCCEEDED -> {
-                        mainViewModel.setSettings(lastStationsListUpdate = currentTime)
-                    }
-
-                    WorkInfo.State.CANCELLED -> {
-                        mainViewModel.sendMessage(
-                            UIMessage.TYPE_INFO,
-                            UIMessage.INFO_INFO,
-                            getString(R.string.job_canceled)
-                        )
-                    }
-
-                    else -> {}
-                }
-            }
-        }
+//        val currentTime = Calendar.getInstance().timeInMillis
+//        val lastUpdate = if (mainViewModel.currentState.value.lastStationsListUpdate == 0L) {
+//            mainViewModel.setSettings(lastStationsListUpdate = currentTime)
+//            currentTime
+//        } else {
+//            mainViewModel.currentState.value.lastStationsListUpdate
+//        }
+//
+//        if ((lastUpdate + WEEK_MILL_TIME) < currentTime) {
+//            val workerRequest = OneTimeWorkRequestBuilder<StationsWorker>().build()
+//            val workManager = WorkManager.getInstance(applicationContext)
+//            workManager.beginUniqueWork(
+//                UPDATE_STATIONS_WORK_NAME, ExistingWorkPolicy.KEEP, workerRequest
+//            ).enqueue()
+//
+//            val workInfoResult = WorkManager.getInstance(applicationContext)
+//                .getWorkInfoByIdLiveData(workerRequest.id)
+//
+//            workInfoResult.observe(this) { workInfo ->
+//                when (workInfo.state) {
+//                    WorkInfo.State.SUCCEEDED -> {
+//                       // mainViewModel.setSettings(lastStationsListUpdate = currentTime)
+//                    }
+//
+//                    WorkInfo.State.CANCELLED -> {
+////                        mainViewModel.sendMessage(
+////                            UIMessage.TYPE_INFO,
+////                            UIMessage.INFO_INFO,
+////                            getString(R.string.job_canceled)
+////                        )
+//                    }
+//
+//                    else -> {}
+//                }
+//            }
+//        }
     }
+
+
 
     companion object {
         private const val TAG = "MAIN_ACTIVITY"

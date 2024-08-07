@@ -36,7 +36,7 @@ fun MainBottomAppBar(
     nowPlayingStation: State<NowPlayingStation> =
         mutableStateOf(NowPlayingStation.newInstance(name = "Sample name...")),
     playbackState: State<PlayBackState>,
-    onPlayClick: (String?) -> Unit = {},
+    onPlayClick: (String?,Boolean) -> Unit = {_,_->},
     onBottomAppBarClick: () -> Unit = {}
 ) {
 
@@ -101,7 +101,7 @@ fun MainBottomAppBar(
             )
         }
         IconButton(
-            onClick = { onPlayClick(null) },
+            onClick = { onPlayClick(nowPlayingStation.value.stationUUID,true) },
             modifier = Modifier.padding(end = 10.dp)
         ) {
             Icon(

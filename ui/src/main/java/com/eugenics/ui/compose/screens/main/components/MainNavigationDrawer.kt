@@ -1,7 +1,6 @@
 package com.eugenics.ui.compose.screens.main.components
 
 import android.content.res.Configuration.UI_MODE_NIGHT_NO
-import android.os.Bundle
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -22,7 +21,6 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.eugenics.core.enums.Commands
 import com.eugenics.core.model.Tag
 import com.eugenics.resource.R
 import com.eugenics.ui.theme.GlobeRadioTheme
@@ -32,7 +30,7 @@ import kotlinx.coroutines.launch
 fun MainNavigationDrawer(
     drawerState: DrawerState = rememberDrawerState(DrawerValue.Open),
     onSettingsClick: () -> Unit = {},
-    sendCommand: (command: String, parameters: Bundle?) -> Unit = { _, _ -> },
+    onGetTagItem: (itemId: String) -> Unit = {},
     tagsList: State<List<Tag>>,
     content: @Composable () -> Unit
 ) {
@@ -56,19 +54,14 @@ fun MainNavigationDrawer(
                             modifier = Modifier
                                 .clickable {
                                     tagDialog.value = false
-                                    val extras = Bundle()
-                                    extras.putString("TAG", item.value)
-                                    sendCommand(
-                                        Commands.STATIONS_COMMAND.name,
-                                        extras
-                                    )
+                                    onGetTagItem(item.name)
                                 }
                                 .fillMaxWidth()
                                 .padding(10.dp)
                                 .wrapContentWidth(align = Alignment.CenterHorizontally)
                         ) {
                             Text(
-                                text = item.name.uppercase(),
+                                text = item.value.uppercase(),
                                 style = MaterialTheme.typography.labelLarge
                             )
                         }
@@ -131,10 +124,7 @@ fun MainNavigationDrawer(
                     text = stringResource(R.string.favorites_text),
                     icon = Icons.Filled.Favorite,
                     onClick = {
-                        sendCommand(
-                            Commands.FAVORITES_COMMAND.name,
-                            null
-                        )
+                        onGetTagItem("FAVORITES")
                         scope.launch {
                             drawerState.close()
                         }
@@ -148,10 +138,7 @@ fun MainNavigationDrawer(
                     text = stringResource(R.string.reload_all_stations_string),
                     icon = Icons.Filled.Refresh,
                     onClick = {
-                        sendCommand(
-                            Commands.RELOAD_ALL_STATIONS_COMMAND.name,
-                            null
-                        )
+                        //TODO()
                         scope.launch {
                             drawerState.close()
                         }

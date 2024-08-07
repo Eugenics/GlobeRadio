@@ -1,8 +1,12 @@
 package com.eugenics.media_service.media
 
+import android.net.Uri
 import android.os.Bundle
 import android.os.ResultReceiver
 import android.util.Log
+import androidx.media3.common.MediaItem
+import androidx.media3.common.MediaMetadata
+import com.eugenics.core.constants.SET_FAVORITES_COMMAND
 import com.eugenics.core.enums.MediaSourceState
 import com.eugenics.core.enums.Commands
 import com.eugenics.core.model.CurrentPrefs
@@ -16,6 +20,8 @@ import com.eugenics.media_service.util.PrefsHelper
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+
+private const val ROOT_ID = "/"
 
 class MediaSource(
     private val stationsRepository: IStationsRepository, prefsRepository: IPrefsRepository
@@ -121,12 +127,12 @@ class MediaSource(
                 } else {
                     stationsRepository.deleteFavorite(stationUuid = stationUuid)
                 }
-                resultBundle.putString(Commands.SET_FAVORITES_COMMAND.name, "Success")
+                resultBundle.putString(SET_FAVORITES_COMMAND, "Success")
                 cb?.send(1, resultBundle)
             } catch (ex: Exception) {
                 _state.value = MediaSourceState.STATE_ERROR.value
                 Log.e(TAG, ex.message.toString())
-                resultBundle.putString(Commands.SET_FAVORITES_COMMAND.name, ex.message.toString())
+                resultBundle.putString(SET_FAVORITES_COMMAND, ex.message.toString())
                 cb?.send(0, resultBundle)
             }
         }
@@ -218,6 +224,62 @@ class MediaSource(
 
                 else -> {}
             }
+        }
+    }
+
+    fun getMediaLibraryItems(): MutableList<MediaItem> {
+        val mediaLibItems = mutableListOf<MediaItem>()
+
+        mediaItems.value.forEach { item ->
+            val mediaExtras = Bundle()
+            mediaExtras.putParcelable("MEDIA_SOURCE_ITEM", item)
+            val mediaMetadata = MediaMetadata.Builder()
+                .setTitle(item.name)
+                .setDescription(item.name + ":" + item.tags)
+                .setSubtitle(item.tags)
+                .setArtworkUri(Uri.parse(item.favicon))
+                .setExtras(mediaExtras)
+                .setIsPlayable(true)
+                .setIsBrowsable(false)
+                .build()
+            val mediaItem = MediaItem.Builder()
+                .setMediaId(item.uuid)
+                .setMediaMetadata(mediaMetadata)
+                .setUri(Uri.parse(item.urlResolved))
+                .build()
+            mediaLibItems.add(mediaItem)
+        }
+        return mediaLibItems
+    }
+
+    fun getRootMediaLibraryItem(): MediaItem {
+        val metadata = MediaMetadata.Builder()
+            .setTitle("root")
+            .setIsPlayable(false)
+            .setIsBrowsable(false)
+            .setMediaType(MediaMetadata.MEDIA_TYPE_FOLDER_ALBUMS)
+            .build()
+
+        return MediaItem.Builder()
+            .setMediaId(ROOT_ID)
+            .setMediaMetadata(metadata)
+            .build()
+    }
+
+    suspend fun searchMediaLibraryItems(query: String) {
+        feelMediaItems(
+            stationsRepository.getLocalStationByName(
+                name = "%$query%"
+            )
+        )
+    }
+
+    suspend fun getMediaLibraryChildren(parentId: String) {
+        when (parentId) {
+            "favorites" -> feelMediaItems(stationsRepository.fetchStationsByFavorites())
+            else -> feelMediaItems(
+                stationsRepository.getLocalStationByTag(tag = "%${parentId.lowercase()}%")
+            )
         }
     }
 

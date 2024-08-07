@@ -66,4 +66,7 @@ dependencies {
 
     // Media3
     implementation(libs.bundles.meida3)
+
+    // Jackson
+    implementation(libs.jackson.databind)
 }

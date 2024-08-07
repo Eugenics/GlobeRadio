@@ -6,8 +6,7 @@ data class DetailScreenHandlers(
     val onBackPressed: () -> Unit,
     val onMenuPressed: () -> Unit,
     val onPlayPressed: () -> Unit,
-    val onPrevPressed: () -> Unit,
-    val onNextPressed: () -> Unit,
+    val onNextPressed: (Boolean) -> Unit,
     val onFavoritePressed: (command: String, bundle: Bundle?) -> Unit,
 ) {
     companion object {
@@ -15,15 +14,13 @@ data class DetailScreenHandlers(
             onBackPressed: () -> Unit = {},
             onMenuPressed: () -> Unit = {},
             onPlayPressed: () -> Unit = {},
-            onPrevPressed: () -> Unit = {},
-            onNextPressed: () -> Unit = {},
+            onNextPressed: (Boolean) -> Unit = {},
             onFavoritePressed: (command: String, bundle: Bundle?) -> Unit = { _, _ -> }
         ): DetailScreenHandlers =
             DetailScreenHandlers(
                 onBackPressed = onBackPressed,
                 onMenuPressed = onMenuPressed,
                 onPlayPressed = onPlayPressed,
-                onPrevPressed = onPrevPressed,
                 onNextPressed = onNextPressed,
                 onFavoritePressed = onFavoritePressed
             )
