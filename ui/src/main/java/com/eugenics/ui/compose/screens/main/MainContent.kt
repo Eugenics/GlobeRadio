@@ -69,7 +69,7 @@ fun MainContent(
             state = columnState
         ) {
             itemsIndexed(items = stations.value,
-                key = { index, item ->
+                key = { index, _ ->
                     stations.value[index].stationuuid
                 }) { index, station ->
                 Row(

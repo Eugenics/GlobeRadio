@@ -2,14 +2,11 @@ package com.eugenics.freeradio.ui.activity
 
 import android.Manifest
 import android.content.Intent
-import android.content.res.Configuration
-import android.net.ConnectivityManager
-import android.net.NetworkCapabilities
-import android.net.NetworkRequest
 import android.os.Build
 import android.os.Bundle
 import android.os.Environment
 import android.util.Log
+import android.view.WindowInsetsController.APPEARANCE_LIGHT_NAVIGATION_BARS
 import androidx.activity.ComponentActivity
 import androidx.activity.SystemBarStyle
 import androidx.activity.compose.setContent
@@ -21,14 +18,12 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.core.content.FileProvider
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
-import androidx.core.view.WindowCompat
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import com.eugenics.resource.R
 import com.eugenics.freeradio.ui.application.Application
 import com.eugenics.freeradio.ui.viewmodels.MediaViewModel
-import com.eugenics.freeradio.util.createInternetConnectivityListener
 import com.eugenics.ui_core.data.enums.DataState
 import com.eugenics.ui_core.data.enums.UICommand
 import com.eugenics.ui_core.data.model.UIMessage
@@ -76,15 +71,11 @@ class MainActivity : ComponentActivity() {
             if (result.data != null) {
                 when (result.resultCode) {
                     RESULT_OK -> mediaViewModel.sendMessage(
-                        UIMessage.TYPE_INFO,
-                        UIMessage.INFO_INFO,
-                        getString(R.string.saved_text)
+                        UIMessage.TYPE_INFO, UIMessage.INFO_INFO, getString(R.string.saved_text)
                     )
 
                     else -> mediaViewModel.sendMessage(
-                        UIMessage.TYPE_INFO,
-                        UIMessage.INFO_INFO,
-                        getString(R.string.not_saved_text)
+                        UIMessage.TYPE_INFO, UIMessage.INFO_INFO, getString(R.string.not_saved_text)
                     )
                 }
             }
@@ -92,16 +83,8 @@ class MainActivity : ComponentActivity() {
 
     @RequiresApi(Build.VERSION_CODES.S)
     override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
 
-        enableEdgeToEdge(
-            navigationBarStyle = SystemBarStyle.auto(
-                Color.Transparent.toArgb(), Color.Transparent.toArgb()
-            )
-        )
-        if (Build.VERSION.SDK_INT >= 29) {
-            window.isNavigationBarContrastEnforced = false
-        }
+        super.onCreate(savedInstanceState)
 
         installSplashScreen().apply {
             this.setKeepOnScreenCondition {
@@ -109,14 +92,10 @@ class MainActivity : ComponentActivity() {
             }
         }
 
-        val isFits = this.resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
-        Log.d(TAG, "Landscape orientation=$isFits")
-        WindowCompat.setDecorFitsSystemWindows(window, isFits)
-
         checkPostNotificationPermission()
         checkIntentData()
         collectUICommands()
-        collectNetworkState()
+        collectThemeIsDarkValue()
 
         setContent {
             Application(viewModel = mediaViewModel)
@@ -126,6 +105,7 @@ class MainActivity : ComponentActivity() {
     override fun onStart() {
         super.onStart()
         //checkStationListUpdate()
+        //collectNetworkState()
     }
 
     private fun collectUICommands() {
@@ -234,30 +214,30 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-    private fun collectNetworkState() {
-        val connectivityManager = getSystemService(CONNECTIVITY_SERVICE) as ConnectivityManager
-        val internetListener = connectivityManager.createInternetConnectivityListener()
-        val networkRequest =
-            NetworkRequest.Builder().addCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
-                .addTransportType(NetworkCapabilities.TRANSPORT_WIFI)
-                .addTransportType(NetworkCapabilities.TRANSPORT_CELLULAR).build()
-        connectivityManager.registerNetworkCallback(
-            networkRequest, internetListener.networkCallback
-        )
-        lifecycleScope.launch {
-            repeatOnLifecycle(Lifecycle.State.STARTED) {
-                internetListener.isActive.collect {
-                    if (!it) {
-                        mediaViewModel.sendMessage(
-                            UIMessage.TYPE_WARNING,
-                            UIMessage.INFO_INFO,
-                            getString(R.string.no_internet_connection)
-                        )
-                    }
-                }
-            }
-        }
-    }
+//    private fun collectNetworkState() {
+//        val connectivityManager = getSystemService(CONNECTIVITY_SERVICE) as ConnectivityManager
+//        val internetListener = connectivityManager.createInternetConnectivityListener()
+//        val networkRequest =
+//            NetworkRequest.Builder().addCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
+//                .addTransportType(NetworkCapabilities.TRANSPORT_WIFI)
+//                .addTransportType(NetworkCapabilities.TRANSPORT_CELLULAR).build()
+//        connectivityManager.registerNetworkCallback(
+//            networkRequest, internetListener.networkCallback
+//        )
+//        lifecycleScope.launch {
+//            repeatOnLifecycle(Lifecycle.State.STARTED) {
+//                internetListener.isActive.collect {
+//                    if (!it) {
+//                        mediaViewModel.sendMessage(
+//                            UIMessage.TYPE_WARNING,
+//                            UIMessage.INFO_INFO,
+//                            getString(R.string.no_internet_connection)
+//                        )
+//                    }
+//                }
+//            }
+//        }
+//    }
 
     private fun checkStationListUpdate() {
 //        val currentTime = Calendar.getInstance().timeInMillis
@@ -298,6 +278,36 @@ class MainActivity : ComponentActivity() {
 //        }
     }
 
+    private fun collectThemeIsDarkValue() {
+        lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
+                mediaViewModel.themeIsDark.collect { isDark ->
+                    enableEdgeToEdge(
+                        statusBarStyle = SystemBarStyle.auto(
+                            Color.Transparent.toArgb(),
+                            Color.Transparent.toArgb(),
+                            detectDarkMode = { isDark }
+                        )
+                    )
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                        if (isDark) {
+                            window.decorView.windowInsetsController
+                                ?.setSystemBarsAppearance(
+                                    0,
+                                    APPEARANCE_LIGHT_NAVIGATION_BARS
+                                )
+                        } else {
+                            window.decorView.windowInsetsController
+                                ?.setSystemBarsAppearance(
+                                    APPEARANCE_LIGHT_NAVIGATION_BARS,
+                                    APPEARANCE_LIGHT_NAVIGATION_BARS
+                                )
+                        }
+                    }
+                }
+            }
+        }
+    }
 
 
     companion object {

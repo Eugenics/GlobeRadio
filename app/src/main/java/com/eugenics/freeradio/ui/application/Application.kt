@@ -43,6 +43,8 @@ fun Application(
         else -> isSystemInDarkTheme()
     }
 
+    viewModel.setThemeIsDarkValue(isDarkTheme)
+
     val dynamicColor = viewModel.primaryDynamicColor.collectAsState()
     val defaultColor = if (isDarkTheme) {
         DarkColors.primary
@@ -71,7 +73,7 @@ fun Application(
         isDarkColorsScheme = isDarkTheme,
         color = color.value,
         isSystemTheme = isSystemTheme
-    ){
+    ) {
         val navController = rememberNavController()
         Surface(tonalElevation = 5.dp) {
             NavGraph(

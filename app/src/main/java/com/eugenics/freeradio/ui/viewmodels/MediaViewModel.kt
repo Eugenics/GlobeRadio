@@ -85,6 +85,9 @@ class MediaViewModel @Inject constructor(
     private val _savedData: MutableStateFlow<String> = MutableStateFlow("")
     val savedData: StateFlow<String> = _savedData
 
+    private val _themeIsDark: MutableStateFlow<Boolean> = MutableStateFlow(false)
+    val themeIsDark: StateFlow<Boolean> = _themeIsDark
+
     init {
         Log.d(TAG, "MEDIA_VIEWMODEL_INIT")
         collectSettingsForWrite()
@@ -417,6 +420,10 @@ class MediaViewModel @Inject constructor(
 
             else -> {}
         }
+    }
+
+    fun setThemeIsDarkValue(isDark: Boolean) {
+        _themeIsDark.update { isDark }
     }
 
     companion object {
